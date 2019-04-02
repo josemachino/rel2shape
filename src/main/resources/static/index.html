@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>DB2ShEx</title>
+	<meta charset="utf-8" />
+	<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/jointjs/2.2.0/joint.css" rel="stylesheet" type="text/css" /><!--<link rel="stylesheet" type="text/css" href="joint.ui.paperScroller.min.css">-->
+	<!-- Our Custom CSS -->
+	<link href="css/style4.css" rel="stylesheet" />
+	<!--BOOTSTRAP CSS -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+	<link crossorigin="anonymous" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous">	</script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
+	
+	<!--BOOTSTRAP -->
+	<!-- Font Awesome JS 
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>-->
+	<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" rel="stylesheet" />
+	<!--Dependencies JointJs -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.js"></script>
+	<script src="js/graphlib.min.js"></script>
+	<script src="js/dagre.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jointjs/2.2.1/joint.js"></script>
+	<script type="text/javascript" src="js/backbone-bootstrap-modals.min.js"></script>
+	<!--Math Jax for render formulas-->
+	<link href="http://fonts.googleapis.com/css?family=Droid+Sans+Mono" rel="stylesheet" type="text/css" />
+	<link href="css/jquery.rainbowJSON.css" rel="stylesheet" />
+	<!--D3 or Vis-->
+	<script type="text/javascript" src="vis/vis.js"></script>
+	<link href="vis/vis.css" rel="stylesheet" type="text/css" />
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+	<!--Table bootstrap-->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-treegrid/0.2.0/css/jquery.treegrid.min.css" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-treegrid/0.2.0/js/jquery.treegrid.min.js"></script>
+	<link href="https://unpkg.com/bootstrap-table@1.13.3/dist/bootstrap-table.min.css" rel="stylesheet">
+	<script src="https://unpkg.com/bootstrap-table@1.13.3/dist/bootstrap-table.min.js"></script>
+	<script src="https://unpkg.com/bootstrap-table@1.13.3/dist/extensions/treegrid/bootstrap-table-treegrid.min.js"></script>
+	
+	<!-- Main Quill library -->
+	<script src="//cdn.quilljs.com/1.3.6/quill.js"></script>
+	<script src="//cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+	<!-- Theme included stylesheets -->
+	<link href="//cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+	<link href="//cdn.quilljs.com/1.3.6/quill.bubble.css" rel="stylesheet"> 
+	<!-- <script type="text/javascript" src="js/bootstrap-table-treegrid.min.js"></script>-->
+	
+	<!-- <script type="text/javascript" src="js/bootstrap-table.js"></script>
+	<link href="css/bootstrap-table.css" rel="stylesheet" type="text/css" /> -->
+	<!-- JSON Editor 
+	<link href="jsoneditor/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="jsoneditor/jsoneditor.min.js"></script>
+    -->
+    <!-- QUery Builder -->
+    <script src="js/moment.js"></script>
+    <link href="css/query-builder.default.css" rel="stylesheet" type="text/css">
+    <script src="js/query-builder.standalone.js"></script>
+<!--     https://github.com/jimmywarting/StreamSaver.js-->
+    <script src="js/StreamSaver.js"></script> <!-- load before streams polyfill to detect support -->
+<script src="https://unpkg.com/@mattiasbuelens/web-streams-polyfill/dist/polyfill.min.js"></script>
+	<!--
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+
+    <script type="text/javascript" src="rappid/v1.6/rappid.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="rappid/v1.6/rappid.min.css"></script>-->
+</head>
+<body>
+<svg height="0" width="0" xmlns="http://www.w3.org/2000/svg"> 
+<defs> <marker id="markerArrowBlue" markerheight="10" markerwidth="10" orient="auto" refx="0" refy="3"> <path d="M0,0 L0,6 L9,3 z" style="fill: black;"></path> </marker> 
+<marker id="markerArrowRed" markerheight="10" markerwidth="10" orient="auto" refx="0" refy="3"> <path d="M0,0 L0,6 L9,3 z" style="fill: green;"></path> </marker> 
+<marker id="markerArrowGreen" markerheight="10" markerwidth="10" orient="auto" refx="0" refy="3"> <path d="M0,0 L0,6 L9,3 z" style="fill: blue;"></path> </marker> 
+</defs> </svg>
+<p>&nbsp;</p>
+
+<div class="wrapper">
+<nav id="sidebar">&nbsp;</nav>
+
+<div id="content">
+	<!-- <div id="menu">&nbsp;</div> -->
+
+	<div class="tab-content">
+		<div class="tab-pane fade" id="database">
+			<div id="sql_container">&nbsp;</div>
+		</div>
+		<div class="tab-pane fade" id="shex">
+			<div id="search_container">&nbsp;</div>
+		</div>
+		<div class="tab-pane fade" id="mappings">
+			<div id="tgds_container">&nbsp;</div>
+		</div>
+		<div class="tab-pane fade" id="exchange">
+			<div id="result_container"></div>
+		</div>
+	</div>
+<!-- http://jsfiddle.net/mfX57/2149/ -->
+<div id="mydb">&nbsp;</div>
+<!--<div id="paper-container"></div>-->
+</div>
+
+<div id="sidebar-right"></div>
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Add Conditions</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	<div id="queryBuilder"></div>        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveGreenParam">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="jointjs/joint.shapes.db.js"></script>
+<script src="jointjs/joint.shapes.shex.js"></script>
+<script src="jointjs/Exchange.js"></script>
+<script src="jointjs/shapes.db.js"></script>
+<script type="text/template" id="side_template">
+        <div class="sidebar-header">
+            <a id="sideLeftcollapse"><h3>Data Exchange</h3></a>
+            <a id="sideLeftcollapse"><strong>DE</strong></a>
+        </div>
+        <ul class="list-unstyled components nav-tabs" role="tablist">
+            <li>
+                <a href="#database" role="tab" data-toggle="tab">
+                    <i class="fas fa-database"></i>
+                    Load Database
+                </a>
+            </li>
+            <li>
+                <a href="#shex" role="tab" data-toggle="tab">
+                    <i class="fas fa-cubes"></i>
+                    Load ShEx or SHACL
+                </a>
+            </li>            
+            <li>
+                <a href="#exchange" role="tab" data-toggle="tab">                    
+                    <i class="fas fa-file-export"></i>
+                    Materialize
+                </a>
+            </li>
+			<li id="tgd">
+                <a  href="#mappings" role="tab" data-toggle="tab">
+                    <i class="fas fa-exchange-alt"></i>
+                    GML
+                </a>
+            </li>
+			<!--<li id="testing">
+                <a  role="tab" data-toggle="tab">                    
+                    <i class="fas fa-tasks"></i>
+                    Unit Testing
+                </a>
+            </li>-->
+        </ul>
+    </script>
+<script type="text/template" id="search_template">
+	<form>
+	<div class="form-group">
+    <label>Search ShEx or SHACL file</label>  
+    <input type="file" accept=".json" id="search_button"  class="form-control"/>
+	</div>
+	</form>
+</script>
+<script type="text/template" id="exchange_template">
+	<form>
+	<div class="form-group">    
+		<label class="radio-inline"><input id="rb_sql "type="radio" name="optradio" checked value="sql">Script SQL</label>
+		<label class="radio-inline"><input id="rb_rml" type="radio" name="optradio" value="rml">R2RML</label>
+		<label class="radio-inline"><input id="rb_sqldb" type="radio" name="optradio" value="sqldb">TripleStore</label>
+	    <button type="submit" class="btn btn-primary form-control">Exchange</button>        		
+	</div>
+	</form>
+	<div id="ls_todo"></div>
+	<div id="result_exchange"></div>
+</script>
+<script type="text/template" id="sql_template">
+        <form id="data" method="post" enctype="multipart/form-data">        
+        <div class="form-group">
+            <label for="sqlFile">SQL File</label>
+            <input type="file" accept=".sql" class="form-control-file form-control" id="sqlFile" aria-describedby="filelHelp" placeholder="Enter SQL file">
+            <small id="filelHelp" class="form-text text-muted">Upload SQL file</small>
+        </div>        
+        <button type="submit" class="btn btn-primary form-control">Load</button>
+        </form>
+		<div class="result"></div>
+    </script>
+<script type="text/template" id="sideright_template">
+        <div class="sidebar-header">
+            <a id="rightCollapsed"><h3>Set of Mappings</h3></a>
+			<a id="rightCollapsed"><strong>ST-TGDs</strong></a>            
+        </div>
+		<div class="rightside">
+		<div class="form-group">
+		   <button class="btn" id="exportst" type="button" data-toggle="tooltip" data-placement="right" title="Export"> <i class="fas fa-file-export"></i></button>
+		   <button class="btn" id="undost" type="button" data-toggle="tooltip" data-placement="right" title="Undo" ><i class="fas fa-undo"></i></button>
+		   <button class="btn" id="savest" type="button" data-toggle="tooltip" data-placement="right" title="Save"><i class="far fa-save"></i></button>
+		   <button class="btn" id="conf" type="button" data-toggle="tooltip" data-placement="right" title="Line Configuration"><i class="fas fa-user-cog"></i></button>			
+		</div>
+		<div class="form-group">
+			<label for="importst">Import Graphic File</label>
+		   <input id="importst" type="file" placeholder="Import Graphics" class="form-control-file form-control"/> 
+		</div>        
+        <table id="table" class="table" data-toggle="table" data-search="false" data-unique-id="id">            
+        </table>                   
+        <div id="syntax_tgds"> </div>
+        </div>
+    </script>
+<script type="text/template" id="tgd_template">
+<fieldset>
+<legend style="color:blue;font-weight:bold;">GML</legend>
+<div id="tgds_list" style="400px">	
+</div>
+</fieldset>
+</script>
+<script type="text/javascript" src="uiloadjs/loadSideNav.js"></script>
+<script type="text/javascript" src="uiloadjs/loadSideRightNav.js"></script>
+<script type="text/javascript" src="uiloadjs/loadShExFile.js"></script>
+<script type="text/javascript" src="uiloadjs/loadSQLFile.js"></script>
+<script type="text/javascript" src="uiloadjs/loadTGDView.js"></script>
+<script type="text/javascript" src="uiloadjs/loadExchangeView.js"></script>
+<script src="js/jquery.rainbowJSON.js"></script>
+    <script type="text/javascript">
+    function operateFormatter(value, row, index) {
+	    return [      
+	      '<a class="removeTGD" href="javascript:void(0)" title="Remove">',
+	      '<i class="fa fa-trash"></i>',
+	      '</a>'
+	    ].join('')
+	  }
+
+	  window.operateEvents = {    
+	    'click .removeTGD': function (e, value, row, index) {	    	
+	    	let currentLink=graphTGDs.getCell(row.id);
+	    	currentLink.remove()	      	      
+	    }
+	  }
+	var $table = $('#table');//,idField:'id',
+	$table.bootstrapTable({ columns:[{field:'pid',title:'pIdLink',class:"w-25",visible:false},{field:'id',title:'IdLink',class:"w-25",visible:false},{field:'ex',title:'Expression',sortable:"true",searchable:true},
+		{field:'operate',title:'Delete',align:'center', events: window.operateEvents,formatter: operateFormatter,width:'10px'}],
+	treeShowField:'ex',parentIdField:'pid'
+	});
+	//onChange:function(){$table.bootstrapTable('resetWidth')}
+	$table.treegrid({treeColumn: 1,expanderExpandedClass: 'glyphicon glyphicon-minus',
+        expanderCollapsedClass: 'glyphicon glyphicon-plus'});
+	$('#ls_todo').hide();	
+	//function rowStyle(row,index){
+	
+	//	return {css:{color: '#'+Math.floor(Math.random() * 16777215).toString(16)}}
+	//}
+	/*,
+		cellStyle: function (value, row, index) {
+			return {	          
+	            css: {
+	                "color": "blue"
+	            }
+	        };https://github.com/wenzhixin/bootstrap-table/issues/221
+		}*/
+	</script>
+</body>
+</html>
