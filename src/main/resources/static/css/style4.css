@@ -1,4 +1,14 @@
 /*TODO DIV INLINE FOR TGDS ENTITY LINK*/
+.rowTGD{
+	width:250px;
+	height:70px;	
+}
+#tableTGD{
+	columns:3;
+}
+.rowIDTGD{
+	display:none;
+}
 .form-control{
 	height:40px;
 }
