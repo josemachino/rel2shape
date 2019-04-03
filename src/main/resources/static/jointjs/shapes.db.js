@@ -1217,8 +1217,13 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
 }
 
 function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
-	return $('#tableTGD').append($('<li>').attr({id:greenLink.id,class:"rowIDTGD"}))
-	.append($('<li>').attr({class:"rowTGD"}).append());
+	return $('#tableTGD').append($('<li>').attr({id:"id_"+greenLink.id,class:"rowIDTGD"}))
+	.append($('<li>').attr({id:"div_id"+greenLink.id,class:"rowTGD"}).append());
+	let dataNodes=[];
+	dataNodes.push();
+	let graph={nodes:,edges:}
+	var =cytoscape({
+		  container: document.getElementById("div_id"+greenLink.id),elements:,layout: { name: 'preset',padding: 5}});
 	
 	
 	/*return $('<div>').append(
