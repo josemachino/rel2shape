@@ -49,9 +49,15 @@ let heightSVGForLine='17px';
 let widthSVGLine='192';
 let widthSVGLineG='232';
 let sessionGO=[];
-let subjectLinkColor="blue";
-let attributeLinkColor="black";
-let attributeRefLinkColor="green";
+let subjectLinkColor="#0E4D92";
+let attributeLinkColor="#73C2FB";
+let attributeRefLinkColor="#3FE0D0";
+let typeNodeRect="round-rectangle";
+let typeNodeAtt="ellipse";
+/**
+ * This variable stores the cytoscape variables created already
+ * */
+let tgdLines=new Map();
 var graphTGDs = new joint.dia.Graph;
 var paperTGDs = new joint.dia.Paper({
     el: document.getElementById('mydb'),
@@ -79,34 +85,6 @@ paperTGDs.on('link:mouseleave', function(linkView) {
     linkView.hideTools();
 });
 
-/*paperTGDs.on('link:pointerdblclick', function(linkView){  
-    var currentLink=linkView.model;
-    if (linkView.sourceMagnet.nodeName=='rect'){
-        var auxKeySymbols=[];
-        for (const key of mapSymbols.keys()) {
-            var obj={text:key};                        
-            auxKeySymbols.push(obj);
-        }        
-        loadModal(currentLink,auxKeySymbols,linkView.sourceView.model.attributes.options,mapSymbols);                    
-    }else if (linkView.sourceMagnet.nodeName=='circle'){        
-        var tablesConnected=[{id:linkView.sourceView.model.id,text:linkView.sourceView.model.attributes.question}];                        
-        var intargetLinks=graphTGDs.getConnectedLinks(linkView.targetView.model, {inbound:true});
-        var portType=linkView.targetView.model.attributes.ports.items[0];
-        var tLinks=getLinkTarget(intargetLinks,portType);                                        
-        
-        for (var tlink of tLinks){							
-            var tView=tlink.findView(paperTGDs);  							
-            var visited=[];
-            getJoinsTableFromTo(linkView.sourceView.model,tablesConnected,tView.sourceView.model.id,visited,tablesConnected[0]);	
-        }               
-        if (tablesConnected.length>1){
-        	
-            loadModalPathAttribute(currentLink,tablesConnected);
-        }else{            
-            loadModalFunctions(currentLink);
-        }    
-    }
-});*/
 
 graphTGDs.on('remove', function(cell, collection, opt) {
    if (cell.isLink()) {	         
@@ -1217,15 +1195,57 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
 }
 
 function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
-	return $('#tableTGD').append($('<li>').attr({id:"id_"+greenLink.id,class:"rowIDTGD"}))
-	.append($('<li>').attr({id:"div_id"+greenLink.id,class:"rowTGD"}).append());
+	/*$('#tableTGD').append($('<li>').attr({class:"rowIDTGD"}).append(greenLink.id))
+	.append($('<li>').attr({id:"idTGD"+greenLink.id,class:"rowTGD"}))
+	.append($('<li>').append("R"));*/
+	
+	$('#tableTGD')
+	.append($('<div>').attr({id:"idTGD"+greenLink.id,class:"rowTGD"}));
+	
 	let dataNodes=[];
-	dataNodes.push();
-	let graph={nodes:,edges:}
-	var =cytoscape({
-		  container: document.getElementById("div_id"+greenLink.id),elements:,layout: { name: 'preset',padding: 5}});
-	
-	
+	let lenRect=sHead.length>tHead.length?sHead.length*5:tHead.length*10;
+	console.log(lenRect)
+	dataNodes.push({data:{id:sHead,type:typeNodeRect},position:{x:30,y:50}});
+	dataNodes.push({data:{id:tHead,type:typeNodeRect},position:{x:200,y:50}});
+	let dataEdges=[];
+	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,'source-label':condition}});
+	let graph={nodes:dataNodes,edges:dataEdges}
+	console.log(graph)
+	var tgdCy=window.cy =cytoscape({
+		  container: document.getElementById("idTGD"+greenLink.id),
+		  style: [
+			    {
+			      selector: 'node',
+			      css: {
+			        'label': 'data(id)',
+			        'shape': 'data(type)',
+			        'text-valign': 'center',
+			        'text-halign': 'center',
+			        'height': 40,
+			        'width': lenRect
+			      }
+			    },{
+			        selector: ':parent',
+			        css: {
+			          'text-valign': 'top',
+			          'text-halign': 'center',
+			        }
+			      },
+			    {
+			        'selector': 'edge[label]',
+			        'style': {
+			          'label': 'data(label)',
+			          'width': 3,
+			          'curve-style': 'bezier',
+			          'target-arrow-shape': 'triangle'
+			        }
+			      }
+			    ],
+		  elements:graph,
+		  layout: { name: 'preset',padding: 10}});
+	/*var layTgd=tgdCy.layout({ name: 'preset' });
+	layTgd.run();*/	
+	tgdLines.set(greenLink.id,tgdCy);
 	/*return $('<div>').append(
     		$('<span>').attr('class','li_tgd').append(sHead)).
     		append($('<div>').attr({'class':'link_tgdG'}).
@@ -1241,9 +1261,24 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
     										append($('<span>').attr('class', 'li_tgd').append(tHead)).remove().html();	 
 */
 }
+/**
+ * path is an array of string name tables
+ * */
+function buildBlueLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
+	let plainObj=[];
+	let postEnt=cy.$('#'+tEnt).position();
+	let possEnt=cy.$('#'+sEnt).position();
+	console.log(cy);
+	plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }, position: { x: postEnt.x, y: postEnt.y+10 } });
+	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }, position: { x: possEnt.x, y: possEnt.y+10 } });
+	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:condition } });
+	cy.add(plainObj);
+	console.log(cy);
+	
+}
 
 function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead){
-	
+	buildGreenLink(greenLink,sHead,fSubject,tHead,"");
     /*let graphicTGDparent=buildGreenLink(greenLink,sHead,fSubject,tHead,"");
     let ident=greenLink.id;
     $table.bootstrapTable('append',[{pid:0,id:ident,ex:graphicTGDparent}])
@@ -1278,10 +1313,14 @@ function drawNewBlueLinkInTable(blueLink){
         }
     }
 	let sourceTName=linkView.sourceView.model.attributes.question;
+	let targetTName=linkView.targetView.model.attributes.question;
 	let sourceAtt=getSourceOptionNameLinkView(linkView);
+	let targetAtt=blueLink.attributes.target.port.split(",")[0];
 	let constraintAtt="";
 	if (blueLink.labels().length>1)
 		constraintAtt=(((blueLink.labels()[1]|| {}).attrs||{}).text||{}).text;
+	
+	buildBlueLink(tgdLines.get(parentId),blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);
 	
 	/*let graphicTGD=$('<div>').append('<i class="fas fa-dot-circle"></i><i class="fas fa-ellipsis-h"></i>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_body_tgd').append(sourceAtt))).append($('<div>').attr({'class':'link_tgd'}).append($('<div>').attr({class:"path_tgd"}).append(joinPath)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:blueLink.id,class:'edit_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:heightSVGForLine,width:widthSVGForLine}).append($('<line>').attr({class:'arrowBlue',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({id:"param_"+blueLink.id,class:"param_tgd"}).append(constraintAtt)).append($('<a>').attr({'data-tooltip':'true',title:'Remove Parameters',id:blueLink.id,class:'rem_param_blue_tgd'}).append($('<i>').attr('class','fas fa-trash-alt')))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_body_tgd').append(blueLink.attributes.target.port.split(",")[0]))).remove().html();
     $table.bootstrapTable('append',[{pid:parentId,id:blueLink.id,ex:graphicTGD}])
@@ -2327,15 +2366,16 @@ function loadConfModal(){
         	
         	for (var link of graphTGDs.getLinks()){
         		if (link.attr('line/stroke')==subjectLinkColor){
-        			link.attr('line/stroke')=$('#entColor').val();        			
+        			link.attr({line:{stroke:$('#entColor').val()}});        			
         		}
         		if (link.attr('line/stroke')==attributeLinkColor){
-        			link.attr('line/stroke')=$('#attColor').val();
+        			link.attr({line:{stroke:$('#attColor').val()}});        			
         		}
         		if (link.attr('line/stroke')==attributeRefLinkColor){
-        			link.attr('line/stroke')=$('#refColor').val();
+        			link.attr({line:{stroke:$('#refColor').val()}});        			
         		}
         	}
+        	console.log($('#entColor').val());
         	subjectLinkColor=$('#entColor').val();        	      
         	attributeLinkColor=$('#attColor').val();                	
         	attributeRefLinkColor=$('#refColor').val();

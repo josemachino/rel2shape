@@ -1,11 +1,16 @@
 /*TODO DIV INLINE FOR TGDS ENTITY LINK*/
 .rowTGD{
-	width:250px;
-	height:70px;	
+	width:400px;
+	height:300px;		
 }
 #tableTGD{
-	columns:3;
+	/*-webkit-column-count: 3;
+       -moz-column-count: 3;
+            column-count: 3;*/  
 }
+/*#tableTGD li{
+	display: inline-block;
+}*/
 .rowIDTGD{
 	display:none;
 }
