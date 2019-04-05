@@ -2,6 +2,7 @@
 /*
  *change background when is a different path
  */
+//https://bl.ocks.org/vegarringdal/8e02e1bcc281f0bb7ecbf041a35f5245
 //https://stackoverflow.com/questions/48915931/bootstrap-table-how-to-set-table-row-background-color
 //https://bootstrap-table.com/docs/api/table-options/
 //http://visjs.org/docs/network/
@@ -1192,6 +1193,7 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
     let graphicTGD=$('<div>').append('<i class="fas fa-dot-circle"></i><i class="fas fa-ellipsis-h"></i>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_body_tgd').append(sAtt))).append($('<div>').attr('class','link_tgd').append($('<div>').attr({class:"path_tgd"}).append(path)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:redLink.id,class:'edit_red_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:'17px',width:widthSVGForLine}).append($('<line>').attr({class:'arrowRed',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({class:"iri_tgd"}).append(fObject))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_body_tgd').append(tAtt))).remove().html();
     $table.bootstrapTable('append',[{pid:parentId,id:redLink.id,ex:graphicTGD}])
     */
+    buildRedLink(tgdLines.get(parentId),redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
 }
 
 function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
@@ -1208,10 +1210,10 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 	dataNodes.push({data:{id:sHead,type:typeNodeRect},position:{x:30,y:50}});
 	dataNodes.push({data:{id:tHead,type:typeNodeRect},position:{x:200,y:50}});
 	let dataEdges=[];
-	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,'source-label':condition}});
+	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,'source-label':condition},classes:'entity'});
 	let graph={nodes:dataNodes,edges:dataEdges}
 	console.log(graph)
-	var tgdCy=window.cy =cytoscape({
+	var tgdCy=cytoscape({
 		  container: document.getElementById("idTGD"+greenLink.id),
 		  style: [
 			    {
@@ -1224,22 +1226,45 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			        'height': 40,
 			        'width': lenRect
 			      }
-			    },{
-			        selector: ':parent',
-			        css: {
+			    },
+			    {
+			       selector: ':parent',
+			       css: {
 			          'text-valign': 'top',
 			          'text-halign': 'center',
-			        }
-			      },
+			       }
+			    },
 			    {
-			        'selector': 'edge[label]',
-			        'style': {
+			       selector: 'edge[label]',
+			       css: {
 			          'label': 'data(label)',
 			          'width': 3,
 			          'curve-style': 'bezier',
 			          'target-arrow-shape': 'triangle'
-			        }
+			       }
+			    },
+			    {
+		    	  selector: 'edge.entity',
+		    	  css: {
+		    	    'curve-style': 'taxi',
+		    	    'taxi-direction': 'upward',
+		    	    'taxi-turn': 20,
+		    	    'taxi-turn-min-distance': 5,
+		    	    'line-color':subjectLinkColor
+		    	  }
+			    },
+		    	{
+		    	  selector: 'edge.att',
+		    	  css: {				    	   
+		    	    'line-color':attributeLinkColor
+		    	  }
+			    },
+			    {
+			      selector: 'edge.attRef',
+			      css: {				    	   
+			        'line-color':attributeRefLinkColor
 			      }
+				}
 			    ],
 		  elements:graph,
 		  layout: { name: 'preset',padding: 10}});
@@ -1262,19 +1287,51 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 */
 }
 /**
+ * This function creates the attribute lines in the table view
  * path is an array of string name tables
  * */
 function buildBlueLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
 	let plainObj=[];
 	let postEnt=cy.$('#'+tEnt).position();
 	let possEnt=cy.$('#'+sEnt).position();
-	console.log(cy);
-	plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }, position: { x: postEnt.x, y: postEnt.y+10 } });
-	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }, position: { x: possEnt.x, y: possEnt.y+10 } });
-	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:condition } });
+	if (path.length>1){
+		//create the parent node
+		for (let i=path.length-1;i>0;i--){
+			var name=path[i-1];
+			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]} });
+		}
+		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }, position: { x: possEnt.x, y: possEnt.y+10 } });
+	}else{
+		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }, position: { x: possEnt.x, y: possEnt.y+10 } });
+	}
+	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }, position: { x: postEnt.x, y: postEnt.y+10 } });
+	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:condition },classes:'att' });
 	cy.add(plainObj);
+	console.log('blue link');
 	console.log(cy);
-	
+}
+/**
+ * This function creates the attribute ref lines in the table view
+ * */
+function buildRedLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
+	let plainObj=[];
+	let postEnt=cy.$('#'+tEnt).position();
+	let possEnt=cy.$('#'+sEnt).position();
+	if (path.length>1){
+		//create the parent node
+		for (let i=path.length-1;i>0;i--){
+			var name=path[i-1];
+			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]} });
+		}
+		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }, position: { x: possEnt.x, y: possEnt.y+10 } });
+	}else{
+		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }, position: { x: possEnt.x, y: possEnt.y+10 } });
+	}
+	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }, position: { x: postEnt.x, y: postEnt.y+10 } });
+	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:fIRI } , classes:'attRef'});
+	cy.add(plainObj);
+	console.log('red link');
+	console.log(cy);
 }
 
 function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead){
@@ -2375,11 +2432,15 @@ function loadConfModal(){
         			link.attr({line:{stroke:$('#refColor').val()}});        			
         		}
         	}
-        	console.log($('#entColor').val());
+        	
         	subjectLinkColor=$('#entColor').val();        	      
         	attributeLinkColor=$('#attColor').val();                	
         	attributeRefLinkColor=$('#refColor').val();
-        	
+        	tgdLines.forEach(function (cy, key, map){
+        		cy.style().selector('edge.entity').style('line-color',subjectLinkColor).update();
+        		cy.style().selector('edge.att').style('line-color',attributeLinkColor).update();
+        		cy.style().selector('edge.attRef').style('line-color',attributeRefLinkColor).update();
+        	});
         	/*graphTGDs.getElements().forEach(function(){
         		
         	});*/
