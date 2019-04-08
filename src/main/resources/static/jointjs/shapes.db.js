@@ -2,6 +2,8 @@
 /*
  *change background when is a different path
  */
+//http://ceur-ws.org/Vol-1456/paper4.pdf
+//https://jsfiddle.net/zc3k1f48/42/
 //https://bl.ocks.org/vegarringdal/8e02e1bcc281f0bb7ecbf041a35f5245
 //https://stackoverflow.com/questions/48915931/bootstrap-table-how-to-set-table-row-background-color
 //https://bootstrap-table.com/docs/api/table-options/
@@ -377,7 +379,7 @@ function createText(id){
     return inText;
 }
 
-function loadModalFunctions(currentLink){  
+function loadModalFunctions(currentLink,cy){  
     console.log("loadModalFunctions")
     var CustomView = Backbone.View.extend({        
         render: function() {
@@ -488,6 +490,7 @@ function loadModalFunctions(currentLink){
             }else{
             	currentLink.label(index,{attrs: {text: {text: constraintAtt}}});             
             }
+            cy.$('#'+currentLink.id).data('label',constraintAtt);
 /*            
             let objGraphic=$table.bootstrapTable('getRowByUniqueId',currentLink.id);                        
             var sourceAtt=$(objGraphic.ex)[2].lastChild.textContent;
@@ -991,6 +994,7 @@ function loadModalRedFromTable(currentLink,iris, parameters,functionsMap,valueRe
 	                var pks=getKeys(element.attributes.options);
 	                let valueIRI=mapSymbols.keys().next().value+"("+pks[0]+")";
 	                linkParent.appendLabel({attrs: {text: {text: valueIRI}}});
+	                
 	                drawNewGreenLinkInTable(linkParent,lastTableName,valueIRI,linkView.targetView.model.attributes.question)
                 }
 			}
@@ -1210,7 +1214,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 	dataNodes.push({data:{id:sHead,type:typeNodeRect},position:{x:30,y:50}});
 	dataNodes.push({data:{id:tHead,type:typeNodeRect},position:{x:200,y:50}});
 	let dataEdges=[];
-	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,'source-label':condition},classes:'entity'});
+	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,labelS:condition},classes:'entity'});
 	let graph={nodes:dataNodes,edges:dataEdges}
 	console.log(graph)
 	var tgdCy=cytoscape({
@@ -1237,7 +1241,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			    {
 			       selector: 'edge[label]',
 			       css: {
-			          'label': 'data(label)',
+			          'label': 'data(label)',			          
 			          'width': 3,
 			          'curve-style': 'bezier',
 			          'target-arrow-shape': 'triangle'
@@ -1246,6 +1250,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			    {
 		    	  selector: 'edge.entity',
 		    	  css: {
+		    		  'source-label': 'data(labelS)',
 		    	    'curve-style': 'taxi',
 		    	    'taxi-direction': 'upward',
 		    	    'taxi-turn': 20,
@@ -1255,7 +1260,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			    },
 		    	{
 		    	  selector: 'edge.att',
-		    	  css: {				    	   
+		    	  css: {				    	   		    		  
 		    	    'line-color':attributeLinkColor
 		    	  }
 			    },
@@ -1267,7 +1272,159 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 				}
 			    ],
 		  elements:graph,
-		  layout: { name: 'preset',padding: 10}});
+		  layout: { name: 'grid',padding: 10}});
+	tgdCy.contextMenus({
+        menuItems: [
+              {
+                id: 'remove',
+                content: 'remove',
+                tooltipText: 'remove',
+                image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
+                selector: 'edge',
+                onClickFunction: function (event) {
+                  var target = event.target || event.cyTarget;
+                  
+                  let currentLink=graphTGDs.getCell(target.id());
+      	    	  currentLink.remove();
+      	    	  if (target.id()==greenLink.id){
+      	    		  tgdCy.destroy();
+	      	    	  let top = document.getElementById("tableTGD");
+	      	    	  let nested=document.getElementById("idTGD"+greenLink.id);
+	      	    	  top.removeChild(nested);	    		  
+      	    	  }
+      	    	  
+                },
+                hasTrailingDivider: true
+              },
+              {
+                  id: 'remove-condition',
+                  content: 'remove Condition',
+                  tooltipText: 'remove Condition',
+                  image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
+                  selector: 'edge.entity',
+                  onClickFunction: function (event) {
+                    var target = event.target || event.cyTarget;
+                    
+                    let auxLink;
+                    for (var link of graphTGDs.getLinks()){        
+                        if (link.id==target.id()){
+                            auxLink=link;
+                            break;
+                        }
+                    }
+                    if (auxLink.labels().length>1){
+                        auxLink.removeLabel(-1)
+                        //update link 
+                        tgdCy.$('#'+auxLink.id).data('labelS','');                        
+                    }
+                  }
+                },
+              {
+                  id: 'add-Where',
+                  content: 'add Conditions',
+                  selector: 'edge.entity',
+                  tooltipText: 'add Conditions to the Entity Mapping',
+                  image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
+                  coreAsWell: true,
+                  onClickFunction: function (event) {                	  
+                	  var target = event.target || event.cyTarget;
+                	  
+                	  let auxLink;
+                	    for (var link of graphTGDs.getLinks()){        
+                	        if (link.id==target.id()){
+                	            auxLink=link;
+                	            break;
+                	        }
+                	    }
+                	    let linkView=auxLink.findView(paperTGDs);
+                	  loadWhereParam(auxLink,linkView.sourceView.model.attributes.options,tgdCy);                	  
+                  }
+                },
+                {
+                    id: 'add-Param',
+                    content: 'add Parameters',
+                    selector: 'edge.att',
+                    tooltipText: 'add Parameters to the attribute',
+                    image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
+                    coreAsWell: true,
+                    onClickFunction: function (event) {                  	  
+                  	  var target = event.target || event.cyTarget;                  	
+	                  	let auxLink;
+	                    for (var link of graphTGDs.getLinks()){        
+	                        if (link.id==target.id()){
+	                            auxLink=link;
+	                            break;
+	                        }
+	                    }
+	                    loadModalFunctions(auxLink,tgdCy);
+                    }
+                  },
+                {
+                    id: 'modify-IRI',
+                    content: 'modify IRI',
+                    selector: 'edge.entity',
+                    tooltipText: 'add Conditions to the Entity Mapping',
+                    image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
+                    coreAsWell: true,
+                    onClickFunction: function (event) {  
+                    	var target = event.target || event.cyTarget;
+                    	var auxKeySymbols=[];
+                        for (const key of mapSymbols.keys()) {
+                            var obj={text:key};                        
+                            auxKeySymbols.push(obj);
+                        }
+                        let auxLink;
+                        for (var link of graphTGDs.getLinks()){        
+                            if (link.id==target.id()){
+                                auxLink=link;
+                                break;
+                            }
+                        }
+                        let linkView=auxLink.findView(paperTGDs)
+                        var pks=getKeys(linkView.sourceView.model.attributes.options);
+                        if (pks.length>1 || mapSymbols.size>1){        
+                            loadModalGreenFromTable(auxLink,auxKeySymbols,linkView.sourceView.model.attributes.options,mapSymbols,tgdCy);
+                        }
+                    }
+                  },
+                  {
+                      id: 'modify-IRI-Ref',
+                      content: 'modify IRI',
+                      selector: 'edge.attRef',
+                      tooltipText: 'Modify IRI',
+                      image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},                      
+                      onClickFunction: function (event) {  
+                      	var target = event.target || event.cyTarget;
+                      	var auxKeySymbols=[];
+                        for (const key of mapSymbols.keys()) {
+                            var obj={text:key};                        
+                            auxKeySymbols.push(obj);
+                        }
+                        let auxLink;
+                        for (var link of graphTGDs.getLinks()){        
+                            if (link.id==e.currentTarget.id){
+                                auxLink=link;
+                                break;
+                            }
+                        }
+                        let linkView=auxLink.findView(paperTGDs);
+                    	var tablesConnected=[{id:linkView.sourceView.model.id,text:linkView.sourceView.model.attributes.question}];   	
+                        var intargetLinks=graphTGDs.getConnectedLinks(linkView.targetView.model, {inbound:true});
+                        var portType=linkView.targetView.model.attributes.ports.items[0];
+                        var tLinks=getLinkTarget(intargetLinks,portType);                                        
+                        let sourceAtt=getSourceOptionNameLinkView(linkView)
+                        for (var tlink of tLinks){							
+                            var tView=tlink.findView(paperTGDs);  							
+                            var visited=[];
+                            getJoinsTableFromTo(linkView.sourceView.model,tablesConnected,tView.sourceView.model.id,visited,tablesConnected[0]);	
+                        }
+                        
+                        if (tablesConnected.length>1 || auxKeySymbols.length>1){
+                        	loadModalRedFromTable(auxLink,auxKeySymbols,tablesConnected,mapSymbols,sourceAtt,intargetLinks,tgdCy);
+                    	}
+                      }
+                    }
+              ]});
 	/*var layTgd=tgdCy.layout({ name: 'preset' });
 	layTgd.run();*/	
 	tgdLines.set(greenLink.id,tgdCy);
@@ -1305,7 +1462,7 @@ function buildBlueLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
 		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }, position: { x: possEnt.x, y: possEnt.y+10 } });
 	}
 	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }, position: { x: postEnt.x, y: postEnt.y+10 } });
-	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:condition },classes:'att' });
+	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:condition},classes:'att' });
 	cy.add(plainObj);
 	console.log('blue link');
 	console.log(cy);
@@ -1581,7 +1738,7 @@ function loadModal(currentLink,iris, parameters,functionsMap){
     modal.render();
 }
 
-function loadModalGreenFromTable(currentLink,iris, parameters,functionsMap){
+function loadModalGreenFromTable(currentLink,iris, parameters,functionsMap,cy){
     //show only those parameters that are keys
     let keyParameters=filterKeyParam(parameters)
     var CustomView = Backbone.View.extend({
@@ -1645,7 +1802,8 @@ function loadModalGreenFromTable(currentLink,iris, parameters,functionsMap){
                 if (currentLink.labels().length>0){
                     currentLink.removeLabel(-1);
                 }            
-                currentLink.appendLabel({attrs: {text: {text: valueIRI}}});            
+                currentLink.appendLabel({attrs: {text: {text: valueIRI}}});
+                cy.$('#'+currentLink.id).data('label',valueIRI);
                 /*let objGraphic=$table.bootstrapTable('getRowByUniqueId',currentLink.id)                                                
                 var relName=$(objGraphic.ex)[0].textContent;
                 var typeName=$(objGraphic.ex)[2].textContent;
@@ -2254,7 +2412,7 @@ function updateParamGreenLink(pid){
     $table.bootstrapTable('updateByUniqueId',{id:pid,row:{ex:graphicTGD}})
     */
 }
-function loadWhereParam(link,attributes){	
+function loadWhereParam(link,attributes,targetCy){	
 	let filAtt=[];
 	attributes.forEach(function(att){
 		if (att.iskey==false){			
@@ -2299,8 +2457,7 @@ function loadWhereParam(link,attributes){
         bodyViewOptions: { },
         onConfirm: function(a) {                                 
         	let conditions=$('#queryB').queryBuilder('getRules',{ skip_empty: true });
-        	if (conditions!=null && conditions.valid==true){
-        		console.log(conditions);
+        	if (conditions!=null && conditions.valid==true){        		
         		let condToStr=getCondWhere(conditions.rules);
         		link.appendLabel({
         			markup: [{tagName: 'rect',selector: 'labelBody'}, {tagName: 'text',selector: 'text'}],
@@ -2314,7 +2471,7 @@ function loadWhereParam(link,attributes){
                         },
                         labelBody: {ref: 'text',refX: -5,refY: -5,refWidth: '100%',refHeight: '100%',refWidth2: 10,refHeight2: 10,stroke: '#7c68fc',fill: 'white',strokeWidth: 2,rx: 5,ry: 5}
                     },position: {offset: -40}});
-        		
+        		targetCy.$('#'+link.id).data('labelS',condToStr);
         		/*let objGraphic=$table.bootstrapTable('getRowByUniqueId',link.id);                            
                 var sHead=$(objGraphic.ex)[0].lastChild.textContent;
                 var fSubject=$(objGraphic.ex)[1].firstChild.textContent;                
