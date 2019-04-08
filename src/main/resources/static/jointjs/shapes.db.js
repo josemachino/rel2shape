@@ -2,6 +2,7 @@
 /*
  *change background when is a different path
  */
+//https://github.com/cytoscape/cytoscape.js/issues/2189
 //http://ceur-ws.org/Vol-1456/paper4.pdf
 //https://jsfiddle.net/zc3k1f48/42/
 //https://bl.ocks.org/vegarringdal/8e02e1bcc281f0bb7ecbf041a35f5245
@@ -1204,19 +1205,21 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 	/*$('#tableTGD').append($('<li>').attr({class:"rowIDTGD"}).append(greenLink.id))
 	.append($('<li>').attr({id:"idTGD"+greenLink.id,class:"rowTGD"}))
 	.append($('<li>').append("R"));*/
-	
-	$('#tableTGD')
-	.append($('<div>').attr({id:"idTGD"+greenLink.id,class:"rowTGD"}));
+	var divRow=document.getElementById('tableTGD');
+	var divForm1 = document.createElement("div");
+    divForm1.setAttribute("class","rowTGD");
+    divForm1.setAttribute("id","idTGD"+greenLink.id);
+    divRow.appendChild(divForm1);
+	//$('#tableTGD')
+	//.append($('<div>').attr({id:"idTGD"+greenLink.id,class:"rowTGD"}));
 	
 	let dataNodes=[];
-	let lenRect=sHead.length>tHead.length?sHead.length*5:tHead.length*10;
-	console.log(lenRect)
+	let lenRect=sHead.length>tHead.length?sHead.length*5:tHead.length*10;	
 	dataNodes.push({data:{id:sHead,type:typeNodeRect},position:{x:30,y:50}});
 	dataNodes.push({data:{id:tHead,type:typeNodeRect},position:{x:200,y:50}});
 	let dataEdges=[];
 	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,labelS:condition},classes:'entity'});
 	let graph={nodes:dataNodes,edges:dataEdges}
-	console.log(graph)
 	var tgdCy=cytoscape({
 		  container: document.getElementById("idTGD"+greenLink.id),
 		  style: [
@@ -1272,7 +1275,8 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 				}
 			    ],
 		  elements:graph,
-		  layout: { name: 'grid',padding: 10}});
+		  layout: { name: 'preset',padding: 10}});
+	
 	tgdCy.contextMenus({
         menuItems: [
               {
@@ -1291,6 +1295,8 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 	      	    	  let top = document.getElementById("tableTGD");
 	      	    	  let nested=document.getElementById("idTGD"+greenLink.id);
 	      	    	  top.removeChild(nested);	    		  
+      	    	  }else{
+      	    		  target.remove();
       	    	  }
       	    	  
                 },
@@ -1425,8 +1431,10 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
                       }
                     }
               ]});
-	/*var layTgd=tgdCy.layout({ name: 'preset' });
-	layTgd.run();*/	
+	
+	//console.log(tgdCy.container());
+	//$('idTGD'+greenLink.id).show();
+	//$('idTGD'+greenLink.id).first().css('overflow','scroll');
 	tgdLines.set(greenLink.id,tgdCy);
 	/*return $('<div>').append(
     		$('<span>').attr('class','li_tgd').append(sHead)).
@@ -2536,6 +2544,7 @@ function loadConfModal(){
         render: function() {                             
             var divForm1 = document.createElement("div");
             divForm1.setAttribute("class","form-group");
+            divForm1.setAttribute("class","colorG");
             
             var inputEntityLineColor=document.createElement("input");
             inputEntityLineColor.setAttribute("id","entColor");

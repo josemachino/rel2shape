@@ -198,7 +198,12 @@ doSearch: function( event ){
 			paperTGDs.fitToContent({padding: 50,allowNewOrigin: 'any' });
 	    }
     };
-    reader.readAsText(event.currentTarget.files[0]);    
+    try{
+    reader.readAsText(event.currentTarget.files[0]);
+    }
+    catch(errExpr){
+    	alert("No File chosen");    	
+    }
     
     var form = new FormData();
 	form.append("file", event.currentTarget.files[0]);	
