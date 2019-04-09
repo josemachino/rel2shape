@@ -56,8 +56,11 @@ let sessionGO=[];
 let subjectLinkColor="#0E4D92";
 let attributeLinkColor="#73C2FB";
 let attributeRefLinkColor="#3FE0D0";
+let rRectColor="#7275db";
+let tRectColor="#4b4a67";
 let typeNodeRect="round-rectangle";
 let typeNodeAtt="ellipse";
+
 /**
  * This variable stores the cytoscape variables created already
  * */
@@ -101,23 +104,26 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 				
 				var linkView=link.findView(paperTGDs);
 				if (linkView.sourceView.model.id== cell.attributes.source.id && linkView.targetView.model.id==cell.attributes.target.id){									
-					link.remove()
+					link.remove();
 				}
 			}			
 			links=graphTGDs.getLinks();
 			for (var link of links){
 				var edgeView=link.findView(paperTGDs);
-				if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type" && link.attr('line/stroke')==attributeLinkColor){
+				if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type" && (link.attr('line/stroke')==attributeLinkColor||link.attr('line/stroke')==attributeRefLinkColor)){
 					let path=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;					
 					let names=getTokens(path)					
 					if (mapTableIdCanvas.get(names[names.length-1])==cell.attributes.source.id){						
-						link.remove()
+						link.remove();
+						
 					}
 				}		
 			}
 			
         }        
+        tgdLines.delete(cell.id);
         //$table.bootstrapTable('removeByUniqueId',cell.id);
+        
    }
 })
 
@@ -1201,22 +1207,19 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
     buildRedLink(tgdLines.get(parentId),redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
 }
 
-function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
-	/*$('#tableTGD').append($('<li>').attr({class:"rowIDTGD"}).append(greenLink.id))
-	.append($('<li>').attr({id:"idTGD"+greenLink.id,class:"rowTGD"}))
-	.append($('<li>').append("R"));*/
+function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){	
 	var divRow=document.getElementById('tableTGD');
 	var divForm1 = document.createElement("div");
     divForm1.setAttribute("class","rowTGD");
     divForm1.setAttribute("id","idTGD"+greenLink.id);
-    divRow.appendChild(divForm1);
-	//$('#tableTGD')
-	//.append($('<div>').attr({id:"idTGD"+greenLink.id,class:"rowTGD"}));
+    divRow.appendChild(divForm1);	
 	
 	let dataNodes=[];
 	let lenRect=sHead.length>tHead.length?sHead.length*5:tHead.length*10;	
-	dataNodes.push({data:{id:sHead,type:typeNodeRect},position:{x:30,y:50}});
-	dataNodes.push({data:{id:tHead,type:typeNodeRect},position:{x:200,y:50}});
+	//dataNodes.push({data:{id:sHead,type:typeNodeRect},position:{x:30,y:50}});
+	//dataNodes.push({data:{id:tHead,type:typeNodeRect},position:{x:200,y:50}});
+	dataNodes.push({data:{id:sHead,type:typeNodeRect},classes:'rentity'});
+	dataNodes.push({data:{id:tHead,type:typeNodeRect},classes:'tentity'});
 	let dataEdges=[];
 	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,labelS:condition},classes:'entity'});
 	let graph={nodes:dataNodes,edges:dataEdges}
@@ -1231,9 +1234,27 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			        'text-valign': 'center',
 			        'text-halign': 'center',
 			        'height': 40,
-			        'width': lenRect
+			        'width': lenRect,
+			        'padding-top': '10px',
+			        'padding-left': '10px',
+			        'padding-bottom': '10px',
+			        'padding-right': '10px',
 			      }
 			    },
+			    {
+				      selector: 'node.rentity',
+				      css: {
+				        'background-color':rRectColor,
+				        'background-opacity': '0'
+				      }
+				    },				    
+				    {
+					      selector: 'node.tentity',
+					      css: {
+					    	  'background-color':tRectColor,
+						      'background-opacity': '0'
+					      }
+					    },
 			    {
 			       selector: ':parent',
 			       css: {
@@ -1247,17 +1268,17 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			          'label': 'data(label)',			          
 			          'width': 3,
 			          'curve-style': 'bezier',
-			          'target-arrow-shape': 'triangle'
+			          'target-arrow-shape': 'triangle',
+			          'text-valign': 'top',
+			          'text-halign': 'center'			        	  
 			       }
 			    },
 			    {
 		    	  selector: 'edge.entity',
 		    	  css: {
-		    		  'source-label': 'data(labelS)',
-		    	    'curve-style': 'taxi',
-		    	    'taxi-direction': 'upward',
-		    	    'taxi-turn': 20,
-		    	    'taxi-turn-min-distance': 5,
+		    		'source-label': 'data(labelS)',
+		    	    'curve-style': 'bezier',
+		    	    'control-point-step-size':40,
 		    	    'line-color':subjectLinkColor
 		    	  }
 			    },
@@ -1275,7 +1296,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 				}
 			    ],
 		  elements:graph,
-		  layout: { name: 'preset',padding: 10}});
+		  layout: { name: 'dagre'}});
 	
 	tgdCy.contextMenus({
         menuItems: [
@@ -1294,11 +1315,12 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
       	    		  tgdCy.destroy();
 	      	    	  let top = document.getElementById("tableTGD");
 	      	    	  let nested=document.getElementById("idTGD"+greenLink.id);
-	      	    	  top.removeChild(nested);	    		  
+	      	    	  top.removeChild(nested);	      	    	  
       	    	  }else{
       	    		  target.remove();
       	    	  }
-      	    	  
+      	    	  tgdLines.delete(target.id());
+      	    	  console.log(tgdLines);
                 },
                 hasTrailingDivider: true
               },
@@ -1346,6 +1368,26 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
                 	  loadWhereParam(auxLink,linkView.sourceView.model.attributes.options,tgdCy);                	  
                   }
                 },
+                {
+                    id: 'attach-file',
+                    content: 'Attach file Constructor',
+                    selector: 'edge.entity',
+                    tooltipText: 'Attach file Constructor',
+                    image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
+                    coreAsWell: true,
+                    onClickFunction: function (event) {                	  
+                  	  var target = event.target || event.cyTarget;                  	  
+                  	  let auxLink;
+                  	  for (var link of graphTGDs.getLinks()){        
+              	        if (link.id==target.id()){
+              	            auxLink=link;
+              	            break;
+              	        }
+                  	  }
+                  	  let linkView=auxLink.findView(paperTGDs);
+                  	  loadAttachFile(auxLink,tgdCy);                	  
+                    }
+                  },
                 {
                     id: 'add-Param',
                     content: 'add Parameters',
@@ -1430,27 +1472,45 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
                     	}
                       }
                     }
-              ]});
+              ]});	
 	
-	//console.log(tgdCy.container());
-	//$('idTGD'+greenLink.id).show();
-	//$('idTGD'+greenLink.id).first().css('overflow','scroll');
 	tgdLines.set(greenLink.id,tgdCy);
-	/*return $('<div>').append(
-    		$('<span>').attr('class','li_tgd').append(sHead)).
-    		append($('<div>').attr({'class':'link_tgdG'}).
-    				append($('<div>').attr({id:"text_"+greenLink.id,class:"iri_tgd"}).
-    						append(fSubject)).
-    						append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:greenLink.id,class:'edit_green_tgd'}).append($('<i>').attr('class','fas fa-edit'))).
-    						append($('<svg>').attr({height:'17px',width:widthSVGForLineG}).append($('<line>').attr({class:'arrowGreen',x1:0,x2:widthSVGLineG,y1:10,y2:10}))).
-    						append($('<div>').attr({id:"param_"+greenLink.id,class:"param_tgd"}).
-    								append($('<div>').attr({class:"tgd_cond"}).append(condition)).
-    								append($('<a>').attr({'data-tooltip':'true',title:'Edit Parameters',id:greenLink.id,class:"edit_param_green"}).append($('<i>').attr('class','fas fa-edit'))).
-    								append($('<a>').attr({'data-tooltip':'true',title:'Remove Parameters',id:greenLink.id,class:"rem_param_green_tgd"}).
-    										append($('<i>').attr('class','fas fa-trash-alt'))))).
-    										append($('<span>').attr('class', 'li_tgd').append(tHead)).remove().html();	 
-*/
+	tgdCy.ready(function(){
+		console.log("ready");
+	});
+	tgdCy.viewport({
+	  zoom: 2,
+	  pan: { x: 120, y: 70 }
+	});
+	
 }
+
+function runLayout(tgdCy,fit, callBack) {
+    // step-1 position child nodes 
+    var parentNodes = tgdCy.nodes(':parent');
+    var grid_layout = parentNodes.descendants().layout({
+      name: 'grid',
+      cols: 1,
+      fit: fit
+    });
+    grid_layout.promiseOn('layoutstop').then(function(event) {
+      // step-2 position parent nodes 
+      var dagre_layout = parentNodes.layout({
+        name: 'dagre',
+        rankDir: 'TB',
+        fit: fit
+      });
+      dagre_layout.promiseOn('layoutstop').then(function(event) {
+        if (callBack) {
+          callBack.call(tgdCy, event);
+        }
+      });
+      dagre_layout.run();
+    });
+    grid_layout.run();
+
+  }
+
 /**
  * This function creates the attribute lines in the table view
  * path is an array of string name tables
@@ -1463,17 +1523,16 @@ function buildBlueLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
 		//create the parent node
 		for (let i=path.length-1;i>0;i--){
 			var name=path[i-1];
-			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]} });
+			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
 		}
-		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }, position: { x: possEnt.x, y: possEnt.y+10 } });
+		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }});
 	}else{
-		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }, position: { x: possEnt.x, y: possEnt.y+10 } });
+		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }});
 	}
-	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }, position: { x: postEnt.x, y: postEnt.y+10 } });
+	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }});
 	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:condition},classes:'att' });
 	cy.add(plainObj);
-	console.log('blue link');
-	console.log(cy);
+	runLayout(cy);	
 }
 /**
  * This function creates the attribute ref lines in the table view
@@ -1488,15 +1547,14 @@ function buildRedLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
 			var name=path[i-1];
 			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]} });
 		}
-		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }, position: { x: possEnt.x, y: possEnt.y+10 } });
+		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }});
 	}else{
-		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }, position: { x: possEnt.x, y: possEnt.y+10 } });
+		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt } });
 	}
-	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }, position: { x: postEnt.x, y: postEnt.y+10 } });
+	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt } });
 	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:fIRI } , classes:'attRef'});
 	cy.add(plainObj);
-	console.log('red link');
-	console.log(cy);
+	runLayout(cy);
 }
 
 function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead){
@@ -2552,6 +2610,10 @@ function loadConfModal(){
             inputEntityLineColor.setAttribute("type","color");
             inputEntityLineColor.setAttribute("name","Entity Line");
             inputEntityLineColor.setAttribute("value",subjectLinkColor);
+            var lEnt = document.createElement("LABEL");
+            var t = document.createTextNode("Entity Mapping");
+            lEnt.setAttribute("for", "entColor");
+            lEnt.appendChild(t);            
             
             var inputAttLineColor=document.createElement("input");
             inputAttLineColor.setAttribute("id","attColor");
@@ -2566,6 +2628,7 @@ function loadConfModal(){
             inputAttRefLineColor.setAttribute("type","color");
             inputAttRefLineColor.setAttribute("name","Attribute Reference Line");
             inputAttRefLineColor.setAttribute("value",attributeRefLinkColor);
+            divForm1.appendChild(lEnt);
             divForm1.appendChild(inputEntityLineColor);
             divForm1.appendChild(inputAttLineColor);
             divForm1.appendChild(inputAttRefLineColor);
@@ -2607,9 +2670,6 @@ function loadConfModal(){
         		cy.style().selector('edge.att').style('line-color',attributeLinkColor).update();
         		cy.style().selector('edge.attRef').style('line-color',attributeRefLinkColor).update();
         	});
-        	/*graphTGDs.getElements().forEach(function(){
-        		
-        	});*/
         },
         onCancel: function(){
         }        
@@ -2617,29 +2677,6 @@ function loadConfModal(){
     modal.render();
 }
 
-
-function createCola(id){
-	var width=$(".rowTGD").css("width");
-	var height=$(".rowTGD").css("height");
-	var cola = cola.d3adaptor(d3)
-    .linkDistance(100)
-    .avoidOverlaps(true)
-    .handleDisconnected(false)
-    .size([width, height]);	
-	return cola;
-}
-function createSVG(id){
-	var width=$(".rowTGD").css("width");
-	var height=$(".rowTGD").css("height");
-	var svg = d3.select("#"+id).append("svg")
-    .attr("width", width)
-    .attr("height", height);
-	return svg;
+function loadAttachFile(){
 	
-}
-function drawNodesSVG(cola,graph){
-	cola
-    .nodes(graph.nodes)
-    .links(graph.links)    
-    .start();
 }

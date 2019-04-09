@@ -25,6 +25,7 @@ function simpleGraph(gObj){
 var sideView = Backbone.View.extend({
 initialize: function(){
     this.render();
+    
 },
 render: function(){
     var template = _.template( $("#sideright_template").html(), {} );
@@ -293,3 +294,75 @@ removeParam:function(e){
 });
 
 var side_view = new sideView({ el: $("#sidebar-right") });
+/*var tgdsCy=cytoscape({container: document.getElementById('#tableTGD'),
+	style: [
+	    {
+	      selector: 'node',
+	      css: {
+	        'label': 'data(id)',
+	        'shape': 'data(type)',
+	        'text-valign': 'center',
+	        'text-halign': 'center',
+	        'height': 40,
+	        'width': lenRect
+	      }
+	    },
+	    {
+		      selector: 'node.rentity',
+		      css: {
+		        'background-color':rRectColor,
+		        'background-opacity': '0'
+		      }
+		    },				    
+		    {
+			      selector: 'node.tentity',
+			      css: {
+			    	  'background-color':tRectColor,
+				      'background-opacity': '0'
+			      }
+			    },
+	    {
+	       selector: ':parent',
+	       css: {
+	          'text-valign': 'top',
+	          'text-halign': 'center',
+	       }
+	    },
+	    {
+	       selector: 'edge[label]',
+	       css: {
+	          'label': 'data(label)',			          
+	          'width': 3,
+	          'curve-style': 'bezier',
+	          'target-arrow-shape': 'triangle',
+	          'text-valign': 'bottom',
+	          'text-halign': 'center'
+	        	  
+	       }
+	    },
+	    {
+    	  selector: 'edge.entity',
+    	  css: {
+    		'source-label': 'data(labelS)',
+    	    'curve-style': 'bezier',
+    	    'control-point-step-size':40,
+    	    'line-color':subjectLinkColor
+    	  }
+	    },
+    	{
+    	  selector: 'edge.att',
+    	  css: {				    	   		    		  
+    	    'line-color':attributeLinkColor
+    	  }
+	    },
+	    {
+	      selector: 'edge.attRef',
+	      css: {				    	   
+	        'line-color':attributeRefLinkColor
+	      }
+		}
+	    ],
+  elements:graph,
+  layout: { name: 'grid',col:2}});
+}
+*/

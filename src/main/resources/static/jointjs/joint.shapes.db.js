@@ -9,16 +9,7 @@ joint.dia.Element.define('db.Table',{
     ports: {
         groups: {
             'in': {
-                position:'top' /*{
-                    name: 'ellipse',
-                    args: {
-                        dx: -5,
-                        dy: -5,
-                        dr: 0,
-                        step: 10,
-                        startAngle: 270
-                    }
-                }*/,
+                position:'top',
                 attrs: {
                     portBody: {
                         width: 10,
