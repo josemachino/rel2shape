@@ -96,17 +96,19 @@ paperTGDs.on('link:mouseleave', function(linkView) {
 graphTGDs.on('remove', function(cell, collection, opt) {
    if (cell.isLink()) {	         
         if (cell.attr('line/stroke')==subjectLinkColor){     
-        	//TODO NOTIFY THAT WE ARE REMOVING ALL LINKS THAT ARE CONNECTED TO THE TABLE WITH ITS TYPE
-        	
-        	
+        	//TODO NOTIFY THAT WE ARE REMOVING ALL LINKS THAT ARE CONNECTED TO THE TABLE WITH ITS TYPE        	
 			var links=graphTGDs.getLinks();			
-			for (var link of links){
-				
+			for (var link of links){				
 				var linkView=link.findView(paperTGDs);
 				if (linkView.sourceView.model.id== cell.attributes.source.id && linkView.targetView.model.id==cell.attributes.target.id){									
 					link.remove();
 				}
-			}			
+			}
+			let cy=tgdLines.get(cell.id);
+	        cy.destroy();
+	    	let top = document.getElementById("tableTGD");
+  	    	let nested=document.getElementById("idTGD"+cell.id);
+  	    	top.removeChild(nested);
 			links=graphTGDs.getLinks();
 			for (var link of links){
 				var edgeView=link.findView(paperTGDs);
@@ -114,14 +116,25 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 					let path=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;					
 					let names=getTokens(path)					
 					if (mapTableIdCanvas.get(names[names.length-1])==cell.attributes.source.id){						
-						link.remove();
-						
+						link.remove();						
 					}
 				}		
 			}
 			
+        }else{
+        	for (let cy of tgdLines.values()){
+        		var edge=cy.$id(cell.id);        		
+        		console.log(edge.length);
+        		if (edge.length>0){
+        			cy.remove(edge);
+        			let sN=edge.data('source');
+        			let tN=edge.data('target');
+        			console.log(cy.$id(sN).incomers());
+        			break;
+        		}
+        	}
         }        
-        tgdLines.delete(cell.id);
+                
         //$table.bootstrapTable('removeByUniqueId',cell.id);
         
    }
@@ -1216,8 +1229,6 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 	
 	let dataNodes=[];
 	let lenRect=sHead.length>tHead.length?sHead.length*5:tHead.length*10;	
-	//dataNodes.push({data:{id:sHead,type:typeNodeRect},position:{x:30,y:50}});
-	//dataNodes.push({data:{id:tHead,type:typeNodeRect},position:{x:200,y:50}});
 	dataNodes.push({data:{id:sHead,type:typeNodeRect},classes:'rentity'});
 	dataNodes.push({data:{id:tHead,type:typeNodeRect},classes:'tentity'});
 	let dataEdges=[];
@@ -1234,11 +1245,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			        'text-valign': 'center',
 			        'text-halign': 'center',
 			        'height': 40,
-			        'width': lenRect,
-			        'padding-top': '10px',
-			        'padding-left': '10px',
-			        'padding-bottom': '10px',
-			        'padding-right': '10px',
+			        'width': lenRect
 			      }
 			    },
 			    {
@@ -1319,7 +1326,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
       	    	  }else{
       	    		  target.remove();
       	    	  }
-      	    	  tgdLines.delete(target.id());
+      	    	  //tgdLines.delete(target.id());
       	    	  console.log(tgdLines);
                 },
                 hasTrailingDivider: true
@@ -1374,7 +1381,6 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
                     selector: 'edge.entity',
                     tooltipText: 'Attach file Constructor',
                     image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-                    coreAsWell: true,
                     onClickFunction: function (event) {                	  
                   	  var target = event.target || event.cyTarget;                  	  
                   	  let auxLink;
@@ -1502,6 +1508,7 @@ function runLayout(tgdCy,fit, callBack) {
       });
       dagre_layout.promiseOn('layoutstop').then(function(event) {
         if (callBack) {
+        	console.log("callback...");
           callBack.call(tgdCy, event);
         }
       });
@@ -2677,6 +2684,31 @@ function loadConfModal(){
     modal.render();
 }
 
-function loadAttachFile(){
-	
+function loadAttachFile(link,tgdCy){
+	var CustomView = Backbone.View.extend({
+        initialize: function(opts) {
+            this.lsPaths=opts.displayParameters;
+        },
+        render: function() {                             
+            var divForm1 = document.createElement("div");
+            divForm1.setAttribute("class","form-group");
+            
+            var inputFile=document.createElement('input');
+            inputFile.setAttribute('type','file');
+            inputFile.classList.add('form-control');                
+            divForm1.appendChild(inputFile);	            
+            this.$el.html(divForm1);                
+            return this;
+        }
+    });
+    var modal = new BackboneBootstrapModals.ConfirmationModal({        
+        headerViewOptions:{showClose:false, label: 'Adding Code'},
+        bodyView: CustomView,        
+        onConfirm: function() {                           
+
+        },
+        onCancel: function(){            
+        }        
+    });
+    modal.render();	
 }
