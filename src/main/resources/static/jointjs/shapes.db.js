@@ -106,6 +106,8 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 			}
 			let cy=tgdLines.get(cell.id);
 	        cy.destroy();
+	        tgdLines.delete(cell.id);
+	        console.log(tgdLines);
 	    	let top = document.getElementById("tableTGD");
   	    	let nested=document.getElementById("idTGD"+cell.id);
   	    	top.removeChild(nested);
@@ -129,14 +131,20 @@ graphTGDs.on('remove', function(cell, collection, opt) {
         			cy.remove(edge);
         			let sN=edge.data('source');
         			let tN=edge.data('target');
-        			console.log(cy.$id(sN).incomers());
+        			console.log(cy.$id(sN).incomers().length);
+        			let sNCy=cy.$id(sN);
+        			let tNCy=cy.$id(tN);
+        			if (sNCy.outdegree(false)==0){        				
+        				deleteParentIfNotChildren(sNCy.parent(),cy);
+        				cy.remove(sNCy);
+        			}
+        			if (tNCy.indegree(false)==0){
+        				cy.remove(tNCy);
+        			}
         			break;
         		}
         	}
-        }        
-                
-        //$table.bootstrapTable('removeByUniqueId',cell.id);
-        
+        }                                        
    }
 })
 
@@ -1232,7 +1240,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 	dataNodes.push({data:{id:sHead,type:typeNodeRect},classes:'rentity'});
 	dataNodes.push({data:{id:tHead,type:typeNodeRect},classes:'tentity'});
 	let dataEdges=[];
-	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,labelS:condition},classes:'entity'});
+	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,labelS:condition,labelT:''},classes:'entity'});
 	let graph={nodes:dataNodes,edges:dataEdges}
 	var tgdCy=cytoscape({
 		  container: document.getElementById("idTGD"+greenLink.id),
@@ -1277,13 +1285,15 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			          'curve-style': 'bezier',
 			          'target-arrow-shape': 'triangle',
 			          'text-valign': 'top',
-			          'text-halign': 'center'			        	  
+			          'text-halign': 'center'//,
+			          //'text-margin-y': -10
 			       }
 			    },
 			    {
 		    	  selector: 'edge.entity',
 		    	  css: {
 		    		'source-label': 'data(labelS)',
+		    		'target-label': 'data(labelT)',
 		    	    'curve-style': 'bezier',
 		    	    'control-point-step-size':40,
 		    	    'line-color':subjectLinkColor
@@ -1552,7 +1562,7 @@ function buildRedLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
 		//create the parent node
 		for (let i=path.length-1;i>0;i--){
 			var name=path[i-1];
-			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]} });
+			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
 		}
 		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }});
 	}else{
@@ -2628,6 +2638,10 @@ function loadConfModal(){
             inputAttLineColor.setAttribute("type","color");
             inputAttLineColor.setAttribute("name","Attribute Line");
             inputAttLineColor.setAttribute("value",attributeLinkColor);
+            var lAtt = document.createElement("LABEL");
+            var t1 = document.createTextNode("Attribute-Literal Mapping");
+            lAtt.setAttribute("for", "attColor");
+            lAtt.appendChild(t1);
             
             var inputAttRefLineColor=document.createElement("input");
             inputAttRefLineColor.setAttribute("id","refColor");
@@ -2635,9 +2649,15 @@ function loadConfModal(){
             inputAttRefLineColor.setAttribute("type","color");
             inputAttRefLineColor.setAttribute("name","Attribute Reference Line");
             inputAttRefLineColor.setAttribute("value",attributeRefLinkColor);
+            var lAttRef = document.createElement("LABEL");
+            var t2 = document.createTextNode("Reference-Typed Mapping");
+            lAttRef.setAttribute("for", "refColor");
+            lAttRef.appendChild(t2);
             divForm1.appendChild(lEnt);
             divForm1.appendChild(inputEntityLineColor);
+            divForm1.appendChild(lAtt);
             divForm1.appendChild(inputAttLineColor);
+            divForm1.appendChild(lAttRef);
             divForm1.appendChild(inputAttRefLineColor);
             this.$el.html(divForm1);                
             return this;
@@ -2693,10 +2713,15 @@ function loadAttachFile(link,tgdCy){
             var divForm1 = document.createElement("div");
             divForm1.setAttribute("class","form-group");
             
+            var textArea=document.createElement('textarea');
+            textArea.setAttribute('id','taIRI');
+            textArea.classList.add('form-control');
+            
             var inputFile=document.createElement('input');
             inputFile.setAttribute('type','file');
             inputFile.classList.add('form-control');                
             divForm1.appendChild(inputFile);	            
+            divForm1.appendChild(textArea);
             this.$el.html(divForm1);                
             return this;
         }
@@ -2705,10 +2730,20 @@ function loadAttachFile(link,tgdCy){
         headerViewOptions:{showClose:false, label: 'Adding Code'},
         bodyView: CustomView,        
         onConfirm: function() {                           
-
+        	//link.
+        	console.log($('#taIRI').val());
+        	tgdCy.$id(link.id).data('labelT',$('#taIRI').val());        	
         },
         onCancel: function(){            
         }        
     });
     modal.render();	
+}
+
+function deleteParentIfNotChildren(node,tgdCy){
+	if (node.children().length==0 && node.isParent()){
+		tgdCy.remove(node);
+	}else{
+		deleteParentIfNotChildren(node.parent(),tgdCy);
+	}
 }
