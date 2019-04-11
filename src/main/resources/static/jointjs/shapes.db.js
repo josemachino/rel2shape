@@ -135,7 +135,7 @@ graphTGDs.on('remove', function(cell, collection, opt) {
         			let sNCy=cy.$id(sN);
         			let tNCy=cy.$id(tN);
         			if (sNCy.outdegree(false)==0){        				
-        				deleteParentIfNotChildren(sNCy.parent(),cy);
+        				//deleteParentIfNotChildren(sNCy.parent(),cy);
         				cy.remove(sNCy);
         			}
         			if (tNCy.indegree(false)==0){
@@ -414,45 +414,13 @@ function loadModalFunctions(currentLink,cy){
             var divContainer=document.createElement('div');
             divContainer.className="container";            
                         
-			//adding function of uppercarse lowercase            
             var divForm1 = document.createElement("div");
-            divForm1.setAttribute("class","form-group");
-            var divForm2 = document.createElement("div");
-            divForm1.setAttribute("class","form-group");
-            var inputText = document.createElement("input");
-            inputText.type="text"
-            inputText.id="att-filter"   
-            inputText.setAttribute("class","form-control")
-			var inputTextFun = document.createElement("input");
-            inputTextFun.type="number"
-            inputTextFun.min=0
-            inputTextFun.id="fun-filter"   
-            inputTextFun.setAttribute("class","form-control")
-			inputTextFun.style.visibility = 'hidden'
-            var labelText = document.createElement("label");
-            labelText.htmlFor="att-filter"
-            labelText.innerText="Filter"            
-            addPrimitiveFunctions(divForm1)    
-            divForm1.appendChild(inputTextFun)
-            divForm2.appendChild(labelText);
-            divForm2.appendChild(inputText);
-            divContainer.appendChild(divForm1);
-            divContainer.appendChild(divForm2);
+            divForm1.setAttribute("class","form-group");                        		         
+            addPrimitiveFunctions(divForm1);                
+            divContainer.appendChild(divForm1);            
             this.$el.html(divContainer);        
             return this;
-        },
-        events :{    
-			"change #att-func":"showTypeFun"
-        },
-		showTypeFun:function(){
-            var x=document.getElementById('fun-filter')
-            if (comparisonOp.includes($('#att-func').val())){                                
-                x.style.visibility = 'visible'
-            }else{
-                x.style.visibility = 'hidden'
-            }
-			
-		}
+        }
     });
     var modal = new BackboneBootstrapModals.ConfirmationModal({        
         headerViewOptions:{showClose:false, label: 'Customize'},
@@ -467,22 +435,11 @@ function loadModalFunctions(currentLink,cy){
                 i++;
             }
             var constraintAtt="";
-            if (document.getElementById('fun-filter').style.visibility=='hidden'){
-            	if ($('#att-func').val().length>0){
-            		console.log("valor fun:"+$('#att-func').val());
-            		constraintAtt="[function:"+ $('#att-func').val();
-            	}
-            }else{            	
-            	constraintAtt="[function:"+ $('#att-func').val()+" "+$('#fun-filter').val();
-            }
-            if ($('#att-filter').val().length>0 && constraintAtt.length>0){
-                constraintAtt=constraintAtt.concat(",filter:"+$('#att-filter').val()).concat("]");
-            }else if ($('#att-filter').val().length>0){
-            	constraintAtt="[filter:"+$('#att-filter').val()+"]";
-            }else if (constraintAtt.length>0){
-            	constraintAtt=constraintAtt.concat("]");
-            }
             
+        	if ($('#att-func').val().length>0){
+        		console.log("valor fun:"+$('#att-func').val());
+        		constraintAtt="[function:"+ $('#att-func').val()+"]";
+        	}                        
             var offsetNew=currentLink.labels().length+1*10;
             if (constraintAtt.length>0){
             if (index==-1){                
@@ -519,16 +476,7 @@ function loadModalFunctions(currentLink,cy){
             	currentLink.label(index,{attrs: {text: {text: constraintAtt}}});             
             }
             cy.$('#'+currentLink.id).data('label',constraintAtt);
-/*            
-            let objGraphic=$table.bootstrapTable('getRowByUniqueId',currentLink.id);                        
-            var sourceAtt=$(objGraphic.ex)[2].lastChild.textContent;
-            var path=$(objGraphic.ex)[3].firstChild.textContent;
-            var tAtt=$(objGraphic.ex)[4].lastChild.textContent;
-            
-            let graphicTGD=$('<div>').append('<i class="fas fa-dot-circle"></i><i class="fas fa-ellipsis-h"></i>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_body_tgd').append(sourceAtt))).append($('<div>').attr('class','link_tgd').append($('<div>').attr({class:"path_tgd"}).append(path)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:currentLink.id,class:'edit_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:'17px',width:widthSVGForLine}).append($('<line>').attr({class:'arrowBlue',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({id:"param_"+currentLink.id,class:"param_tgd"}).append(constraintAtt)).append($('<a>').attr({'data-tooltip':'true',title:'Remove Parameters',id:currentLink.id,class:'rem_param_blue_tgd'}).append($('<i>').attr('class','fas fa-trash-alt')))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_body_tgd').append(tAtt))).remove().html();            
-            $table.bootstrapTable('updateByUniqueId',{id:currentLink.id,row:{ex:graphicTGD}})
-            */
-            }
+           }
         },
         onCancel: function(){
             
@@ -555,27 +503,11 @@ function addPrimitiveFunctions(divForm1){
     option2.value="LOWER";
     var option3 = document.createElement("option");
     option3.text = "Trim";
-    option3.value="TRIM";
-	var option4 = document.createElement("option");
-    option4.text = "<";
-    option4.value="le";
-	var option5 = document.createElement("option");
-    option5.text = "<=";
-    option5.value="leq";
-	var option6 = document.createElement("option");
-    option6.text = ">";
-    option6.value="gt";
-	var option7 = document.createElement("option");
-    option7.text = ">=";
-    option7.value="geq";
+    option3.value="TRIM";	
     select.add(option0);
     select.add(option1);
     select.add(option2);
-    select.add(option3);
-	select.add(option4);
-	select.add(option5);
-	select.add(option6);
-	select.add(option7);
+    select.add(option3);	
     divForm1.appendChild(labelSelect)
     divForm1.appendChild(select)
 }
@@ -1313,7 +1245,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 				}
 			    ],
 		  elements:graph,
-		  layout: { name: 'dagre'}});
+		  layout: { name: 'dagre',nodeSep: 20}});
 	
 	tgdCy.contextMenus({
         menuItems: [
@@ -1364,6 +1296,29 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
                     }
                   }
                 },
+                {
+                    id: 'remove-Param',
+                    content: 'remove Parameter',
+                    tooltipText: 'remove Parameter',
+                    image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
+                    selector: 'edge.att',
+                    onClickFunction: function (event) {
+                      var target = event.target || event.cyTarget;
+                      
+                      let auxLink;
+                      for (var link of graphTGDs.getLinks()){        
+                          if (link.id==target.id()){
+                              auxLink=link;
+                              break;
+                          }
+                      }
+                      if (auxLink.labels().length>1){
+                          auxLink.removeLabel(-1)
+                          //update link 
+                          tgdCy.$('#'+auxLink.id).data('label','');                        
+                      }
+                    }
+                  },
               {
                   id: 'add-Where',
                   content: 'add Conditions',
@@ -1373,16 +1328,19 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
                   coreAsWell: true,
                   onClickFunction: function (event) {                	  
                 	  var target = event.target || event.cyTarget;
-                	  
+                	  try{
                 	  let auxLink;
-                	    for (var link of graphTGDs.getLinks()){        
+                	  for (var link of graphTGDs.getLinks()){        
                 	        if (link.id==target.id()){
                 	            auxLink=link;
                 	            break;
                 	        }
                 	    }
-                	    let linkView=auxLink.findView(paperTGDs);
-                	  loadWhereParam(auxLink,linkView.sourceView.model.attributes.options,tgdCy);                	  
+                	  let linkView=auxLink.findView(paperTGDs);
+                	  loadWhereParam(auxLink,linkView.sourceView.model.attributes.options,tgdCy);
+                	  }catch(err){
+                		  console.log("id not selected");
+                	  }
                   }
                 },
                 {
@@ -2516,7 +2474,7 @@ function loadWhereParam(link,attributes,targetCy){
 				}else{
 					typAtt=att.type;
 				}
-				filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal'],default_operator: 'equal'});
+				filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal','contains'],default_operator: 'equal'});
 			}
 		}
 	});
@@ -2603,8 +2561,10 @@ function getCondWhere(conditions){
 			else
 				stmt=stmt.concat(cond.field).concat(operatorStrToChar(cond.operator)).concat('"').concat(cond.value).concat('"');
 		}
+		stmt=stmt.concat(",");
 		
 	});
+	stmt=stmt.substr(0,stmt.length-1);
 	return stmt;
 }
 

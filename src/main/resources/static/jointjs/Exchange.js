@@ -455,8 +455,9 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 						whereQ=whereQ.concat(" WHERE ");
 						rule.constraints.forEach(function(joinQ){
 							if (joinQ.type=="apply"){
-								qTri=qTri.replace(joinQ.left.attrs[0].attr,joinQ.right.function+"("+joinQ.left.attrs[0].attr+")");
-								simpleQRML=simpleQRML.replace(joinQ.left.attrs[0].attr,joinQ.right.function+"("+joinQ.left.attrs[0].attr+")");
+								console.log(joinQ.left.rel);
+								qTri=qTri.replace(joinQ.left.rel+'.'+joinQ.left.attrs[0].attr,joinQ.right.function+"("+joinQ.left.rel+'.'+joinQ.left.attrs[0].attr+")");
+								simpleQRML=simpleQRML.replace(joinQ.left.rel+'.'+joinQ.left.attrs[0].attr,joinQ.right.function+"("+joinQ.left.rel+'.'+joinQ.left.attrs[0].attr+")");
 							}
 							if (joinQ.type=="like"){
 								whereQ=whereQ.concat(joinQ.left.rel).concat(".").concat(joinQ.left.attrs[0].attr).concat(" LIKE '%").concat(joinQ.right.value).concat("%' AND ");
@@ -570,8 +571,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 			shexView=shexView.concat("SELECT '").concat(type).concat("' AS typeS,'").concat(tc.label).concat("' AS label,'").concat(tc.type).concat("' AS typeO,'").concat(tc.mult).concat("' AS mult").concat(" UNION ");
 		})
 	});
-	typesRML=typesRML.slice(0,-7).concat(") AS Ts");
-	console.log(triplesAllRML);
+	typesRML=typesRML.slice(0,-7).concat(") AS Ts");	
 	triplesAllRML=triplesAllRML.slice(0,-7).concat(") AS T");
 	shexView=shexView.slice(0,-7).concat(") AS Sh");
 	chase=chase.concat(c3).concat(schQ);
@@ -645,9 +645,19 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	this.RMLScript=file2RML;
 };
 
-Exchange.prototype.GMLfromCy=function(mapSymbols,tgdLines,mapTables){
-	let comparisonOp=["le","leq","gt","geq"];
-	console.log(mapSymbols);	
+Exchange.prototype.ParamtoSQL = function(param,colName){
+	let paramF=param.split(',');
+	let paramTokens=paramF[0].split(':');
+	let comparisonOp={"le":"<","leq":"<=","gt":">","geq":">=","filter":"like"};
+	if (paramTokens[1].split(" ").length==1){
+		return paramTokens[1].concat('(').concat(colName).concat(')');
+	}else{
+		let aux=paramTokens[1].split(" ");
+		return colName.concat(' ').concat(comparisonOp.aux[0]).concat(' ').concat(aux[1]);
+	}
+};
+
+Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables){	
 	let mapLines=new Map();
 	tgdLines.forEach(function(tgdCy, key, map){						
 		let edgeEnt=tgdCy.$id(key);
@@ -662,8 +672,8 @@ Exchange.prototype.GMLfromCy=function(mapSymbols,tgdLines,mapTables){
 		let iri=annotations[0];
 		let funI=iri.split('(');
 		gml=gml.concat(funI[0]).concat('(').concat(entities[0]).concat('.').concat(funI[1]).concat(' as ').concat(entities[1]).concat('\n');
-		//set the where it there is
-		annotations.push( edgeEnt.data('labelS') );		
+		//set the where if there is
+		annotations.push( edgeEnt.data('labelS').replace(","," AND ") );		
 		let header=[entities[0]];
 		if (annotations.length>1 && annotations[1].length>0){
 			header.push(annotations[1]);
@@ -671,12 +681,20 @@ Exchange.prototype.GMLfromCy=function(mapSymbols,tgdLines,mapTables){
 		let detailTGD={query:header,des:gml};
 		let edgesAtt=tgdCy.edges('.att');
 		let edgesAttRef=tgdCy.edges('.attRef');
-									
+		this.ParamtoSQL("c","a");					
 		edgesAtt.forEach(function(ed){			
 			let sNAtt=ed.data('source');
-			let tNAtt=ed.data('target');			
+			let tNAtt=ed.data('target');	
+			console.log(ed.data('label').length);
+			//this.ParamtoSQL(ed.data('label'),sNAtt);
 			detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(tgdCy.$id(sNAtt).data('parent')).concat(".").concat(sNAtt).concat(';\n');
-
+			if (detailTGD.query.length==1 && ed.data('label').length>0){
+				//detailTGD.query.push(this.ParamtoSQL(ed.data('label'),sNAtt));
+			}
+			if (detailTGD.query.length==2 && ed.data('label').length>0){
+				
+				//detailTGD.query[1]=detailTGD.query[1].concat(" AND ").concat(this.ParamtoSQL(ed.data('label'),sNAtt));
+			}
 		});	
 		edgesAttRef.forEach(function(ed){
 			let sNAtt=ed.data('source');
@@ -688,11 +706,11 @@ Exchange.prototype.GMLfromCy=function(mapSymbols,tgdLines,mapTables){
 			
 		});
 		let taNames=tgdCy.nodes('.rentity');
-		taNames.forEach(function(taName){
-			console.log(taName);
+		taNames.forEach(function(taName){			
 			if (taName.data('id')!=sN)
-				detailTGD.query[0]=detailTGD.query[0].concat(" JOIN ").concat(taName);
-		});					
+				detailTGD.query[0]=detailTGD.query[0].concat(" JOIN ").concat(taName.data('id'));
+		});				
+		
 		mapLines.set(key,detailTGD);
 		
 	});
