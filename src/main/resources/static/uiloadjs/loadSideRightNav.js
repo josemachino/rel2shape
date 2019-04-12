@@ -294,12 +294,12 @@ removeParam:function(e){
 });
 
 var side_view = new sideView({ el: $("#sidebar-right") });
-/*var tgdsCy=cytoscape({container: document.getElementById('#tableTGD'),
+var tgdsCy=cytoscape({container: document.getElementById('#tableTGD'),
 	style: [
 	    {
 	      selector: 'node',
 	      css: {
-	        'label': 'data(id)',
+	        'label': 'data(label)',
 	        'shape': 'data(type)',
 	        'text-valign': 'center',
 	        'text-halign': 'center',
@@ -335,17 +335,22 @@ var side_view = new sideView({ el: $("#sidebar-right") });
 	          'width': 3,
 	          'curve-style': 'bezier',
 	          'target-arrow-shape': 'triangle',
-	          'text-valign': 'bottom',
-	          'text-halign': 'center'
-	        	  
+	          'text-valign': 'top',
+	          'text-halign': 'center'//,
+	          //'text-margin-y': -10
 	       }
 	    },
 	    {
     	  selector: 'edge.entity',
     	  css: {
     		'source-label': 'data(labelS)',
-    	    'curve-style': 'bezier',
-    	    'control-point-step-size':40,
+    		'target-label': 'data(labelT)',
+    	    'curve-style': 'taxi',
+    	    'taxi-direction': 'upward',
+    	    'taxi-turn': 20,
+    	    'taxi-turn-min-distance': 5,
+    	    'source-endpoint': 'outside-to-node',
+    	    'target-endpoint': 'outside-to-node',
     	    'line-color':subjectLinkColor
     	  }
 	    },
@@ -363,6 +368,206 @@ var side_view = new sideView({ el: $("#sidebar-right") });
 		}
 	    ],
   elements:graph,
-  layout: { name: 'grid',col:2}});
+  layout: { name: 'dagre',nodeSep: 20}});
+
+tgdsCy.contextMenus({
+menuItems: [
+      {
+        id: 'remove',
+        content: 'remove',
+        tooltipText: 'remove',
+        image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
+        selector: 'edge',
+        onClickFunction: function (event) {
+          var target = event.target || event.cyTarget;
+          
+          let currentLink=graphTGDs.getCell(target.id());
+	    	  currentLink.remove();
+	    	  if (target.id()==greenLink.id){
+	    		  tgdsCy.destroy();
+  	    	  let top = document.getElementById("tableTGD");
+  	    	  let nested=document.getElementById("idTGD"+greenLink.id);
+  	    	  top.removeChild(nested);	      	    	  
+	    	  }else{
+	    		  target.remove();
+	    	  }
+	    	  //tgdLines.delete(target.id());
+	    	  console.log(tgdLines);
+        },
+        hasTrailingDivider: true
+      },
+      {
+          id: 'remove-condition',
+          content: 'remove Condition',
+          tooltipText: 'remove Condition',
+          image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
+          selector: 'edge.entity',
+          onClickFunction: function (event) {
+            var target = event.target || event.cyTarget;
+            
+            let auxLink;
+            for (var link of graphTGDs.getLinks()){        
+                if (link.id==target.id()){
+                    auxLink=link;
+                    break;
+                }
+            }
+            if (auxLink.labels().length>1){
+                auxLink.removeLabel(-1)
+                //update link 
+                tgdsCy.$('#'+auxLink.id).data('labelS','');                        
+            }
+          }
+        },
+        {
+            id: 'remove-Param',
+            content: 'remove Parameter',
+            tooltipText: 'remove Parameter',
+            image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
+            selector: 'edge.att',
+            onClickFunction: function (event) {
+              var target = event.target || event.cyTarget;
+              
+              let auxLink;
+              for (var link of graphTGDs.getLinks()){        
+                  if (link.id==target.id()){
+                      auxLink=link;
+                      break;
+                  }
+              }
+              if (auxLink.labels().length>1){
+                  auxLink.removeLabel(-1)
+                  //update link 
+                  tgdsCy.$('#'+auxLink.id).data('label','');                        
+              }
+            }
+          },
+      {
+          id: 'add-Where',
+          content: 'add Conditions',
+          selector: 'edge.entity',
+          tooltipText: 'add Conditions to the Entity Mapping',
+          image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
+          coreAsWell: true,
+          onClickFunction: function (event) {                	  
+        	  var target = event.target || event.cyTarget;
+        	  try{
+        	  let auxLink;
+        	  for (var link of graphTGDs.getLinks()){        
+        	        if (link.id==target.id()){
+        	            auxLink=link;
+        	            break;
+        	        }
+        	    }
+        	  let linkView=auxLink.findView(paperTGDs);
+        	  loadWhereParam(auxLink,linkView.sourceView.model.attributes.options,tgdsCy);
+        	  }catch(err){
+        		  console.log("id not selected");
+        	  }
+          }
+        },
+        {
+            id: 'attach-file',
+            content: 'Attach file Constructor',
+            selector: 'edge.entity',
+            tooltipText: 'Attach file Constructor',
+            image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
+            onClickFunction: function (event) {                	  
+          	  var target = event.target || event.cyTarget;                  	  
+          	  let auxLink;
+          	  for (var link of graphTGDs.getLinks()){        
+      	        if (link.id==target.id()){
+      	            auxLink=link;
+      	            break;
+      	        }
+          	  }
+          	  let linkView=auxLink.findView(paperTGDs);
+          	  loadAttachFile(auxLink,tgdsCy);                	  
+            }
+          },
+        {
+            id: 'add-Param',
+            content: 'add Parameters',
+            selector: 'edge.att',
+            tooltipText: 'add Parameters to the attribute',
+            image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
+            coreAsWell: true,
+            onClickFunction: function (event) {                  	  
+          	  var target = event.target || event.cyTarget;                  	
+              	let auxLink;
+                for (var link of graphTGDs.getLinks()){        
+                    if (link.id==target.id()){
+                        auxLink=link;
+                        break;
+                    }
+                }
+                loadModalFunctions(auxLink,tgdsCy);
+            }
+          },
+        {
+            id: 'modify-IRI',
+            content: 'modify IRI',
+            selector: 'edge.entity',
+            tooltipText: 'add Conditions to the Entity Mapping',
+            image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
+            coreAsWell: true,
+            onClickFunction: function (event) {  
+            	var target = event.target || event.cyTarget;
+            	var auxKeySymbols=[];
+                for (const key of mapSymbols.keys()) {
+                    var obj={text:key};                        
+                    auxKeySymbols.push(obj);
+                }
+                let auxLink;
+                for (var link of graphTGDs.getLinks()){        
+                    if (link.id==target.id()){
+                        auxLink=link;
+                        break;
+                    }
+                }
+                let linkView=auxLink.findView(paperTGDs)
+                var pks=getKeys(linkView.sourceView.model.attributes.options);
+                if (pks.length>1 || mapSymbols.size>1){        
+                    loadModalGreenFromTable(auxLink,auxKeySymbols,linkView.sourceView.model.attributes.options,mapSymbols,tgdsCy);
+                }
+            }
+          },
+          {
+              id: 'modify-IRI-Ref',
+              content: 'modify IRI',
+              selector: 'edge.attRef',
+              tooltipText: 'Modify IRI',
+              image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},                      
+              onClickFunction: function (event) {  
+              	var target = event.target || event.cyTarget;
+              	var auxKeySymbols=[];
+                for (const key of mapSymbols.keys()) {
+                    var obj={text:key};                        
+                    auxKeySymbols.push(obj);
+                }
+                let auxLink;
+                for (var link of graphTGDs.getLinks()){        
+                    if (link.id==e.currentTarget.id){
+                        auxLink=link;
+                        break;
+                    }
+                }
+                let linkView=auxLink.findView(paperTGDs);
+            	var tablesConnected=[{id:linkView.sourceView.model.id,text:linkView.sourceView.model.attributes.question}];   	
+                var intargetLinks=graphTGDs.getConnectedLinks(linkView.targetView.model, {inbound:true});
+                var portType=linkView.targetView.model.attributes.ports.items[0];
+                var tLinks=getLinkTarget(intargetLinks,portType);                                        
+                let sourceAtt=getSourceOptionNameLinkView(linkView)
+                for (var tlink of tLinks){							
+                    var tView=tlink.findView(paperTGDs);  							
+                    var visited=[];
+                    getJoinsTableFromTo(linkView.sourceView.model,tablesConnected,tView.sourceView.model.id,visited,tablesConnected[0]);	
+                }
+                
+                if (tablesConnected.length>1 || auxKeySymbols.length>1){
+                	loadModalRedFromTable(auxLink,auxKeySymbols,tablesConnected,mapSymbols,sourceAtt,intargetLinks,tgdsCy);
+            	}
+              }
+            }
+      ]});
 }
-*/

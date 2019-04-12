@@ -1523,13 +1523,13 @@ function buildRedLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
 		//create the parent node
 		for (let i=path.length-1;i>0;i--){
 			var name=path[i-1];
-			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
+			plainObj.push({ group: 'nodes', data: { id: name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
 		}
-		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }});
+		plainObj.push({ group: 'nodes', data: { id: sAtt,label:sAtt,type:typeNodeAtt,parent:path[0] }});
 	}else{
-		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt } });
+		plainObj.push({ group: 'nodes', data: { id: sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt } });
 	}
-	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt } });
+	plainObj.push({ group: 'nodes', data: { id: tAtt,label:tAtt,type:typeNodeAtt,parent:tEnt } });
 	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:fIRI } , classes:'attRef'});
 	cy.add(plainObj);
 	runLayout(cy);
