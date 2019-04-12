@@ -436,8 +436,7 @@ function loadModalFunctions(currentLink,cy){
             }
             var constraintAtt="";
             
-        	if ($('#att-func').val().length>0){
-        		console.log("valor fun:"+$('#att-func').val());
+        	if ($('#att-func').val().length>0){        		
         		constraintAtt="[function:"+ $('#att-func').val()+"]";
         	}                        
             var offsetNew=currentLink.labels().length+1*10;

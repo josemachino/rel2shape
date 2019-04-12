@@ -448,8 +448,8 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 					let lsTables=[];
 					let whereQ="";
 					if (rule.constraints.length==1 && rule.constraints[0].type=="apply"){
-						qTri=qTri.replace(rule.constraints[0].left.attrs[0].attr,rule.constraints[0].right.function+"("+rule.constraints[0].left.attrs[0].attr+")");
-						simpleQRML=simpleQRML.replace(rule.constraints[0].left.attrs[0].attr,rule.constraints[0].right.function+"("+rule.constraints[0].left.attrs[0].attr+")");
+						qTri=qTri.replace(rule.constraints[0].left.rel+'.'+rule.constraints[0].left.attrs[0].attr,rule.constraints[0].right.function+"("+rule.constraints[0].left.rel+'.'+rule.constraints[0].left.attrs[0].attr+")");
+						simpleQRML=simpleQRML.replace(rule.constraints[0].left.rel+'.'+rule.constraints[0].left.attrs[0].attr,rule.constraints[0].right.function+"("+rule.constraints[0].left.rel+'.'+rule.constraints[0].left.attrs[0].attr+")");
 					}else{
 					
 						whereQ=whereQ.concat(" WHERE ");
@@ -645,19 +645,14 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	this.RMLScript=file2RML;
 };
 
-Exchange.prototype.ParamtoSQL = function(param,colName){
-	let paramF=param.split(',');
-	let paramTokens=paramF[0].split(':');
-	let comparisonOp={"le":"<","leq":"<=","gt":">","geq":">=","filter":"like"};
-	if (paramTokens[1].split(" ").length==1){
-		return paramTokens[1].concat('(').concat(colName).concat(')');
-	}else{
-		let aux=paramTokens[1].split(" ");
-		return colName.concat(' ').concat(comparisonOp.aux[0]).concat(' ').concat(aux[1]);
-	}
+Exchange.prototype.ParamtoSQL = function(param,colName){	
+	let paramTokens=param.split(':');	
+	let fName=paramTokens[1];
+	fName=fName.substr(0,fName.length-1);
+	return fName.concat('(').concat(colName).concat(')');		
 };
 
-Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables){	
+Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables){
 	let mapLines=new Map();
 	tgdLines.forEach(function(tgdCy, key, map){						
 		let edgeEnt=tgdCy.$id(key);
@@ -681,19 +676,15 @@ Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables){
 		let detailTGD={query:header,des:gml};
 		let edgesAtt=tgdCy.edges('.att');
 		let edgesAttRef=tgdCy.edges('.attRef');
-		this.ParamtoSQL("c","a");					
 		edgesAtt.forEach(function(ed){			
 			let sNAtt=ed.data('source');
-			let tNAtt=ed.data('target');	
-			console.log(ed.data('label').length);
-			//this.ParamtoSQL(ed.data('label'),sNAtt);
-			detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(tgdCy.$id(sNAtt).data('parent')).concat(".").concat(sNAtt).concat(';\n');
-			if (detailTGD.query.length==1 && ed.data('label').length>0){
-				//detailTGD.query.push(this.ParamtoSQL(ed.data('label'),sNAtt));
-			}
-			if (detailTGD.query.length==2 && ed.data('label').length>0){
-				
-				//detailTGD.query[1]=detailTGD.query[1].concat(" AND ").concat(this.ParamtoSQL(ed.data('label'),sNAtt));
+			let tNAtt=ed.data('target');				
+			if (ed.data('label').length>0){				
+				let parent=tgdCy.$id(sNAtt).data('parent');
+				parent=parent.concat(".").concat(sNAtt);
+				detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(Exchange.prototype.ParamtoSQL.call(this,ed.data('label'),tgdCy.$id(sNAtt).data('parent'))).concat(';\n');
+			}else{
+				detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(tgdCy.$id(sNAtt).data('parent')).concat(".").concat(sNAtt).concat(';\n');
 			}
 		});	
 		edgesAttRef.forEach(function(ed){
