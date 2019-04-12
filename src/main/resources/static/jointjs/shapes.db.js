@@ -1168,8 +1168,8 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 	
 	let dataNodes=[];
 	let lenRect=sHead.length>tHead.length?sHead.length*5:tHead.length*10;	
-	dataNodes.push({data:{id:sHead,type:typeNodeRect},classes:'rentity'});
-	dataNodes.push({data:{id:tHead,type:typeNodeRect},classes:'tentity'});
+	dataNodes.push({data:{id:sHead,label:sHead,type:typeNodeRect},classes:'rentity'});
+	dataNodes.push({data:{id:tHead,label:tHead,type:typeNodeRect},classes:'tentity'});
 	let dataEdges=[];
 	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,labelS:condition,labelT:''},classes:'entity'});
 	let graph={nodes:dataNodes,edges:dataEdges}
@@ -1179,7 +1179,7 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 			    {
 			      selector: 'node',
 			      css: {
-			        'label': 'data(id)',
+			        'label': 'data(label)',
 			        'shape': 'data(type)',
 			        'text-valign': 'center',
 			        'text-halign': 'center',
@@ -1225,8 +1225,12 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){
 		    	  css: {
 		    		'source-label': 'data(labelS)',
 		    		'target-label': 'data(labelT)',
-		    	    'curve-style': 'bezier',
-		    	    'control-point-step-size':40,
+		    	    'curve-style': 'taxi',
+		    	    'taxi-direction': 'upward',
+		    	    'taxi-turn': 20,
+		    	    'taxi-turn-min-distance': 5,
+		    	    'source-endpoint': 'outside-to-node',
+		    	    'target-endpoint': 'outside-to-node',
 		    	    'line-color':subjectLinkColor
 		    	  }
 			    },
@@ -1497,13 +1501,13 @@ function buildBlueLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
 		//create the parent node
 		for (let i=path.length-1;i>0;i--){
 			var name=path[i-1];
-			plainObj.push({ group: 'nodes', data: { id: name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
+			plainObj.push({ group: 'nodes', data: { id: name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
 		}
-		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:path[0] }});
+		plainObj.push({ group: 'nodes', data: { id: sAtt,label:sAtt,type:typeNodeAtt,parent:path[0] }});
 	}else{
-		plainObj.push({ group: 'nodes', data: { id: sAtt,type:typeNodeAtt,parent:sEnt }});
+		plainObj.push({ group: 'nodes', data: { id: sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt }});
 	}
-	plainObj.push({ group: 'nodes', data: { id: tAtt,type:typeNodeAtt,parent:tEnt }});
+	plainObj.push({ group: 'nodes', data: { id: tAtt,label:tAtt,type:typeNodeAtt,parent:tEnt }});
 	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:condition},classes:'att' });
 	cy.add(plainObj);
 	runLayout(cy);	
