@@ -104,13 +104,8 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 					link.remove();
 				}
 			}
-			let cy=tgdLines.get(cell.id);
-	        cy.destroy();
-	        tgdLines.delete(cell.id);
-	        console.log(tgdLines);
-	    	let top = document.getElementById("tableTGD");
-  	    	let nested=document.getElementById("idTGD"+cell.id);
-  	    	top.removeChild(nested);
+			               
+	    	
 			links=graphTGDs.getLinks();
 			for (var link of links){
 				var edgeView=link.findView(paperTGDs);
@@ -124,26 +119,26 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 			}
 			
         }else{
-        	for (let cy of tgdLines.values()){
-        		var edge=cy.$id(cell.id);        		
+        	
+        	//for (let cy of tgdLines.values()){
+        		var edge=tgdsCy.$id(cell.id);        		
         		console.log(edge.length);
         		if (edge.length>0){
-        			cy.remove(edge);
+        			tgdsCy.remove(edge);
         			let sN=edge.data('source');
         			let tN=edge.data('target');
-        			console.log(cy.$id(sN).incomers().length);
-        			let sNCy=cy.$id(sN);
-        			let tNCy=cy.$id(tN);
+        			let sNCy=tgdsCy.$id(sN);
+        			let tNCy=tgdsCy.$id(tN);
         			if (sNCy.outdegree(false)==0){        				
         				//deleteParentIfNotChildren(sNCy.parent(),cy);
-        				cy.remove(sNCy);
+        				tgdsCy.remove(sNCy);
         			}
         			if (tNCy.indegree(false)==0){
-        				cy.remove(tNCy);
+        				tgdsCy.remove(tNCy);
         			}
-        			break;
+        			//break;
         		}
-        	}
+        	//}
         }                                        
    }
 })
@@ -1156,325 +1151,42 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
     let graphicTGD=$('<div>').append('<i class="fas fa-dot-circle"></i><i class="fas fa-ellipsis-h"></i>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_body_tgd').append(sAtt))).append($('<div>').attr('class','link_tgd').append($('<div>').attr({class:"path_tgd"}).append(path)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:redLink.id,class:'edit_red_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:'17px',width:widthSVGForLine}).append($('<line>').attr({class:'arrowRed',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({class:"iri_tgd"}).append(fObject))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_body_tgd').append(tAtt))).remove().html();
     $table.bootstrapTable('append',[{pid:parentId,id:redLink.id,ex:graphicTGD}])
     */
-    buildRedLink(tgdLines.get(parentId),redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
+    buildRedLink(parentId,tgdsCy,redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
 }
 
-function buildGreenLink(greenLink,sHead,fSubject,tHead,condition){	
-	var divRow=document.getElementById('tableTGD');
-	var divForm1 = document.createElement("div");
-    divForm1.setAttribute("class","rowTGD");
-    divForm1.setAttribute("id","idTGD"+greenLink.id);
-    divRow.appendChild(divForm1);	
+function buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,condition){	
+	tgdsCy.add({group:'nodes',data:{id:sHead,label:sHead,type:typeNodeRect},classes:'rentity'});	
+	tgdsCy.add({group:'nodes',data:{id:greenLink.id+tHead,label:tHead,type:typeNodeRect},classes:'tentity'});
+	tgdsCy.add({group:'edges',data:{id:greenLink.id,source:sHead,target:greenLink.id+tHead,label:fSubject,labelS:condition,labelT:''},classes:'entity'});
 	
-	let dataNodes=[];
-	let lenRect=sHead.length>tHead.length?sHead.length*5:tHead.length*10;	
-	dataNodes.push({data:{id:sHead,label:sHead,type:typeNodeRect},classes:'rentity'});
-	dataNodes.push({data:{id:tHead,label:tHead,type:typeNodeRect},classes:'tentity'});
-	let dataEdges=[];
-	dataEdges.push({data:{id:greenLink.id,source:sHead,target:tHead,label:fSubject,labelS:condition,labelT:''},classes:'entity'});
-	let graph={nodes:dataNodes,edges:dataEdges}
-	var tgdCy=cytoscape({
-		  container: document.getElementById("idTGD"+greenLink.id),
-		  style: [
-			    {
-			      selector: 'node',
-			      css: {
-			        'label': 'data(label)',
-			        'shape': 'data(type)',
-			        'text-valign': 'center',
-			        'text-halign': 'center',
-			        'height': 40,
-			        'width': lenRect
-			      }
-			    },
-			    {
-				      selector: 'node.rentity',
-				      css: {
-				        'background-color':rRectColor,
-				        'background-opacity': '0'
-				      }
-				    },				    
-				    {
-					      selector: 'node.tentity',
-					      css: {
-					    	  'background-color':tRectColor,
-						      'background-opacity': '0'
-					      }
-					    },
-			    {
-			       selector: ':parent',
-			       css: {
-			          'text-valign': 'top',
-			          'text-halign': 'center',
-			       }
-			    },
-			    {
-			       selector: 'edge[label]',
-			       css: {
-			          'label': 'data(label)',			          
-			          'width': 3,
-			          'curve-style': 'bezier',
-			          'target-arrow-shape': 'triangle',
-			          'text-valign': 'top',
-			          'text-halign': 'center'//,
-			          //'text-margin-y': -10
-			       }
-			    },
-			    {
-		    	  selector: 'edge.entity',
-		    	  css: {
-		    		'source-label': 'data(labelS)',
-		    		'target-label': 'data(labelT)',
-		    	    'curve-style': 'taxi',
-		    	    'taxi-direction': 'upward',
-		    	    'taxi-turn': 20,
-		    	    'taxi-turn-min-distance': 5,
-		    	    'source-endpoint': 'outside-to-node',
-		    	    'target-endpoint': 'outside-to-node',
-		    	    'line-color':subjectLinkColor
-		    	  }
-			    },
-		    	{
-		    	  selector: 'edge.att',
-		    	  css: {				    	   		    		  
-		    	    'line-color':attributeLinkColor
-		    	  }
-			    },
-			    {
-			      selector: 'edge.attRef',
-			      css: {				    	   
-			        'line-color':attributeRefLinkColor
-			      }
-				}
-			    ],
-		  elements:graph,
-		  layout: { name: 'dagre',nodeSep: 20}});
-	
-	tgdCy.contextMenus({
-        menuItems: [
-              {
-                id: 'remove',
-                content: 'remove',
-                tooltipText: 'remove',
-                image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
-                selector: 'edge',
-                onClickFunction: function (event) {
-                  var target = event.target || event.cyTarget;
-                  
-                  let currentLink=graphTGDs.getCell(target.id());
-      	    	  currentLink.remove();
-      	    	  if (target.id()==greenLink.id){
-      	    		  tgdCy.destroy();
-	      	    	  let top = document.getElementById("tableTGD");
-	      	    	  let nested=document.getElementById("idTGD"+greenLink.id);
-	      	    	  top.removeChild(nested);	      	    	  
-      	    	  }else{
-      	    		  target.remove();
-      	    	  }
-      	    	  //tgdLines.delete(target.id());
-      	    	  console.log(tgdLines);
-                },
-                hasTrailingDivider: true
-              },
-              {
-                  id: 'remove-condition',
-                  content: 'remove Condition',
-                  tooltipText: 'remove Condition',
-                  image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
-                  selector: 'edge.entity',
-                  onClickFunction: function (event) {
-                    var target = event.target || event.cyTarget;
-                    
-                    let auxLink;
-                    for (var link of graphTGDs.getLinks()){        
-                        if (link.id==target.id()){
-                            auxLink=link;
-                            break;
-                        }
-                    }
-                    if (auxLink.labels().length>1){
-                        auxLink.removeLabel(-1)
-                        //update link 
-                        tgdCy.$('#'+auxLink.id).data('labelS','');                        
-                    }
-                  }
-                },
-                {
-                    id: 'remove-Param',
-                    content: 'remove Parameter',
-                    tooltipText: 'remove Parameter',
-                    image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
-                    selector: 'edge.att',
-                    onClickFunction: function (event) {
-                      var target = event.target || event.cyTarget;
-                      
-                      let auxLink;
-                      for (var link of graphTGDs.getLinks()){        
-                          if (link.id==target.id()){
-                              auxLink=link;
-                              break;
-                          }
-                      }
-                      if (auxLink.labels().length>1){
-                          auxLink.removeLabel(-1)
-                          //update link 
-                          tgdCy.$('#'+auxLink.id).data('label','');                        
-                      }
-                    }
-                  },
-              {
-                  id: 'add-Where',
-                  content: 'add Conditions',
-                  selector: 'edge.entity',
-                  tooltipText: 'add Conditions to the Entity Mapping',
-                  image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-                  coreAsWell: true,
-                  onClickFunction: function (event) {                	  
-                	  var target = event.target || event.cyTarget;
-                	  try{
-                	  let auxLink;
-                	  for (var link of graphTGDs.getLinks()){        
-                	        if (link.id==target.id()){
-                	            auxLink=link;
-                	            break;
-                	        }
-                	    }
-                	  let linkView=auxLink.findView(paperTGDs);
-                	  loadWhereParam(auxLink,linkView.sourceView.model.attributes.options,tgdCy);
-                	  }catch(err){
-                		  console.log("id not selected");
-                	  }
-                  }
-                },
-                {
-                    id: 'attach-file',
-                    content: 'Attach file Constructor',
-                    selector: 'edge.entity',
-                    tooltipText: 'Attach file Constructor',
-                    image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-                    onClickFunction: function (event) {                	  
-                  	  var target = event.target || event.cyTarget;                  	  
-                  	  let auxLink;
-                  	  for (var link of graphTGDs.getLinks()){        
-              	        if (link.id==target.id()){
-              	            auxLink=link;
-              	            break;
-              	        }
-                  	  }
-                  	  let linkView=auxLink.findView(paperTGDs);
-                  	  loadAttachFile(auxLink,tgdCy);                	  
-                    }
-                  },
-                {
-                    id: 'add-Param',
-                    content: 'add Parameters',
-                    selector: 'edge.att',
-                    tooltipText: 'add Parameters to the attribute',
-                    image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-                    coreAsWell: true,
-                    onClickFunction: function (event) {                  	  
-                  	  var target = event.target || event.cyTarget;                  	
-	                  	let auxLink;
-	                    for (var link of graphTGDs.getLinks()){        
-	                        if (link.id==target.id()){
-	                            auxLink=link;
-	                            break;
-	                        }
-	                    }
-	                    loadModalFunctions(auxLink,tgdCy);
-                    }
-                  },
-                {
-                    id: 'modify-IRI',
-                    content: 'modify IRI',
-                    selector: 'edge.entity',
-                    tooltipText: 'add Conditions to the Entity Mapping',
-                    image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-                    coreAsWell: true,
-                    onClickFunction: function (event) {  
-                    	var target = event.target || event.cyTarget;
-                    	var auxKeySymbols=[];
-                        for (const key of mapSymbols.keys()) {
-                            var obj={text:key};                        
-                            auxKeySymbols.push(obj);
-                        }
-                        let auxLink;
-                        for (var link of graphTGDs.getLinks()){        
-                            if (link.id==target.id()){
-                                auxLink=link;
-                                break;
-                            }
-                        }
-                        let linkView=auxLink.findView(paperTGDs)
-                        var pks=getKeys(linkView.sourceView.model.attributes.options);
-                        if (pks.length>1 || mapSymbols.size>1){        
-                            loadModalGreenFromTable(auxLink,auxKeySymbols,linkView.sourceView.model.attributes.options,mapSymbols,tgdCy);
-                        }
-                    }
-                  },
-                  {
-                      id: 'modify-IRI-Ref',
-                      content: 'modify IRI',
-                      selector: 'edge.attRef',
-                      tooltipText: 'Modify IRI',
-                      image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},                      
-                      onClickFunction: function (event) {  
-                      	var target = event.target || event.cyTarget;
-                      	var auxKeySymbols=[];
-                        for (const key of mapSymbols.keys()) {
-                            var obj={text:key};                        
-                            auxKeySymbols.push(obj);
-                        }
-                        let auxLink;
-                        for (var link of graphTGDs.getLinks()){        
-                            if (link.id==e.currentTarget.id){
-                                auxLink=link;
-                                break;
-                            }
-                        }
-                        let linkView=auxLink.findView(paperTGDs);
-                    	var tablesConnected=[{id:linkView.sourceView.model.id,text:linkView.sourceView.model.attributes.question}];   	
-                        var intargetLinks=graphTGDs.getConnectedLinks(linkView.targetView.model, {inbound:true});
-                        var portType=linkView.targetView.model.attributes.ports.items[0];
-                        var tLinks=getLinkTarget(intargetLinks,portType);                                        
-                        let sourceAtt=getSourceOptionNameLinkView(linkView)
-                        for (var tlink of tLinks){							
-                            var tView=tlink.findView(paperTGDs);  							
-                            var visited=[];
-                            getJoinsTableFromTo(linkView.sourceView.model,tablesConnected,tView.sourceView.model.id,visited,tablesConnected[0]);	
-                        }
-                        
-                        if (tablesConnected.length>1 || auxKeySymbols.length>1){
-                        	loadModalRedFromTable(auxLink,auxKeySymbols,tablesConnected,mapSymbols,sourceAtt,intargetLinks,tgdCy);
-                    	}
-                      }
-                    }
-              ]});	
-	
-	tgdLines.set(greenLink.id,tgdCy);
+	/*tgdLines.set(greenLink.id,tgdCy);
 	tgdCy.ready(function(){
 		console.log("ready");
-	});
-	tgdCy.viewport({
+	});*/
+	tgdsCy.viewport({
 	  zoom: 2,
 	  pan: { x: 120, y: 70 }
 	});
+	//tgdsCy.layout({name:'grid',columns:2}).run();
+	runLayout(tgdsCy);
 	
 }
 
 function runLayout(tgdCy,fit, callBack) {
     // step-1 position child nodes 
-    var parentNodes = tgdCy.nodes(':parent');
+    /*var parentNodes = tgdCy.nodes(':parent');
     var grid_layout = parentNodes.descendants().layout({
       name: 'grid',
-      cols: 1,
-      fit: fit
+      cols: 1
     });
     grid_layout.promiseOn('layoutstop').then(function(event) {
       // step-2 position parent nodes 
-      var dagre_layout = parentNodes.layout({
+    	console.log('ridd')
+      /*var dagre_layout = parentNodes.layout({
         name: 'dagre',
-        rankDir: 'TB',
+        padding:50,
+        ranker: 'network-simplex',
+        rankDir: 'BT',
         fit: fit
       });
       dagre_layout.promiseOn('layoutstop').then(function(event) {
@@ -1486,57 +1198,93 @@ function runLayout(tgdCy,fit, callBack) {
       dagre_layout.run();
     });
     grid_layout.run();
-
+*/
+	tgdCy.layout({name:'grid',columns:2}).run();
   }
 
 /**
  * This function creates the attribute lines in the table view
  * path is an array of string name tables
  * */
-function buildBlueLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
+function buildBlueLink(parentId,cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
 	let plainObj=[];
 	let postEnt=cy.$('#'+tEnt).position();
 	let possEnt=cy.$('#'+sEnt).position();
+	let lenNode=0;
 	if (path.length>1){
 		//create the parent node
 		for (let i=path.length-1;i>0;i--){
 			var name=path[i-1];
-			plainObj.push({ group: 'nodes', data: { id: name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
+			if (i==path.length-1){
+				plainObj.push({ group: 'nodes', data: { id: sEnt+name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
+			}
+			else{
+				plainObj.push({ group: 'nodes', data: { id: sEnt+name,label:name,type:typeNodeRect,parent: sEnt+path[i]},classes:'rentity' });
+			}
+			lenNode=name.length>lenNode?name.length:lenNode;
 		}
-		plainObj.push({ group: 'nodes', data: { id: sAtt,label:sAtt,type:typeNodeAtt,parent:path[0] }});
+		plainObj.push({ group: 'nodes', data: { id: sEnt+sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt+path[0] }});
+		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
 	}else{
-		plainObj.push({ group: 'nodes', data: { id: sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt }});
+		plainObj.push({ group: 'nodes', data: { id: sEnt+sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt }});
+		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
 	}
-	plainObj.push({ group: 'nodes', data: { id: tAtt,label:tAtt,type:typeNodeAtt,parent:tEnt }});
-	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:condition},classes:'att' });
+	plainObj.push({ group: 'nodes', data: { id: parentId+tEnt+tAtt,label:tAtt,type:typeNodeAtt,parent:parentId+tEnt }});
+	lenNode=tAtt.length>lenNode?tAtt.length:lenNode;
+	plainObj.push({ group: 'edges', data: { id: attLineId, source: sEnt+sAtt, target:parentId+tEnt+tAtt,label:condition},classes:'att' });
 	cy.add(plainObj);
-	runLayout(cy);	
+	cy.$('node').css('width',lenNode*12);	
+	/*cy.layout({name:'grid',columns:2}).run();
+	var parentNodes = cy.nodes(':parent');
+    var grid_layout = parentNodes.descendants().layout({
+      name: 'grid',
+      cols: 1
+    });
+    grid_layout.run();*/
+	runLayout(cy,true);	
 }
 /**
  * This function creates the attribute ref lines in the table view
  * */
-function buildRedLink(cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
+function buildRedLink(parentId,cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
 	let plainObj=[];
 	let postEnt=cy.$('#'+tEnt).position();
 	let possEnt=cy.$('#'+sEnt).position();
+	let lenNode=0;
 	if (path.length>1){
 		//create the parent node
 		for (let i=path.length-1;i>0;i--){
 			var name=path[i-1];
-			plainObj.push({ group: 'nodes', data: { id: name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
+			if (i==path.length-1){
+				plainObj.push({ group: 'nodes', data: { id: sEnt+name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
+			}else{
+				plainObj.push({ group: 'nodes', data: { id: sEnt+name,label:name,type:typeNodeRect,parent: sEnt+path[i]},classes:'rentity' });
+			}
+			lenNode=name.length>lenNode?name.length:lenNode;
 		}
-		plainObj.push({ group: 'nodes', data: { id: sAtt,label:sAtt,type:typeNodeAtt,parent:path[0] }});
+		plainObj.push({ group: 'nodes', data: { id: sEnt+sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt+path[0] }});
+		lenNode=name.length>lenNode?name.length:lenNode;
 	}else{
-		plainObj.push({ group: 'nodes', data: { id: sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt } });
+		plainObj.push({ group: 'nodes', data: { id: sEnt+sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt } });
+		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
 	}
-	plainObj.push({ group: 'nodes', data: { id: tAtt,label:tAtt,type:typeNodeAtt,parent:tEnt } });
-	plainObj.push({ group: 'edges', data: { id: attLineId, source: sAtt, target: tAtt,label:fIRI } , classes:'attRef'});
+	plainObj.push({ group: 'nodes', data: { id: parentId+tEnt+tAtt,label:tAtt,type:typeNodeAtt,parent:parentId+tEnt } });
+	lenNode=tAtt.length>lenNode?tAtt.length:lenNode;
+	plainObj.push({ group: 'edges', data: { id: attLineId, source: sEnt+sAtt, target: parentId+tEnt+tAtt,label:fIRI } , classes:'attRef'});
 	cy.add(plainObj);
-	runLayout(cy);
+	cy.$('node').css('width',lenNode*12);
+	/*cy.layout({name:'grid',columns:2}).run();
+	var parentNodes = cy.nodes(':parent');
+	var grid_layout = parentNodes.descendants().layout({
+	      name: 'grid',
+	      cols: 1
+	    });
+	    grid_layout.run();*/
+	runLayout(cy,true);
 }
 
 function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead){
-	buildGreenLink(greenLink,sHead,fSubject,tHead,"");
+	buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,"");
     /*let graphicTGDparent=buildGreenLink(greenLink,sHead,fSubject,tHead,"");
     let ident=greenLink.id;
     $table.bootstrapTable('append',[{pid:0,id:ident,ex:graphicTGDparent}])
@@ -1578,7 +1326,7 @@ function drawNewBlueLinkInTable(blueLink){
 	if (blueLink.labels().length>1)
 		constraintAtt=(((blueLink.labels()[1]|| {}).attrs||{}).text||{}).text;
 	
-	buildBlueLink(tgdLines.get(parentId),blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);
+	buildBlueLink(parentId,tgdsCy,blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);
 	
 	/*let graphicTGD=$('<div>').append('<i class="fas fa-dot-circle"></i><i class="fas fa-ellipsis-h"></i>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_body_tgd').append(sourceAtt))).append($('<div>').attr({'class':'link_tgd'}).append($('<div>').attr({class:"path_tgd"}).append(joinPath)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:blueLink.id,class:'edit_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:heightSVGForLine,width:widthSVGForLine}).append($('<line>').attr({class:'arrowBlue',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({id:"param_"+blueLink.id,class:"param_tgd"}).append(constraintAtt)).append($('<a>').attr({'data-tooltip':'true',title:'Remove Parameters',id:blueLink.id,class:'rem_param_blue_tgd'}).append($('<i>').attr('class','fas fa-trash-alt')))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_body_tgd').append(blueLink.attributes.target.port.split(",")[0]))).remove().html();
     $table.bootstrapTable('append',[{pid:parentId,id:blueLink.id,ex:graphicTGD}])
@@ -2709,4 +2457,8 @@ function deleteParentIfNotChildren(node,tgdCy){
 	}else{
 		deleteParentIfNotChildren(node.parent(),tgdCy);
 	}
+}
+
+function deleteCyNodeEdge(){
+	
 }

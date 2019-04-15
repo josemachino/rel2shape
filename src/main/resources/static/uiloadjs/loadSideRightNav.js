@@ -294,7 +294,9 @@ removeParam:function(e){
 });
 
 var side_view = new sideView({ el: $("#sidebar-right") });
-var tgdsCy=cytoscape({container: document.getElementById('#tableTGD'),
+console.log(rRectColor);
+console.log(tRectColor);
+var tgdsCy=cytoscape({container: document.getElementById('tableTGD'),
 	style: [
 	    {
 	      selector: 'node',
@@ -303,8 +305,7 @@ var tgdsCy=cytoscape({container: document.getElementById('#tableTGD'),
 	        'shape': 'data(type)',
 	        'text-valign': 'center',
 	        'text-halign': 'center',
-	        'height': 40,
-	        'width': lenRect
+	        'height': 40	        
 	      }
 	    },
 	    {
@@ -367,8 +368,7 @@ var tgdsCy=cytoscape({container: document.getElementById('#tableTGD'),
 	      }
 		}
 	    ],
-  elements:graph,
-  layout: { name: 'dagre',nodeSep: 20}});
+  layout: { name: 'grid', columns: 2}});
 
 tgdsCy.contextMenus({
 menuItems: [
@@ -383,16 +383,12 @@ menuItems: [
           
           let currentLink=graphTGDs.getCell(target.id());
 	    	  currentLink.remove();
-	    	  if (target.id()==greenLink.id){
-	    		  tgdsCy.destroy();
-  	    	  let top = document.getElementById("tableTGD");
-  	    	  let nested=document.getElementById("idTGD"+greenLink.id);
-  	    	  top.removeChild(nested);	      	    	  
+	    	  /*if (target.id()==greenLink.id){
+	    		  
+  	    	        	    	  
 	    	  }else{
 	    		  target.remove();
-	    	  }
-	    	  //tgdLines.delete(target.id());
-	    	  console.log(tgdLines);
+	    	  }*/
         },
         hasTrailingDivider: true
       },
@@ -570,4 +566,3 @@ menuItems: [
               }
             }
       ]});
-}
