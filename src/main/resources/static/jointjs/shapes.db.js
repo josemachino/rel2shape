@@ -62,7 +62,7 @@ let typeNodeRect="round-rectangle";
 let typeNodeAtt="ellipse";
 
 /**
- * This variable stores the cytoscape variables created already
+ * This variable stores in the id edge identifier and value array of edge and type 
  * */
 let tgdLines=new Map();
 var graphTGDs = new joint.dia.Graph;
@@ -117,10 +117,31 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 					}
 				}		
 			}
-			
+			var edge=tgdsCy.$id(cell.id);
+			tgdsCy.remove(edge);
+			let sN=edge.data('source');
+			let tN=edge.data('target');
+			let sNCy=tgdsCy.$id(sN);
+			let tNCy=tgdsCy.$id(tN);
+			tgdsCy.remove(sNCy);
+			tgdsCy.remove(tNCy);
+			tgdLines.delete(cell.id);
         }else{
         	
-        	//for (let cy of tgdLines.values()){
+        		for (let value of tgdLines.values()) {
+        		  let found=false;
+        		  for (let l=0;l<value.length;l++){
+        			  if (value[l].id==cell.id){
+        				  value.splice(l, 1);
+        				  found=true;
+        				  break;
+        			  }
+        		  }
+        		  if (found){
+        			  break;
+        		  }
+        			  
+        		}	
         		var edge=tgdsCy.$id(cell.id);        		
         		console.log(edge.length);
         		if (edge.length>0){
@@ -129,9 +150,10 @@ graphTGDs.on('remove', function(cell, collection, opt) {
         			let tN=edge.data('target');
         			let sNCy=tgdsCy.$id(sN);
         			let tNCy=tgdsCy.$id(tN);
-        			if (sNCy.outdegree(false)==0){        				
-        				//deleteParentIfNotChildren(sNCy.parent(),cy);
+        			if (sNCy.outdegree(false)==0){       
+        				let nodeP=sNCy.parent();
         				tgdsCy.remove(sNCy);
+        				deleteParentIfNotChildren(nodeP,tgdsCy);
         			}
         			if (tNCy.indegree(false)==0){
         				tgdsCy.remove(tNCy);
@@ -1159,14 +1181,14 @@ function buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,condition){
 	tgdsCy.add({group:'nodes',data:{id:greenLink.id+tHead,label:tHead,type:typeNodeRect},classes:'tentity'});
 	tgdsCy.add({group:'edges',data:{id:greenLink.id,source:sHead,target:greenLink.id+tHead,label:fSubject,labelS:condition,labelT:''},classes:'entity'});
 	
-	/*tgdLines.set(greenLink.id,tgdCy);
-	tgdCy.ready(function(){
+	tgdLines.set(greenLink.id,[]);
+	/*tgdCy.ready(function(){
 		console.log("ready");
-	});*/
+	});
 	tgdsCy.viewport({
 	  zoom: 2,
 	  pan: { x: 120, y: 70 }
-	});
+	});*/
 	//tgdsCy.layout({name:'grid',columns:2}).run();
 	runLayout(tgdsCy);
 	
@@ -1174,20 +1196,21 @@ function buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,condition){
 
 function runLayout(tgdCy,fit, callBack) {
     // step-1 position child nodes 
-    /*var parentNodes = tgdCy.nodes(':parent');
+    var parentNodes = tgdCy.nodes(':parent');
     var grid_layout = parentNodes.descendants().layout({
       name: 'grid',
-      cols: 1
+      cols: 1,
+      avoidOverlap: true
     });
     grid_layout.promiseOn('layoutstop').then(function(event) {
       // step-2 position parent nodes 
     	console.log('ridd')
-      /*var dagre_layout = parentNodes.layout({
+      var dagre_layout = parentNodes.layout({
         name: 'dagre',
         padding:50,
-        ranker: 'network-simplex',
-        rankDir: 'BT',
-        fit: fit
+        align:'UL',
+        ranker: 'tight-tree',
+        rankDir: 'BT'        
       });
       dagre_layout.promiseOn('layoutstop').then(function(event) {
         if (callBack) {
@@ -1198,8 +1221,7 @@ function runLayout(tgdCy,fit, callBack) {
       dagre_layout.run();
     });
     grid_layout.run();
-*/
-	tgdCy.layout({name:'grid',columns:2}).run();
+
   }
 
 /**
@@ -1211,29 +1233,32 @@ function buildBlueLink(parentId,cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition)
 	let postEnt=cy.$('#'+tEnt).position();
 	let possEnt=cy.$('#'+sEnt).position();
 	let lenNode=0;
+	let k=path.length-1;
 	if (path.length>1){
 		//create the parent node
 		for (let i=path.length-1;i>0;i--){
 			var name=path[i-1];
 			if (i==path.length-1){
-				plainObj.push({ group: 'nodes', data: { id: sEnt+name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
-			}
-			else{
-				plainObj.push({ group: 'nodes', data: { id: sEnt+name,label:name,type:typeNodeRect,parent: sEnt+path[i]},classes:'rentity' });
+				console.log("aqui "+sEnt+name+" parent "+path[i]);
+				plainObj.push({ group: 'nodes', data: { id: path[k]+name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
+			}else{
+				console.log("aqui "+sEnt+name+" parent "+sEnt+path[i]);
+				plainObj.push({ group: 'nodes', data: { id: path[k]+name,label:name,type:typeNodeRect,parent: path[k]+path[i]},classes:'rentity' });
 			}
 			lenNode=name.length>lenNode?name.length:lenNode;
 		}
-		plainObj.push({ group: 'nodes', data: { id: sEnt+sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt+path[0] }});
+		plainObj.push({ group: 'nodes', data: { id: path[k]+sAtt,label:sAtt,type:typeNodeAtt,parent:path[k]+path[0] }});
 		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
 	}else{
-		plainObj.push({ group: 'nodes', data: { id: sEnt+sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt }});
+		plainObj.push({ group: 'nodes', data: { id: path[k]+sAtt,label:sAtt,type:typeNodeAtt,parent:path[k] }});
 		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
 	}
 	plainObj.push({ group: 'nodes', data: { id: parentId+tEnt+tAtt,label:tAtt,type:typeNodeAtt,parent:parentId+tEnt }});
 	lenNode=tAtt.length>lenNode?tAtt.length:lenNode;
-	plainObj.push({ group: 'edges', data: { id: attLineId, source: sEnt+sAtt, target:parentId+tEnt+tAtt,label:condition},classes:'att' });
+	plainObj.push({ group: 'edges', data: { id: attLineId, source: path[k]+sAtt, target:parentId+tEnt+tAtt,label:condition},classes:'att' });
 	cy.add(plainObj);
 	cy.$('node').css('width',lenNode*12);	
+	tgdLines.get(parentId).push({id:attLineId,type:'att'});
 	/*cy.layout({name:'grid',columns:2}).run();
 	var parentNodes = cy.nodes(':parent');
     var grid_layout = parentNodes.descendants().layout({
@@ -1251,28 +1276,32 @@ function buildRedLink(parentId,cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
 	let postEnt=cy.$('#'+tEnt).position();
 	let possEnt=cy.$('#'+sEnt).position();
 	let lenNode=0;
+	let k=path.length-1;
 	if (path.length>1){
 		//create the parent node
 		for (let i=path.length-1;i>0;i--){
 			var name=path[i-1];
 			if (i==path.length-1){
-				plainObj.push({ group: 'nodes', data: { id: sEnt+name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
+				console.log("aqui "+sEnt+name+" parent "+path[i]);
+				plainObj.push({ group: 'nodes', data: { id: path[k]+name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
 			}else{
-				plainObj.push({ group: 'nodes', data: { id: sEnt+name,label:name,type:typeNodeRect,parent: sEnt+path[i]},classes:'rentity' });
+				console.log("aqui "+sEnt+name+" parent "+sEnt+path[i]);
+				plainObj.push({ group: 'nodes', data: { id: path[k]+name,label:name,type:typeNodeRect,parent: path[k]+path[i]},classes:'rentity' });
 			}
 			lenNode=name.length>lenNode?name.length:lenNode;
 		}
-		plainObj.push({ group: 'nodes', data: { id: sEnt+sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt+path[0] }});
+		plainObj.push({ group: 'nodes', data: { id: path[k]+sAtt,label:sAtt,type:typeNodeAtt,parent:path[k]+path[0] }});
 		lenNode=name.length>lenNode?name.length:lenNode;
 	}else{
-		plainObj.push({ group: 'nodes', data: { id: sEnt+sAtt,label:sAtt,type:typeNodeAtt,parent:sEnt } });
+		plainObj.push({ group: 'nodes', data: { id: path[k]+sAtt,label:sAtt,type:typeNodeAtt,parent:path[k] } });
 		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
 	}
 	plainObj.push({ group: 'nodes', data: { id: parentId+tEnt+tAtt,label:tAtt,type:typeNodeAtt,parent:parentId+tEnt } });
 	lenNode=tAtt.length>lenNode?tAtt.length:lenNode;
-	plainObj.push({ group: 'edges', data: { id: attLineId, source: sEnt+sAtt, target: parentId+tEnt+tAtt,label:fIRI } , classes:'attRef'});
+	plainObj.push({ group: 'edges', data: { id: attLineId, source: path[k]+sAtt, target: parentId+tEnt+tAtt,label:fIRI } , classes:'attRef'});
 	cy.add(plainObj);
 	cy.$('node').css('width',lenNode*12);
+	tgdLines.get(parentId).push({id:attLineId,type:'attRef'});
 	/*cy.layout({name:'grid',columns:2}).run();
 	var parentNodes = cy.nodes(':parent');
 	var grid_layout = parentNodes.descendants().layout({
@@ -2403,11 +2432,10 @@ function loadConfModal(){
         	subjectLinkColor=$('#entColor').val();        	      
         	attributeLinkColor=$('#attColor').val();                	
         	attributeRefLinkColor=$('#refColor').val();
-        	tgdLines.forEach(function (cy, key, map){
-        		cy.style().selector('edge.entity').style('line-color',subjectLinkColor).update();
-        		cy.style().selector('edge.att').style('line-color',attributeLinkColor).update();
-        		cy.style().selector('edge.attRef').style('line-color',attributeRefLinkColor).update();
-        	});
+        	
+        	tgdsCy.style().selector('edge.entity').style('line-color',subjectLinkColor).update();
+    		tgdsCy.style().selector('edge.att').style('line-color',attributeLinkColor).update();
+    		tgdsCy.style().selector('edge.attRef').style('line-color',attributeRefLinkColor).update();        	
         },
         onCancel: function(){
         }        
@@ -2451,14 +2479,15 @@ function loadAttachFile(link,tgdCy){
     modal.render();	
 }
 
-function deleteParentIfNotChildren(node,tgdCy){
-	if (node.children().length==0 && node.isParent()){
+function deleteParentIfNotChildren(node,tgdCy){	
+	if (node.children().length==0 && node.outdegree(false)==0){
+		let nodeP=node.parent();
 		tgdCy.remove(node);
-	}else{
-		deleteParentIfNotChildren(node.parent(),tgdCy);
+		deleteParentIfNotChildren(nodeP,tgdCy);
 	}
 }
-
-function deleteCyNodeEdge(){
-	
+function arrayRemove(arr, value) {
+   return arr.filter(function(ele){
+       return ele != value;
+   });
 }

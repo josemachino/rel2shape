@@ -337,7 +337,8 @@ var tgdsCy=cytoscape({container: document.getElementById('tableTGD'),
 	          'curve-style': 'bezier',
 	          'target-arrow-shape': 'triangle',
 	          'text-valign': 'top',
-	          'text-halign': 'center'//,
+	          'text-halign': 'center',
+	          'text-background-color':'gray'
 	          //'text-margin-y': -10
 	       }
 	    },
@@ -481,6 +482,16 @@ menuItems: [
           	  loadAttachFile(auxLink,tgdsCy);                	  
             }
           },
+          {
+              id: 'unattach-file',
+              content: 'Unattach file Constructor',
+              selector: 'edge.entity',
+              tooltipText: 'Unattach file Constructor',
+              image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
+              onClickFunction: function (event) {                	              	   
+            	  tgdCy.$id(target.id()).data('labelT','');
+              }
+            },
         {
             id: 'add-Param',
             content: 'add Parameters',

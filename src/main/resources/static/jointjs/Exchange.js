@@ -652,15 +652,15 @@ Exchange.prototype.ParamtoSQL = function(param,colName){
 	return fName.concat('(').concat(colName).concat(')');		
 };
 
-Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables){
+Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables,tgdCy){
 	let mapLines=new Map();
-	tgdLines.forEach(function(tgdCy, key, map){						
+	tgdLines.forEach(function(edgesAtt, key, map){						
 		let edgeEnt=tgdCy.$id(key);
 		let sN=edgeEnt.data('source');
 		let tN=edgeEnt.data('target');
 		let entities= [];
-		entities.push(sN);
-		entities.push(tN);						
+		entities.push(tgdCy.$id(sN).data('label'));
+		entities.push(tgdCy.$id(tN).data('label'));						
 		let gml="\n=>\n";
 		let annotations=[];
 		annotations.push( edgeEnt.data('label'));						
@@ -674,32 +674,34 @@ Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables){
 			header.push(annotations[1]);
 		}
 		let detailTGD={query:header,des:gml};
-		let edgesAtt=tgdCy.edges('.att');
-		let edgesAttRef=tgdCy.edges('.attRef');
-		edgesAtt.forEach(function(ed){			
-			let sNAtt=ed.data('source');
-			let tNAtt=ed.data('target');				
-			if (ed.data('label').length>0){				
-				let parent=tgdCy.$id(sNAtt).data('parent');
-				parent=parent.concat(".").concat(sNAtt);
-				detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(Exchange.prototype.ParamtoSQL.call(this,ed.data('label'),tgdCy.$id(sNAtt).data('parent'))).concat(';\n');
+		edgesAtt.forEach(function(edge){
+			let ed=tgdCy.$id(edge.id);
+			if (edge.type=="att"){				
+				let sNAtt=ed.data('source');
+				let tNAtt=ed.data('target');				
+				if (ed.data('label').length>0){				
+					let parent=tgdCy.$id(tgdCy.$id(sNAtt).data('parent')).data('label');					
+					parent=parent.concat(".").concat(tgdCy.$id(sNAtt).data('label'));
+					detailTGD.des=detailTGD.des.concat('\t:').concat(tgdCy.$id(tNAtt).data('label')).concat(' ').concat(Exchange.prototype.ParamtoSQL.call(this,ed.data('label'),tgdCy.$id(tgdCy.$id(sNAtt).data('parent')).data('label'))).concat(';\n');
+				}else{
+					detailTGD.des=detailTGD.des.concat('\t:').concat(tgdCy.$id(tNAtt).data('label')).concat(' ').concat(tgdCy.$id(tgdCy.$id(sNAtt).data('parent')).data('label')).concat(".").concat(tgdCy.$id(sNAtt).data('label')).concat(';\n');
+				}
 			}else{
-				detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(tgdCy.$id(sNAtt).data('parent')).concat(".").concat(sNAtt).concat(';\n');
+				let sNAtt=ed.data('source');
+				let tNAtt=ed.data('target');			
+				let iri=ed.data('label');
+				let fIri=iri.split("(");
+				//console.log(tgdCy.$id(sNAtt).parent()); it works we can use for delete
+				detailTGD.des=detailTGD.des.concat('\t:').concat(tgdCy.$id(tNAtt).data('label')).concat(' ').concat(fIri[0]).concat("(").concat(tgdCy.$id(tgdCy.$id(sNAtt).data('parent')).data('label')).concat(".").concat(fIri[1]).concat(';\n');
 			}
-		});	
-		edgesAttRef.forEach(function(ed){
-			let sNAtt=ed.data('source');
-			let tNAtt=ed.data('target');			
-			let iri=ed.data('label');
-			let fIri=iri.split("(");
-			//console.log(tgdCy.$id(sNAtt).parent()); it works we can use for delete
-			detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(fIri[0]).concat("(").concat(tgdCy.$id(sNAtt).data('parent')).concat(".").concat(fIri[1]).concat(';\n');
-			
 		});
-		let taNames=tgdCy.nodes('.rentity');
-		taNames.forEach(function(taName){			
-			if (taName.data('id')!=sN)
-				detailTGD.query[0]=detailTGD.query[0].concat(" JOIN ").concat(taName.data('id'));
+		
+		
+		let taNamesNo=tgdCy.nodes('.rentity');
+		taNamesNo.forEach(function(node){
+			
+			if (node.data('id')!=sN && node.data('id').startsWith(sN))
+				detailTGD.query[0]=detailTGD.query[0].concat(" JOIN ").concat(node.data('label'));
 		});				
 		
 		mapLines.set(key,detailTGD);
