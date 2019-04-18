@@ -2292,7 +2292,9 @@ function loadWhereParam(link,attributes,targetCy){
                         },
                         labelBody: {ref: 'text',refX: -5,refY: -5,refWidth: '100%',refHeight: '100%',refWidth2: 10,refHeight2: 10,stroke: '#7c68fc',fill: 'white',strokeWidth: 2,rx: 5,ry: 5}
                     },position: {offset: -40}});
-        		targetCy.$('#'+link.id).data('labelS',condToStr);
+        		var tippyA = makeTippy(targetCy.$('#'+link.id), condToStr);
+    			tippyA.show();
+        		//targetCy.$('#'+link.id).data('labelS',condToStr);
         		/*let objGraphic=$table.bootstrapTable('getRowByUniqueId',link.id);                            
                 var sHead=$(objGraphic.ex)[0].lastChild.textContent;
                 var fSubject=$(objGraphic.ex)[1].firstChild.textContent;                

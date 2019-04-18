@@ -83,7 +83,7 @@ activate:function(e){
 undost:function(e){
 	console.log("undo");
 	//remove all elements from table
-	$table.bootstrapTable('removeAll');
+	tgdsCy.elements().remove();
 	//and import
 	if (sessionGO.length>0){
 		let lastSaved=sessionGO.pop();
@@ -107,10 +107,12 @@ undost:function(e){
 		var links=graphTGDs.getLinks();			
 		for (var link of links){
 			var edgeView=link.findView(paperTGDs);
-			if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type"){
+			if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type"){				
 				if (link.attr('line/stroke')==subjectLinkColor){
 					let valueIRI=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;
 					let taName=edgeView.sourceView.model.attributes.question;
+					console.log("green link "+valueIRI);
+					console.log(tgdLines);
 					drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question);
 				}
 				if (link.attr('line/stroke')==attributeLinkColor){					
@@ -139,8 +141,8 @@ import:function(e){
     	var obj = JSON.parse(event.target.result);
     	mapSymbols=new Map();
     	mapTableIdCanvas=new Map();
-    	//clear the table with mappings
-    	$table.bootstrapTable('removeAll');
+    	//clear the panel with mappings
+    	tgdsCy.elements().remove();
     	//TODO create the table of mappings and load the global variables
     	graphTGDs.fromJSON(obj);   
     	paperTGDs.fitToContent({
@@ -162,12 +164,17 @@ import:function(e){
 		for (var link of links){
 			var edgeView=link.findView(paperTGDs);
 			if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type"){
+				console.log(link.attr('line/stroke'));
+				console.log(subjectLinkColor);
+				console.log(link);
 				if (link.attr('line/stroke')==subjectLinkColor){
+					console.log("green link "+link.id);
 					let valueIRI=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;
 					let taName=edgeView.sourceView.model.attributes.question;
 					drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question);
 				}
-				if (link.attr('line/stroke')==attributeLinkColor){					
+				if (link.attr('line/stroke')==attributeLinkColor){
+					console.log("blue "+link.id);
 					drawNewBlueLinkInTable(link)
 				}
 				if (link.attr('line/stroke')==attributeRefLinkColor){					
@@ -177,7 +184,8 @@ import:function(e){
 					let fObject=(((link.labels()[1]|| {}).attrs||{}).text||{}).text;
 					let tHead=edgeView.targetView.model.attributes.question;
 					drawNewRedLinkInTable(link,sHead,sAtt,path,fObject,tHead)
-				}				
+				}
+				console.log(tgdLines);
 			}
 		}		
     	//loop graphTGDs to obtain mapTableIdCanvas and for mapSymbols the types try to use a default url
@@ -577,3 +585,20 @@ menuItems: [
               }
             }
       ]});
+var makeTippy = function(node, text){
+	return tippy( node.popperRef(), {
+		content: function(){
+			var div = document.createElement('div');
+
+			div.innerHTML = text;
+
+			return div;
+		},
+		trigger: 'manual',
+		arrow: true,
+		placement: 'bottom',
+		hideOnClick: false,
+		multiple: true,
+		sticky: true
+	} );
+};
