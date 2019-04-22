@@ -141,7 +141,7 @@ import:function(e){
     	var obj = JSON.parse(event.target.result);
     	mapSymbols=new Map();
     	mapTableIdCanvas=new Map();
-    	//clear the panel with mappings
+    	//clear the panel with mappings    	
     	tgdsCy.elements().remove();
     	//TODO create the table of mappings and load the global variables
     	graphTGDs.fromJSON(obj);   
@@ -161,23 +161,32 @@ import:function(e){
     		}
     	})
     	var links=graphTGDs.getLinks();			
-		for (var link of links){
+    	for (var link of links){
 			var edgeView=link.findView(paperTGDs);
 			if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type"){
-				console.log(link.attr('line/stroke'));
-				console.log(subjectLinkColor);
-				console.log(link);
-				if (link.attr('line/stroke')==subjectLinkColor){
+				
+				let tLinkport=link.get('target').port.split(',');
+				
+								
+				if (tLinkport.length==1){
 					console.log("green link "+link.id);
 					let valueIRI=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;
 					let taName=edgeView.sourceView.model.attributes.question;
 					drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question);
 				}
-				if (link.attr('line/stroke')==attributeLinkColor){
+			}
+		}
+    	
+    	
+		for (var link of links){
+			var edgeView=link.findView(paperTGDs);
+			if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type"){				
+				let tLinkport=link.get('target').port.split(',');
+				if (tLinkport.length==3 && tLinkport[1]=='Literal'){
 					console.log("blue "+link.id);
 					drawNewBlueLinkInTable(link)
 				}
-				if (link.attr('line/stroke')==attributeRefLinkColor){					
+				if (tLinkport.length==3 && tLinkport[1]!='Literal')	{				
 					let sHead=edgeView.sourceView.model.attributes.question;
 					let sAtt=getSourceOptionNameLinkView(edgeView);
 					let path=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;;
