@@ -682,7 +682,7 @@ Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables,tgdCy){
 				if (ed.data('label').length>0){				
 					let parent=tgdCy.$id(tgdCy.$id(sNAtt).data('parent')).data('label');					
 					parent=parent.concat(".").concat(tgdCy.$id(sNAtt).data('label'));
-					detailTGD.des=detailTGD.des.concat('\t:').concat(tgdCy.$id(tNAtt).data('label')).concat(' ').concat(Exchange.prototype.ParamtoSQL.call(this,ed.data('label'),tgdCy.$id(tgdCy.$id(sNAtt).data('parent')).data('label'))).concat(';\n');
+					detailTGD.des=detailTGD.des.concat('\t:').concat(tgdCy.$id(tNAtt).data('label')).concat(' ').concat(Exchange.prototype.ParamtoSQL.call(this,ed.data('label'),tgdCy.$id(tgdCy.$id(sNAtt).data('parent')).data('label')+"."+tgdCy.$id(sNAtt).data('label'))).concat(';\n');
 				}else{
 					detailTGD.des=detailTGD.des.concat('\t:').concat(tgdCy.$id(tNAtt).data('label')).concat(' ').concat(tgdCy.$id(tgdCy.$id(sNAtt).data('parent')).data('label')).concat(".").concat(tgdCy.$id(sNAtt).data('label')).concat(';\n');
 				}

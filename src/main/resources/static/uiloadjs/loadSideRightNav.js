@@ -359,6 +359,7 @@ var tgdsCy=cytoscape({container: document.getElementById('tableTGD'),
 	          //'text-margin-y': -10
 	       }
 	    },
+	    
 	    {
     	  selector: 'edge.entity',
     	  css: {
@@ -594,6 +595,7 @@ menuItems: [
               }
             }
       ]});
+tgdsCy.panzoom({});
 var makeTippy = function(node, text){
 	return tippy( node.popperRef(), {
 		content: function(){
@@ -605,7 +607,7 @@ var makeTippy = function(node, text){
 		},
 		trigger: 'manual',
 		arrow: true,
-		placement: 'bottom',
+		placement: 'top',
 		hideOnClick: false,
 		multiple: true,
 		sticky: true

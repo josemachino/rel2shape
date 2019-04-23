@@ -1203,8 +1203,7 @@ function runLayout(tgdCy,fit, callBack) {
       avoidOverlap: true
     });
     grid_layout.promiseOn('layoutstop').then(function(event) {
-      // step-2 position parent nodes 
-    	console.log('ridd')
+      // step-2 position parent nodes     	
       var dagre_layout = parentNodes.layout({
         name: 'dagre',
         padding:50,
@@ -2326,7 +2325,9 @@ function operatorStrToChar(operator){
 	case "greater":
 		return ">";
 	case "greater or equal":
-		return ">=";		
+		return ">=";	
+	case "contains":
+		return " like ";
 	}
 }
 /**
