@@ -84,6 +84,8 @@ undost:function(e){
 	console.log("undo");
 	//remove all elements from table
 	tgdsCy.elements().remove();
+	tgdLines.clear();
+	tgdGreenCond.clear();
 	//and import
 	if (sessionGO.length>0){
 		let lastSaved=sessionGO.pop();
@@ -108,24 +110,37 @@ undost:function(e){
 		for (var link of links){
 			var edgeView=link.findView(paperTGDs);
 			if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type"){				
-				if (link.attr('line/stroke')==subjectLinkColor){
+				let tLinkport=link.get('target').port.split(',');											
+				if (tLinkport.length==1){					
 					let valueIRI=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;
 					let taName=edgeView.sourceView.model.attributes.question;
-					console.log("green link "+valueIRI);
-					console.log(tgdLines);
-					drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question);
+					if (link.labels().length>1){
+						let condition=(((link.labels()[1]|| {}).attrs||{}).text||{}).text;
+						drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question,condition);
+					}else{
+						drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question,"");
+					}					
 				}
-				if (link.attr('line/stroke')==attributeLinkColor){					
+			}
+		}
+    	
+    	
+		for (var link of links){
+			var edgeView=link.findView(paperTGDs);
+			if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type"){				
+				let tLinkport=link.get('target').port.split(',');
+				if (tLinkport.length==3 && tLinkport[1]=='Literal'){
+					console.log("blue "+link.id);
 					drawNewBlueLinkInTable(link)
 				}
-				if (link.attr('line/stroke')==attributeRefLinkColor){					
+				if (tLinkport.length==3 && tLinkport[1]!='Literal')	{				
 					let sHead=edgeView.sourceView.model.attributes.question;
 					let sAtt=getSourceOptionNameLinkView(edgeView);
 					let path=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;;
 					let fObject=(((link.labels()[1]|| {}).attrs||{}).text||{}).text;
 					let tHead=edgeView.targetView.model.attributes.question;
 					drawNewRedLinkInTable(link,sHead,sAtt,path,fObject,tHead)
-				}				
+				}
 			}
 		}
 	}
@@ -143,6 +158,8 @@ import:function(e){
     	mapTableIdCanvas=new Map();
     	//clear the panel with mappings    	
     	tgdsCy.elements().remove();
+    	tgdLines.clear();
+    	tgdGreenCond.clear();
     	//TODO create the table of mappings and load the global variables
     	graphTGDs.fromJSON(obj);   
     	paperTGDs.fitToContent({
@@ -170,9 +187,15 @@ import:function(e){
 								
 				if (tLinkport.length==1){
 					console.log("green link "+link.id);
-					let valueIRI=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;
+					let valueIRI=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;					
 					let taName=edgeView.sourceView.model.attributes.question;
-					drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question);
+					if (link.labels().length>1){
+						let condition=(((link.labels()[1]|| {}).attrs||{}).text||{}).text;
+						drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question,condition);
+					}else{
+						drawNewGreenLinkInTable(link,taName,valueIRI,edgeView.targetView.model.attributes.question,"");
+					}
+					
 				}
 			}
 		}
@@ -355,16 +378,14 @@ var tgdsCy=cytoscape({container: document.getElementById('tableTGD'),
 	          'target-arrow-shape': 'triangle',
 	          'text-valign': 'top',
 	          'text-halign': 'center',
-	          'text-background-color':'gray'
+	          'text-background-color':'#ffffff',
+	          'text-background-opacity': 1
 	          //'text-margin-y': -10
 	       }
 	    },
-	    
 	    {
     	  selector: 'edge.entity',
-    	  css: {
-    		'source-label': 'data(labelS)',
-    		'target-label': 'data(labelT)',
+    	  css: {    		
     	    'curve-style': 'taxi',
     	    'taxi-direction': 'upward',
     	    'taxi-turn': 20,
@@ -401,13 +422,7 @@ menuItems: [
           var target = event.target || event.cyTarget;
           
           let currentLink=graphTGDs.getCell(target.id());
-	    	  currentLink.remove();
-	    	  /*if (target.id()==greenLink.id){
-	    		  
-  	    	        	    	  
-	    	  }else{
-	    		  target.remove();
-	    	  }*/
+	    	  currentLink.remove();	    	  
         },
         hasTrailingDivider: true
       },
@@ -430,7 +445,12 @@ menuItems: [
             if (auxLink.labels().length>1){
                 auxLink.removeLabel(-1)
                 //update link 
-                tgdsCy.$('#'+auxLink.id).data('labelS','');                        
+                //tgdsCy.$('#'+auxLink.id).data('labelS','');     
+                tgdGreenCond.get(auxLink.id)[0]='';
+                if (tgdGreenPopper.has(auxLink.id)){
+                	tgdGreenPopper.get(auxLink.id).destroy();
+                }
+                                
             }
           }
         },
@@ -606,6 +626,7 @@ var makeTippy = function(node, text){
 			return div;
 		},
 		trigger: 'manual',
+		distance:30,
 		arrow: true,
 		placement: 'top',
 		hideOnClick: false,

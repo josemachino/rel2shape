@@ -65,6 +65,11 @@ let typeNodeAtt="ellipse";
  * This variable stores in the id edge identifier and value array of edge and type 
  * */
 let tgdLines=new Map();
+/**
+ * This variable stores id edge identifier and string value of a condition 
+ * */
+let tgdGreenCond=new Map();
+let tgdGreenPopper=new Map();
 var graphTGDs = new joint.dia.Graph;
 var paperTGDs = new joint.dia.Paper({
     el: document.getElementById('mydb'),
@@ -126,6 +131,9 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 			tgdsCy.remove(sNCy);
 			tgdsCy.remove(tNCy);
 			tgdLines.delete(cell.id);
+			tgdGreenCond.delete(cell.id);
+			tgdGreenPopper.get(cell.id).destroy();
+			tgdGreenPopper.delete(cell.id);
         }else{
         	
         		for (let value of tgdLines.values()) {
@@ -1168,28 +1176,22 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
         }
     }
 	
-    let tAtt=redLink.attributes.target.port.split(",")[0];
-    /*
-    let graphicTGD=$('<div>').append('<i class="fas fa-dot-circle"></i><i class="fas fa-ellipsis-h"></i>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_body_tgd').append(sAtt))).append($('<div>').attr('class','link_tgd').append($('<div>').attr({class:"path_tgd"}).append(path)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:redLink.id,class:'edit_red_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:'17px',width:widthSVGForLine}).append($('<line>').attr({class:'arrowRed',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({class:"iri_tgd"}).append(fObject))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_body_tgd').append(tAtt))).remove().html();
-    $table.bootstrapTable('append',[{pid:parentId,id:redLink.id,ex:graphicTGD}])
-    */
+    let tAtt=redLink.attributes.target.port.split(",")[0];    
     buildRedLink(parentId,tgdsCy,redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
 }
 
-function buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,condition){	
+function buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,condition,constructorDefIri){	
 	tgdsCy.add({group:'nodes',data:{id:sHead,label:sHead,type:typeNodeRect},classes:'rentity'});	
 	tgdsCy.add({group:'nodes',data:{id:greenLink.id+tHead,label:tHead,type:typeNodeRect},classes:'tentity'});
-	tgdsCy.add({group:'edges',data:{id:greenLink.id,source:sHead,target:greenLink.id+tHead,label:fSubject,labelS:condition,labelT:''},classes:'entity'});
+	tgdsCy.add({group:'edges',data:{id:greenLink.id,source:sHead,target:greenLink.id+tHead,label:fSubject},classes:'entity'});
 	
 	tgdLines.set(greenLink.id,[]);
-	/*tgdCy.ready(function(){
-		console.log("ready");
-	});
-	tgdsCy.viewport({
-	  zoom: 2,
-	  pan: { x: 120, y: 70 }
-	});*/
-	//tgdsCy.layout({name:'grid',columns:2}).run();
+	tgdGreenCond.set(greenLink.id,[condition,constructorDefIri]);
+	if (condition!=null && condition.length>0){
+		var typpyA=makeTippy(tgdsCy.$('#'+greenLink.id), condition);
+		typpyA.show();
+		tgdGreenPopper.set(greenLink.id,typpyA);
+	}
 	runLayout(tgdsCy);
 	
 }
@@ -1311,8 +1313,8 @@ function buildRedLink(parentId,cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
 	runLayout(cy,true);
 }
 
-function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead){
-	buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,"");
+function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead,condition){
+	buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,condition);
     /*let graphicTGDparent=buildGreenLink(greenLink,sHead,fSubject,tHead,"");
     let ident=greenLink.id;
     $table.bootstrapTable('append',[{pid:0,id:ident,ex:graphicTGDparent}])
@@ -2232,6 +2234,9 @@ function updateParamGreenLink(pid){
     $table.bootstrapTable('updateByUniqueId',{id:pid,row:{ex:graphicTGD}})
     */
 }
+/**
+ * This methods is called from a entity mapping
+ * */
 function loadWhereParam(link,attributes,targetCy){	
 	let filAtt=[];
 	attributes.forEach(function(att){
@@ -2293,7 +2298,9 @@ function loadWhereParam(link,attributes,targetCy){
                     },position: {offset: -40}});
         		var tippyA = makeTippy(targetCy.$('#'+link.id), condToStr);
     			tippyA.show();
+    			tgdGreenPopper.set(link.id,tippyA);
         		//targetCy.$('#'+link.id).data('labelS',condToStr);
+        		tgdGreenCond.get(link.id)[0]=condToStr;
         		/*let objGraphic=$table.bootstrapTable('getRowByUniqueId',link.id);                            
                 var sHead=$(objGraphic.ex)[0].lastChild.textContent;
                 var fSubject=$(objGraphic.ex)[1].firstChild.textContent;                
@@ -2474,7 +2481,8 @@ function loadAttachFile(link,tgdCy){
         onConfirm: function() {                           
         	//link.
         	console.log($('#taIRI').val());
-        	tgdCy.$id(link.id).data('labelT',$('#taIRI').val());        	
+        	//tgdCy.$id(link.id).data('labelT',$('#taIRI').val());
+        	tgdGreenCond.get(link.id)[1]=$('#taIRI').val();
         },
         onCancel: function(){            
         }        

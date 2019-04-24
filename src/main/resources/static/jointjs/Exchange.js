@@ -1,4 +1,5 @@
 //https://stackoverflow.com/questions/39059349/dynamic-predicate-in-r2rml
+//https://github.com/cytoscape/cytoscape.js/issues/382
 function Exchange(){}
 //TODO IMPLEMENT DE VERIFICATION PROCESS THAT ALWAYS SHOULD BE TYPED the first element
 Exchange.prototype.checkComplete=function(jsonTGD,graphST){
@@ -652,7 +653,7 @@ Exchange.prototype.ParamtoSQL = function(param,colName){
 	return fName.concat('(').concat(colName).concat(')');		
 };
 
-Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables,tgdCy){
+Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables,tgdCy,tgdGreenCond){
 	let mapLines=new Map();
 	tgdLines.forEach(function(edgesAtt, key, map){						
 		let edgeEnt=tgdCy.$id(key);
@@ -668,7 +669,11 @@ Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables,tgdCy){
 		let funI=iri.split('(');
 		gml=gml.concat(funI[0]).concat('(').concat(entities[0]).concat('.').concat(funI[1]).concat(' as ').concat(entities[1]).concat('\n');
 		//set the where if there is
-		annotations.push( edgeEnt.data('labelS').replace(","," AND ") );		
+		if (tgdGreenCond.get(key)[0]!=null){
+			annotations.push( tgdGreenCond.get(key)[0].replace(","," AND ") );
+		}
+			
+				
 		let header=[entities[0]];
 		if (annotations.length>1 && annotations[1].length>0){
 			header.push(annotations[1]);

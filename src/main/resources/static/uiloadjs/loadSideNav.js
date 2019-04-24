@@ -14,7 +14,7 @@ hideOthers:function(e){
     if ($(e.target).parents('li')[0].id=="tgd"){        
     	//editorJSON.set(stTGD2(graphTGDs,paperTGDs,mapTableIdCanvas));
     	var exchange=new Exchange();
-    	editor.setContents({ops:[{insert:exchange.GMLfromCy(mapSymbols,tgdLines,mapTableIdCanvas,tgdsCy)}]},'api');
+    	editor.setContents({ops:[{insert:exchange.GMLfromCy(mapSymbols,tgdLines,mapTableIdCanvas,tgdsCy,tgdGreenCond)}]},'api');
     	
     }
     if($(e.target).parents('li')[0].id=="testing"){    	
