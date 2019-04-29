@@ -82,8 +82,7 @@ activate:function(e){
 ,
 undost:function(e){
 	console.log("undo");
-	//remove all elements from table
-	tgdsCy.elements().remove();
+	//remove all elements from table	
 	tgdLines.clear();
 	tgdGreenCond.clear();
 	//and import
@@ -143,6 +142,7 @@ undost:function(e){
 				}
 			}
 		}
+		drawSVGGraph();
 	}
 },
 savest:function(e){
@@ -156,8 +156,7 @@ import:function(e){
     	var obj = JSON.parse(event.target.result);
     	mapSymbols=new Map();
     	mapTableIdCanvas=new Map();
-    	//clear the panel with mappings    	
-    	tgdsCy.elements().remove();
+    	//clear the panel with mappings    	    	
     	tgdLines.clear();
     	tgdGreenCond.clear();
     	//TODO create the table of mappings and load the global variables
@@ -219,7 +218,8 @@ import:function(e){
 				}
 				console.log(tgdLines);
 			}
-		}		
+		}	
+		drawSVGGraph();
     	//loop graphTGDs to obtain mapTableIdCanvas and for mapSymbols the types try to use a default url
     };
     reader.readAsText(e.currentTarget.files[0]);
@@ -334,9 +334,8 @@ removeParam:function(e){
 });
 
 var side_view = new sideView({ el: $("#sidebar-right") });
-console.log(rRectColor);
-console.log(tRectColor);
-var tgdsCy=cytoscape({container: document.getElementById('tableTGD'),
+
+/*var tgdsCy=cytoscape({container: document.getElementById('tableTGD'),
 	style: [
 	    {
 	      selector: 'node',
@@ -633,4 +632,4 @@ var makeTippy = function(node, text){
 		multiple: true,
 		sticky: true
 	} );
-};
+};*/

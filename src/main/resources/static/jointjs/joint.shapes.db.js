@@ -1,9 +1,13 @@
 /*https://github.com/393799203/rappid/blob/master/apps/QAD/src/snippet.js*/
+let fontFamily="Arial";
+let fontSizeAttribute=12;
+let fontSizeEntity=15;
+
 joint.shapes.db = {};
 joint.dia.Element.define('db.Table',{
     optionHeight: 30,
     questionHeight: 45,
-    paddingBottom: 30,
+    paddingBottom: 10,
     minWidth: 150,
     portMarkup: [{ tagName: 'rect', selector: 'portBody' },{ tagName: 'circle', selector: 'portBody2' }],
     ports: {
@@ -76,7 +80,7 @@ joint.dia.Element.define('db.Table',{
     attrs: {
         '.': { magnet: false },
         '.body': {
-            width: 150, height: 250,
+            width: 150, height: 150,
             rx: '1%', ry: '2%',
             stroke: 'none',
             fill: {
@@ -92,13 +96,13 @@ joint.dia.Element.define('db.Table',{
         '.options': { ref: '.body', 'ref-x': 0 },
 
         // Text styling.
-        text: { 'font-family': 'Arial' },
-        '.option-text': { 'font-size': 11, fill: '#4b4a67', 'y-alignment': .7, 'x-alignment': 30 },
+        text: { 'font-family': fontFamily },
+        '.option-text': { 'font-size': fontSizeAttribute, fill: '#4b4a67', 'y-alignment': .7, 'x-alignment': 30 },
         '.question-text': {
             fill: 'black',
             refX: '50%',
             refY: 15,
-            'font-size': 15,
+            'font-size': fontSizeEntity,
             'text-anchor': 'middle',
             style: { 'text-shadow': '1px 1px 0px gray' }
         },

@@ -52,6 +52,10 @@ let widthSVGForLineG='250px';
 let heightSVGForLine='17px';
 let widthSVGLine='192';
 let widthSVGLineG='232';
+
+let svgCanvasTGDW=650;
+let svgCanvasTGDH=500;
+
 let sessionGO=[];
 let subjectLinkColor="#0E4D92";
 let attributeLinkColor="#73C2FB";
@@ -70,6 +74,8 @@ let tgdLines=new Map();
  * */
 let tgdGreenCond=new Map();
 let tgdGreenPopper=new Map();
+
+let tgdPathLine=new Map();
 var graphTGDs = new joint.dia.Graph;
 var paperTGDs = new joint.dia.Paper({
     el: document.getElementById('mydb'),
@@ -121,15 +127,7 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 						link.remove();						
 					}
 				}		
-			}
-			var edge=tgdsCy.$id(cell.id);
-			tgdsCy.remove(edge);
-			let sN=edge.data('source');
-			let tN=edge.data('target');
-			let sNCy=tgdsCy.$id(sN);
-			let tNCy=tgdsCy.$id(tN);
-			tgdsCy.remove(sNCy);
-			tgdsCy.remove(tNCy);
+			}			
 			tgdLines.delete(cell.id);
 			tgdGreenCond.delete(cell.id);
 			tgdGreenPopper.get(cell.id).destroy();
@@ -150,25 +148,7 @@ graphTGDs.on('remove', function(cell, collection, opt) {
         		  }
         			  
         		}	
-        		var edge=tgdsCy.$id(cell.id);        		
-        		console.log(edge.length);
-        		if (edge.length>0){
-        			tgdsCy.remove(edge);
-        			let sN=edge.data('source');
-        			let tN=edge.data('target');
-        			let sNCy=tgdsCy.$id(sN);
-        			let tNCy=tgdsCy.$id(tN);
-        			if (sNCy.outdegree(false)==0){       
-        				let nodeP=sNCy.parent();
-        				tgdsCy.remove(sNCy);
-        				deleteParentIfNotChildren(nodeP,tgdsCy);
-        			}
-        			if (tNCy.indegree(false)==0){
-        				tgdsCy.remove(tNCy);
-        			}
-        			//break;
-        		}
-        	//}
+        		
         }                                        
    }
 })
@@ -1177,23 +1157,13 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
     }
 	
     let tAtt=redLink.attributes.target.port.split(",")[0];    
-    buildRedLink(parentId,tgdsCy,redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
+    buildRedLink(parentId,redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
 }
 
-function buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,condition,constructorDefIri){	
-	tgdsCy.add({group:'nodes',data:{id:sHead,label:sHead,type:typeNodeRect},classes:'rentity'});	
-	tgdsCy.add({group:'nodes',data:{id:greenLink.id+tHead,label:tHead,type:typeNodeRect},classes:'tentity'});
-	tgdsCy.add({group:'edges',data:{id:greenLink.id,source:sHead,target:greenLink.id+tHead,label:fSubject},classes:'entity'});
-	
-	tgdLines.set(greenLink.id,[]);
-	tgdGreenCond.set(greenLink.id,[condition,constructorDefIri]);
-	if (condition!=null && condition.length>0){
-		var typpyA=makeTippy(tgdsCy.$('#'+greenLink.id), condition);
-		typpyA.show();
-		tgdGreenPopper.set(greenLink.id,typpyA);
-	}
-	runLayout(tgdsCy);
-	
+function buildGreenLink(greenLink,sHead,fSubject,tHead,condition,constructorDefIri){		
+	tgdLines.set(greenLink.id,[]);	
+	tgdGreenCond.set(greenLink.id,[condition,constructorDefIri,fSubject,sHead,tHead]);
+
 }
 
 function runLayout(tgdCy,fit, callBack) {
@@ -1226,101 +1196,21 @@ function runLayout(tgdCy,fit, callBack) {
   }
 
 /**
- * This function creates the attribute lines in the table view
- * path is an array of string name tables
+ * 
  * */
-function buildBlueLink(parentId,cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
-	let plainObj=[];
-	let postEnt=cy.$('#'+tEnt).position();
-	let possEnt=cy.$('#'+sEnt).position();
-	let lenNode=0;
-	let k=path.length-1;
-	if (path.length>1){
-		//create the parent node
-		for (let i=path.length-1;i>0;i--){
-			var name=path[i-1];
-			if (i==path.length-1){
-				console.log("aqui "+sEnt+name+" parent "+path[i]);
-				plainObj.push({ group: 'nodes', data: { id: path[k]+name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
-			}else{
-				console.log("aqui "+sEnt+name+" parent "+sEnt+path[i]);
-				plainObj.push({ group: 'nodes', data: { id: path[k]+name,label:name,type:typeNodeRect,parent: path[k]+path[i]},classes:'rentity' });
-			}
-			lenNode=name.length>lenNode?name.length:lenNode;
-		}
-		plainObj.push({ group: 'nodes', data: { id: path[k]+sAtt,label:sAtt,type:typeNodeAtt,parent:path[k]+path[0] }});
-		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
-	}else{
-		plainObj.push({ group: 'nodes', data: { id: path[k]+sAtt,label:sAtt,type:typeNodeAtt,parent:path[k] }});
-		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
-	}
-	plainObj.push({ group: 'nodes', data: { id: parentId+tEnt+tAtt,label:tAtt,type:typeNodeAtt,parent:parentId+tEnt }});
-	lenNode=tAtt.length>lenNode?tAtt.length:lenNode;
-	plainObj.push({ group: 'edges', data: { id: attLineId, source: path[k]+sAtt, target:parentId+tEnt+tAtt,label:condition},classes:'att' });
-	cy.add(plainObj);
-	cy.$('node').css('width',lenNode*12);	
+function buildBlueLink(parentId,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){		
 	tgdLines.get(parentId).push({id:attLineId,type:'att'});
-	/*cy.layout({name:'grid',columns:2}).run();
-	var parentNodes = cy.nodes(':parent');
-    var grid_layout = parentNodes.descendants().layout({
-      name: 'grid',
-      cols: 1
-    });
-    grid_layout.run();*/
-	runLayout(cy,true);	
+	tgdPathLine.set(attLineId,path)		
 }
 /**
  * This function creates the attribute ref lines in the table view
  * */
-function buildRedLink(parentId,cy,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){
-	let plainObj=[];
-	let postEnt=cy.$('#'+tEnt).position();
-	let possEnt=cy.$('#'+sEnt).position();
-	let lenNode=0;
-	let k=path.length-1;
-	if (path.length>1){
-		//create the parent node
-		for (let i=path.length-1;i>0;i--){
-			var name=path[i-1];
-			if (i==path.length-1){
-				console.log("aqui "+sEnt+name+" parent "+path[i]);
-				plainObj.push({ group: 'nodes', data: { id: path[k]+name,label:name,type:typeNodeRect,parent: path[i]},classes:'rentity' });
-			}else{
-				console.log("aqui "+sEnt+name+" parent "+sEnt+path[i]);
-				plainObj.push({ group: 'nodes', data: { id: path[k]+name,label:name,type:typeNodeRect,parent: path[k]+path[i]},classes:'rentity' });
-			}
-			lenNode=name.length>lenNode?name.length:lenNode;
-		}
-		plainObj.push({ group: 'nodes', data: { id: path[k]+sAtt,label:sAtt,type:typeNodeAtt,parent:path[k]+path[0] }});
-		lenNode=name.length>lenNode?name.length:lenNode;
-	}else{
-		plainObj.push({ group: 'nodes', data: { id: path[k]+sAtt,label:sAtt,type:typeNodeAtt,parent:path[k] } });
-		lenNode=sAtt.length>lenNode?sAtt.length:lenNode;
-	}
-	plainObj.push({ group: 'nodes', data: { id: parentId+tEnt+tAtt,label:tAtt,type:typeNodeAtt,parent:parentId+tEnt } });
-	lenNode=tAtt.length>lenNode?tAtt.length:lenNode;
-	plainObj.push({ group: 'edges', data: { id: attLineId, source: path[k]+sAtt, target: parentId+tEnt+tAtt,label:fIRI } , classes:'attRef'});
-	cy.add(plainObj);
-	cy.$('node').css('width',lenNode*12);
-	tgdLines.get(parentId).push({id:attLineId,type:'attRef'});
-	/*cy.layout({name:'grid',columns:2}).run();
-	var parentNodes = cy.nodes(':parent');
-	var grid_layout = parentNodes.descendants().layout({
-	      name: 'grid',
-	      cols: 1
-	    });
-	    grid_layout.run();*/
-	runLayout(cy,true);
+function buildRedLink(parentId,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){	
+	tgdLines.get(parentId).push({id:attLineId,type:'attRef'});	
 }
 
 function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead,condition){
-	buildGreenLink(tgdsCy,greenLink,sHead,fSubject,tHead,condition);
-    /*let graphicTGDparent=buildGreenLink(greenLink,sHead,fSubject,tHead,"");
-    let ident=greenLink.id;
-    $table.bootstrapTable('append',[{pid:0,id:ident,ex:graphicTGDparent}])
-    $table.treegrid({treeColumn: 1,expanderExpandedClass: 'glyphicon glyphicon-minus',
-        expanderCollapsedClass: 'glyphicon glyphicon-plus'});*/
-	
+	buildGreenLink(greenLink,sHead,fSubject,tHead,condition);
 }
 
 function drawNewBlueLinkInTable(blueLink){	
@@ -1356,7 +1246,7 @@ function drawNewBlueLinkInTable(blueLink){
 	if (blueLink.labels().length>1)
 		constraintAtt=(((blueLink.labels()[1]|| {}).attrs||{}).text||{}).text;
 	
-	buildBlueLink(parentId,tgdsCy,blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);
+	buildBlueLink(parentId,blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);
 	
 	/*let graphicTGD=$('<div>').append('<i class="fas fa-dot-circle"></i><i class="fas fa-ellipsis-h"></i>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_body_tgd').append(sourceAtt))).append($('<div>').attr({'class':'link_tgd'}).append($('<div>').attr({class:"path_tgd"}).append(joinPath)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:blueLink.id,class:'edit_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:heightSVGForLine,width:widthSVGForLine}).append($('<line>').attr({class:'arrowBlue',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({id:"param_"+blueLink.id,class:"param_tgd"}).append(constraintAtt)).append($('<a>').attr({'data-tooltip':'true',title:'Remove Parameters',id:blueLink.id,class:'rem_param_blue_tgd'}).append($('<i>').attr('class','fas fa-trash-alt')))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_body_tgd').append(blueLink.attributes.target.port.split(",")[0]))).remove().html();
     $table.bootstrapTable('append',[{pid:parentId,id:blueLink.id,ex:graphicTGD}])
@@ -2501,4 +2391,72 @@ function arrayRemove(arr, value) {
    return arr.filter(function(ele){
        return ele != value;
    });
+}
+
+function drawSVGGraph(){
+	$("#tableTGD").html();
+	var svg = d3.select("#tableTGD")
+	   .append("svg").attr("width", svgCanvasTGDW).attr("height", svgCanvasTGDH);
+	var defs = svg.append("defs")
+	defs.append("marker")
+	.attr({
+		"id":"arrow",
+		"viewBox":"0 -5 10 10",
+		"refX":5,
+		"refY":0,
+		"markerWidth":4,
+		"markerHeight":4,
+		"orient":"auto"
+	})
+	.append("path")
+		.attr("d", "M0,-5L10,0L0,5")
+		.attr("class","arrowHead");
+	let widthText=150;
+	let distanceEnts=200;
+	let heightText=50;
+	let curPosEY=0;
+	let curPosEX=0;
+	let margin=50;
+	tgdLines.forEach(function(attLines,key,map){
+		//draw source Entity
+		drawText(svg,curPosEX,curPosEY,tgdGreenCond.get(key)[3],widthText,heightText);
+		//draw target Entity
+		drawText(svg,curPosEX+widthText+distanceEnts,curPosEY,tgdGreenCond.get(key)[4],widthText,heightText);
+		drawLineArrow(svg,curPosEX+widthText,curPosEY,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor);
+		//draw IRI over line
+		drawTextAndOptions(svg,curPosEX+distanceEnts/2,curPosEY,tgdGreenCond.get(key)[2],widthText,heightText);
+		
+		for (let att of attLines){			
+			console.log(tgdPathLine.get(att.id));
+		}
+		curPosEY+=heightText+margin;
+	})
+	
+}
+function drawText(svg,posX,posY,value,wText,hText){	
+	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
+	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto").text(value);	
+}
+function drawTextAndOptions(svg,posX,posY,value,wText,hText){	
+	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
+	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto").text(value);	
+}
+function drawLine(svg, posiniX,posiniY,posfinX,posfinY,color){
+	svg.append("line")
+    .attr("x1", posiniX)
+    .attr("y1", posiniY)
+    .attr("x2", posfinX)
+    .attr("y2", posfinY)
+    .style("stroke", color)
+    .style("stroke-width", 1);	
+}
+function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color){
+	svg.append("line")
+	.attr("marker-end","url(#arrow)")
+    .attr("x1", posiniX)
+    .attr("y1", posiniY)
+    .attr("x2", posfinX)
+    .attr("y2", posfinY)
+    .style("stroke", color)
+    .style("stroke-width", 1);	
 }
