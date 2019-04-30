@@ -73,7 +73,6 @@ let tgdLines=new Map();
  * This variable stores id edge identifier and string value of a condition 
  * */
 let tgdGreenCond=new Map();
-let tgdGreenPopper=new Map();
 
 let tgdPathLine=new Map();
 var graphTGDs = new joint.dia.Graph;
@@ -129,9 +128,7 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 				}		
 			}			
 			tgdLines.delete(cell.id);
-			tgdGreenCond.delete(cell.id);
-			tgdGreenPopper.get(cell.id).destroy();
-			tgdGreenPopper.delete(cell.id);
+			tgdGreenCond.delete(cell.id);			
         }else{
         	
         		for (let value of tgdLines.values()) {
@@ -1166,47 +1163,19 @@ function buildGreenLink(greenLink,sHead,fSubject,tHead,condition,constructorDefI
 
 }
 
-function runLayout(tgdCy,fit, callBack) {
-    // step-1 position child nodes 
-    var parentNodes = tgdCy.nodes(':parent');
-    var grid_layout = parentNodes.descendants().layout({
-      name: 'grid',
-      cols: 1,
-      avoidOverlap: true
-    });
-    grid_layout.promiseOn('layoutstop').then(function(event) {
-      // step-2 position parent nodes     	
-      var dagre_layout = parentNodes.layout({
-        name: 'dagre',
-        padding:50,
-        align:'UL',
-        ranker: 'tight-tree',
-        rankDir: 'BT'        
-      });
-      dagre_layout.promiseOn('layoutstop').then(function(event) {
-        if (callBack) {
-        	console.log("callback...");
-          callBack.call(tgdCy, event);
-        }
-      });
-      dagre_layout.run();
-    });
-    grid_layout.run();
-
-  }
-
 /**
  * 
  * */
 function buildBlueLink(parentId,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){		
 	tgdLines.get(parentId).push({id:attLineId,type:'att'});
-	tgdPathLine.set(attLineId,path)		
+	tgdPathLine.set(attLineId,[path,sAtt,tAtt])		
 }
 /**
  * This function creates the attribute ref lines in the table view
  * */
 function buildRedLink(parentId,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){	
-	tgdLines.get(parentId).push({id:attLineId,type:'attRef'});	
+	tgdLines.get(parentId).push({id:attLineId,type:'attRef'});
+	tgdPathLine.set(attLineId,[path,sAtt,tAtt])
 }
 
 function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead,condition){
@@ -2185,10 +2154,7 @@ function loadWhereParam(link,attributes,targetCy){
                             textVerticalAnchor: 'middle'
                         },
                         labelBody: {ref: 'text',refX: -5,refY: -5,refWidth: '100%',refHeight: '100%',refWidth2: 10,refHeight2: 10,stroke: '#7c68fc',fill: 'white',strokeWidth: 2,rx: 5,ry: 5}
-                    },position: {offset: -40}});
-        		var tippyA = makeTippy(targetCy.$('#'+link.id), condToStr);
-    			tippyA.show();
-    			tgdGreenPopper.set(link.id,tippyA);
+                    },position: {offset: -40}});        		
         		//targetCy.$('#'+link.id).data('labelS',condToStr);
         		tgdGreenCond.get(link.id)[0]=condToStr;
         		/*let objGraphic=$table.bootstrapTable('getRowByUniqueId',link.id);                            
@@ -2401,35 +2367,57 @@ function drawSVGGraph(){
 	defs.append("marker")
 	.attr({
 		"id":"arrow",
-		"viewBox":"0 -5 10 10",
 		"refX":5,
-		"refY":0,
-		"markerWidth":4,
+		"refY":2,
+		"markerWidth":6,
 		"markerHeight":4,
 		"orient":"auto"
 	})
 	.append("path")
-		.attr("d", "M0,-5L10,0L0,5")
-		.attr("class","arrowHead");
+		.attr("d", "M 0,0 V 4 L6,2 Z");
 	let widthText=150;
 	let distanceEnts=200;
 	let heightText=50;
 	let curPosEY=0;
 	let curPosEX=0;
 	let margin=50;
+	let tgdPosST=new Map();
 	tgdLines.forEach(function(attLines,key,map){
 		//draw source Entity
 		drawText(svg,curPosEX,curPosEY,tgdGreenCond.get(key)[3],widthText,heightText);
 		//draw target Entity
 		drawText(svg,curPosEX+widthText+distanceEnts,curPosEY,tgdGreenCond.get(key)[4],widthText,heightText);
-		drawLineArrow(svg,curPosEX+widthText,curPosEY,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor);
+		drawLineArrow(svg,curPosEX+widthText,curPosEY+heightText/2,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor);
 		//draw IRI over line
-		drawTextAndOptions(svg,curPosEX+distanceEnts/2,curPosEY,tgdGreenCond.get(key)[2],widthText,heightText);
-		
+		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/2,curPosEY,tgdGreenCond.get(key)[2],widthText,heightText);
+		let pathTree=new Map(); 
+		let attArr=[];
+		let attShArr=[];
 		for (let att of attLines){			
-			console.log(tgdPathLine.get(att.id));
+			let taArray=tgdPathLine.get(att.id)[0];			
+			for (let i=taArray.length-2;i>=0;i--){				
+				if (i==taArray.length-2){
+					pathTree.set(taArray[i],"")
+				}
+				if (i==0){					
+					let arr=[];
+					arr.push(tgdPathLine.get(att.id)[1]);			
+				}
+			}			
+			if (taArray.length==1){				
+				attArr.push(tgdPathLine.get(att.id)[1]);
+			}			
+			attShArr.push(tgdPathLine.get(att.id)[2]);
 		}
+		let treeOrder=getTreeOrder(pathTree);
+		let shPosY=curPosEY;
+		drawAtt(svg,attShArr,curPosEX+widthText+distanceEnts,shPosY+heightText);
+		drawAtt(svg,attArr,curPosEX,curPosEY+heightText);		
+		
+		//draw the paths and attributes
 		curPosEY+=heightText+margin;
+		//drawAttLines(svg,attLines,tgdPosST);
+		
 	})
 	
 }
@@ -2459,4 +2447,27 @@ function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color){
     .attr("y2", posfinY)
     .style("stroke", color)
     .style("stroke-width", 1);	
+}
+function drawAtt(svg,attArr, posX,posY){
+	let hTe=25;
+	let wTe=100;
+	let marg=5;
+	let rightAlign=40;	
+	attArr.forEach(function(att){		
+		drawLine(svg,posX,posY,posX+rightAlign,posY+hTe/2,"#0f0f10");
+		drawText(svg,posX+rightAlign,posY,att,wTe,hTe);
+		posY+=hTe+marg;
+	})
+}
+function drawAttLines(svg,attLines,tgdPosST){
+	for (let att of attLines){
+		let position=tgdPosST.get(att.id);
+		if (att.type=="att")
+			drawLineArrow(svg,position[0],position[1],position[2],position[3],attributeLinkColor);
+		else
+			drawLineArrow(svg,position[0],position[1],position[2],position[3],attributeRefLinkColor);
+	}
+}
+function getTreeOrder(pathTree){
+	return [];
 }
