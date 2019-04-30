@@ -101,7 +101,7 @@ public class DBService {
 			int i = 0;
 			for (Column col : ta.getColumnByNames().values()) {
 				if (ta.getForeignKeyForColumnNameOrigin(col) == null) {					
-					atts[i] = new AttRel(ta.getName().substring(0, 2) + i, col.getName(), pks.contains(col.getName()),col.getType());
+					atts[i] = new AttRel(ta.getName() + i, col.getName(), pks.contains(col.getName()),col.getType());
 				} else {					
 					Table refTa = db.getTableForName(ta.getForeignKeyForColumnNameOrigin(col).getTableNameTarget());
 					int j = 0;
@@ -113,8 +113,8 @@ public class DBService {
 						j++;
 					}
 					// Set id of the column
-					atts[i] = new AttRel(ta.getName().substring(0, 2) + i, col.getName(), pks.contains(col.getName()),col.getType(),
-							new ReFK(refTa.getName(), refTa.getName().substring(0, 2) + j));					
+					atts[i] = new AttRel(ta.getName()+ i, col.getName(), pks.contains(col.getName()),col.getType(),
+							new ReFK(refTa.getName(), refTa.getName() + j));					
 				}
 				rString.append(col.getName()).append(" ").append(col.getType()).append(sep);
 				i++;

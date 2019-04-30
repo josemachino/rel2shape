@@ -38,7 +38,8 @@ uploadFile:function (event){
         contentType: false,
         enctype: 'multipart/form-data'
       })
-      .done(function(data) {        
+      .done(function(data) {
+    	  console.log(data);
         positionTable= { x: 70, y: 10 };
         graphTGDs.clear();        
         mapTableIdCanvas=new Map();
