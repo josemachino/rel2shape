@@ -1125,14 +1125,8 @@ function loadModalTypeReferenced(currentLink,iris, parameters,functionsMap,value
     modal.render();
 }
 
-function drawUpdateRedLinkInTable(currentLink,sHead,sAtt,path,fObject,tHead){
-    /* let tAtt=currentLink.attributes.target.port.split(",")[0]
-    var graphicTGD=$('<div>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_head_tgd').append(sHead)).append($('<div>').attr('class','li_body_tgd').append(sAtt))).append($('<div>').attr('class','link_tgd').append($('<div>').attr({class:"path_tgd"}).append(path)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:currentLink.id,class:'edit_red_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:'17px',width:widthSVGForLine}).append($('<line>').attr({class:'arrowRed',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({class:"iri_tgd"}).append(fObject))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_head_tgd').append(tHead)).append($('<div>').attr('class','li_body_tgd').append(tAtt))).remove().html();;
-    $table.bootstrapTable('updateByUniqueId',{id:currentLink.id,row:{ex:graphicTGD}})
-    */
-}
-
-function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){			
+function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
+	console.log(redLink);
 	let relNames=getTokens(path)
 	let linkView=redLink.findView(paperTGDs);
 	var inTargetLinks=graphTGDs.getConnectedLinks(linkView.targetView.model, {inbound:true});
@@ -1149,14 +1143,14 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
             break;
         }
     }
+    console.log(idTable);
     for (var tlink of tLinks){							
         var tView=tlink.findView(paperTGDs);                
-        if (tView.sourceView.model.id==idTable){            
+        if (tView.sourceView.model.id==idTable){        	
             parentId=tlink.id;
             break;
         }
-    }
-	
+    }	
     let tAtt=redLink.attributes.target.port.split(",")[0];    
     buildRedLink(parentId,redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
 }
@@ -1219,12 +1213,7 @@ function drawNewBlueLinkInTable(blueLink){
 	if (blueLink.labels().length>1)
 		constraintAtt=(((blueLink.labels()[1]|| {}).attrs||{}).text||{}).text;
 	
-	buildBlueLink(parentId,blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);
-	
-	/*let graphicTGD=$('<div>').append('<i class="fas fa-dot-circle"></i><i class="fas fa-ellipsis-h"></i>').append($('<div>').attr('class','li_tgd').append($('<div>').attr('class','li_body_tgd').append(sourceAtt))).append($('<div>').attr({'class':'link_tgd'}).append($('<div>').attr({class:"path_tgd"}).append(joinPath)).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:blueLink.id,class:'edit_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:heightSVGForLine,width:widthSVGForLine}).append($('<line>').attr({class:'arrowBlue',x1:0,x2:widthSVGLine,y1:10,y2:10}))).append($('<div>').attr({id:"param_"+blueLink.id,class:"param_tgd"}).append(constraintAtt)).append($('<a>').attr({'data-tooltip':'true',title:'Remove Parameters',id:blueLink.id,class:'rem_param_blue_tgd'}).append($('<i>').attr('class','fas fa-trash-alt')))).append($('<div>').attr('class', 'li_tgd').append($('<div>').attr('class','li_body_tgd').append(blueLink.attributes.target.port.split(",")[0]))).remove().html();
-    $table.bootstrapTable('append',[{pid:parentId,id:blueLink.id,ex:graphicTGD}])
-    $table.treegrid({treeColumn: 1,expanderExpandedClass: 'glyphicon glyphicon-minus',
-        expanderCollapsedClass: 'glyphicon glyphicon-plus'});*/
+	buildBlueLink(parentId,blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);	
 }
 
 function loadPathIRIModal(currentLink,iris, parameters,functionsMap,lsPaths){
@@ -2304,9 +2293,7 @@ function loadConfModal(){
         	attributeLinkColor=$('#attColor').val();                	
         	attributeRefLinkColor=$('#refColor').val();
         	
-        	tgdsCy.style().selector('edge.entity').style('line-color',subjectLinkColor).update();
-    		tgdsCy.style().selector('edge.att').style('line-color',attributeLinkColor).update();
-    		tgdsCy.style().selector('edge.attRef').style('line-color',attributeRefLinkColor).update();        	
+        	drawSVGGraph();        	
         },
         onCancel: function(){
         }        
@@ -2410,14 +2397,15 @@ function drawSVGGraph(){
 	.append("path")
 		.attr("d", "M0,0 L0,6 L9,3 z")
 		.attr("style","fill:"+attributeRefLinkColor);
-	
+	let hTe=25;
+	let wTe=100;
 	let widthText=150;
 	let distanceEnts=200;
 	let heightText=50;
 	let curPosEY=0;
 	let curPosEX=0;
 	let margin=50;
-	let tgdPosST=new Map();
+	let tgdPosDB=new Map();
 	let tgdPosSh=new Map();	
 	tgdLines.forEach(function(attLines,key,map){
 		//draw source Entity
@@ -2430,25 +2418,41 @@ function drawSVGGraph(){
 		let pathTree=new Map(); 
 		let attArr=[];
 		let attShArr=[];
-		let draw=new Set();
+		let attMapPos=new Map();
+		let positionShX=curPosEX+distanceEnts+widthText;
+		let positionShY=curPosEY+heightText;
+		let rightAlign=40;
+		let taNames=new Set();
 		for (let att of attLines){			
 			let taArray=tgdPathLine.get(att.id)[0];						
 			if (taArray.length==1){								
-				drawAtt(svg,tgdPathLine.get(att.id)[1],curPosEX,curPosEY+heightText,att.id,tgdPosST);
-			}						
-			drawAtt(svg,tgdPathLine.get(att.id)[2],curPosEX+widthText+distanceEnts,shPosY+heightText,att.id,tgdPosSh);
+				drawAtt(svg,tgdPathLine.get(att.id)[1],curPosEX,curPosEY+heightText,att.id,rightAlign,wTe,hTe);
+				tgdPosDB.set(att.id,[curPosEX+rightAlign+wTe,curPosEY+heightText]);
+			}			
+			taArray.forEach(function(ta){
+				taNames.add(ta);
+			});			
+			if (attMapPos.has(tgdPathLine.get(att.id)[2])){
+				tgdPosSh.set(att.id,attMapPos.get(tgdPathLine.get(att.id)[2]))
+			}else{
+				tgdPosSh.set(att.id,[positionShX,positionShY]);
+				drawAtt(svg,tgdPathLine.get(att.id)[2],positionShX,positionShY,att.id,rightAlign,wTe,hTe);				
+				attMapPos.set(tgdPathLine.get(att.id)[2],[positionShX,positionShY]);
+			}			
 		}
-		let treeOrder=getTreeOrder(attLines);
-		let shPosY=curPosEY;
-		
-				
-		
+		let k=0;	
+		let indexTa=new Map();		
+		taNames.forEach(function(ta){
+			indexTa.set(ta,k);
+			k++;
+		})
+		let matrix=Array(taNames.size).fill(null).map(() => Array(taNames.size).fill(0));
+		console.log(matrix)
+		getTreeOrder(attLines,curPosEX,curPosEY,matrix, indexTa);				
 		//draw the paths and attributes
-		curPosEY+=heightText+margin;
-		//drawAttLines(svg,attLines,tgdPosST);
-		
-	})
-	
+		curPosEY+=heightText+margin;		
+		//drawAttLines(svg,attLines,tgdPosDB,tgdPosSh);		
+	})	
 }
 function drawText(svg,posX,posY,value,wText,hText){	
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
@@ -2477,56 +2481,44 @@ function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color,type){
     .style("stroke", color)
     .style("stroke-width", 1);	
 }
-function drawAtt(svg,att, posX,posY,lineId,mapLine){
-	let hTe=25;
-	let wTe=100;
-	let marg=5;
-	let rightAlign=40;	
-			
-		drawLine(svg,posX,posY,posX+rightAlign,posY+hTe/2,"#0f0f10");
-		drawText(svg,posX+rightAlign,posY,att,wTe,hTe);
-		posY+=hTe+marg;
-	
-		mapLine.set(lineId,[posX+rightAlign+wTe,posY]);
+function drawAtt(svg,att, posX,posY,lineId,rightAlign,wTe,hTe){	
+	let marg=5;					
+	drawLine(svg,posX,posY,posX+rightAlign,posY+hTe/2,"#0f0f10");
+	drawText(svg,posX+rightAlign,posY,att,wTe,hTe);
+	posY+=hTe+marg;	
 }
-function drawAttLines(svg,attLines,tgdPosST){
+function drawAttLines(svg,attLines,tgdPosDB,tgdPosSh){
 	for (let att of attLines){
-		let position=tgdPosST.get(att.id);
+		let positionIni=tgdPosDB.get(att.id);
+		let positionFin=tgdPosSh.get(att.id);
 		if (att.type=="att")
-			drawLineArrow(svg,position[0],position[1],position[2],position[3],attributeLinkColor,"Att");
+			drawLineArrow(svg,positionIni[0],positionIni[1],positionFin[0],positionFin[1],attributeLinkColor,"Att");
 		else
-			drawLineArrow(svg,position[0],position[1],position[2],position[3],attributeRefLinkColor,"RefAtt");
+			drawLineArrow(svg,positionIni[0],positionIni[1],positionFin[0],positionFin[1],attributeRefLinkColor,"RefAtt");
 	}
 }
-function getTreeOrder(attLines,posX,posY){
-	let posXRank=[posX];
+
+function getTreeOrder(attLines,posX,posY,matrix,indexTa){
+	//let posXRank=[posX];
+	let wEntNode=40;
+	let hEntNode=25;	
 	for (let att of attLines){
 		let taArray=tgdPathLine.get(att.id)[0];
-		let curMap;
 		for (let i=taArray.length-2;i>=0;i--){
-			posXRank.push(posX+rightAlign);
-			if (i==taArray.length-2){
-				pathTree.set(taArray[i],[])
-				//si es nuevo 
-				
-				
-				//sino recuperar
-				drawText(svg,posX+rightAlign,posY,taArray[i],wTe,hTe);
-				posX=posXRank[i];
-				curMap=pathTree;					
-			}else{				
-				let taMap=new Map();
-				taMap.set(taArray[i],[]);
-				console.log(taMap);
-				curMap.get(taArray[i+1]).push(taMap);
-				curMap=taMap;
-			}
-			if (i==0){					
-				let arr=curMap.get(taArray[i]);
-				arr.push(tgdPathLine.get(att.id)[1]);	
-				console.log(arr);
-				tgdPosST.set(att.id,[posX,posY])
-			}
+			let row=indexTa.get(taArray[i]);
+			let col=indexTa.get(taArray[i+1])
+			console.log("row "+row+" col "+col);
+			matrix[row][col]=1;
+		}
+	}
+	console.log(indexTa)
+	console.log(matrix);	
+}
+function drawTree(matrix,col,indexTa){
+	for (let l=0;l<matrix.length;l++){
+		if (matrix[l][col]==1){
+			indexTa.get()
+			drawTree(matrix,l);
 		}
 	}
 }

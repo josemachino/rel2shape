@@ -208,15 +208,16 @@ import:function(e){
 					console.log("blue "+link.id);
 					drawNewBlueLinkInTable(link)
 				}
+				console.log(tgdLines);
 				if (tLinkport.length==3 && tLinkport[1]!='Literal')	{				
 					let sHead=edgeView.sourceView.model.attributes.question;
 					let sAtt=getSourceOptionNameLinkView(edgeView);
-					let path=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;;
-					let fObject=(((link.labels()[1]|| {}).attrs||{}).text||{}).text;
+					let path=(((link.labels()[1]|| {}).attrs||{}).text||{}).text;
+					let fObject=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;
 					let tHead=edgeView.targetView.model.attributes.question;
 					drawNewRedLinkInTable(link,sHead,sAtt,path,fObject,tHead)
 				}
-				console.log(tgdLines);
+				
 			}
 		}	
 		drawSVGGraph();
