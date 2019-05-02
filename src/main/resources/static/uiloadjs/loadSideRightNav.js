@@ -39,7 +39,9 @@ events: {
      "change input[type=file]":"import",
      "click .edit_tgd":"modifyTGD",
      "click .edit_green_tgd":"modifyLinkGreen",
+     "click .rem_green_tgd":"removeGreenTGD",
      "click .edit_red_tgd":"modifyLinkRed",
+     "click .rem_red_tgd":"removeLinkRed",
      "click .rem_param_blue_tgd":"removeParam",
      "click #rightCollapsed":"activate",
      "click .edit_param_green":"editParamLinkGreen",
@@ -47,6 +49,16 @@ events: {
 },
 configure:function(e){
 	loadConfModal();
+},
+removeLinkRed:function(e){
+	let currentLink=graphTGDs.getCell(e.currentTarget.id);
+	currentLink.remove();
+	drawSVGGraph();
+},
+removeGreenTGD:function(e){
+	let currentLink=graphTGDs.getCell(e.currentTarget.id);
+	currentLink.remove();
+	drawSVGGraph();
 },
 removeParamGreen:function(e){
 	//TODO

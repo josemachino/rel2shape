@@ -725,3 +725,77 @@ Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables,tgdCy,tgdG
 	
 	return mapToStr;
 };
+
+Exchange.prototype.GMLCan = function(mapSymbols,tgdLines,mapTables,tgdGreenCond){
+	let mapLines=new Map();
+	tgdLines.forEach(function(edgesAtt, key, map){						
+		
+		let sN=tgdGreenCond.get(key)[3]
+		let tN=tgdGreenCond.get(key)[4]
+		let entities= [];
+		entities.push(sN);
+		entities.push(tN);						
+		let gml="\n=>\n";
+		let annotations=[];
+		annotations.push( tgdGreenCond.get(key)[2]);						
+		let iri=annotations[0];
+		let funI=iri.split('(');
+		gml=gml.concat(funI[0]).concat('(').concat(entities[0]).concat('.').concat(funI[1]).concat(' as ').concat(entities[1]).concat('\n');
+		//set the where if there is
+		if (tgdGreenCond.get(key)[0]!=null){
+			annotations.push( tgdGreenCond.get(key)[0].replace(","," AND ") );
+		}
+			
+				
+		let header=[entities[0]];
+		if (annotations.length>1 && annotations[1].length>0){
+			header.push(annotations[1]);
+		}
+		let detailTGD={query:header,des:gml};
+		let setNameTa=new Set();
+		edgesAtt.forEach(function(edge){
+			let ed=tgdPathLine.get(edge.id);
+			let sNAtt=ed[1];
+			let tNAtt=ed[2];
+			
+			
+			if (ed[0].length>1){
+				let set2=new Set(ed[0]);
+				setNameTa = new Set([...setNameTa, ...set2])
+			}
+			if (edge.type=="att"){											
+				if (ed[3].length>0){				
+					detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(Exchange.prototype.ParamtoSQL.call(this,ed[3],ed[4]+"."+sNAtt)).concat(';\n');
+				}else{
+					detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(ed[4]).concat(".").concat(sNAtt).concat(';\n');
+				}
+			}else{						
+				let iri=ed[3];
+				let fIri=iri.split("(");
+				//console.log(tgdCy.$id(sNAtt).parent()); it works we can use for delete
+				detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(fIri[0]).concat("(").concat(ed[4]).concat(".").concat(fIri[1]).concat(';\n');
+			}
+		});
+	
+		setNameTa.forEach(function(ta){
+			
+			if (ta!=sN)
+				detailTGD.query[0]=detailTGD.query[0].concat(" JOIN ").concat(ta);
+		});				
+		
+		mapLines.set(key,detailTGD);
+		
+	});
+	
+	let mapToStr="";
+	for (var value of mapLines.values()) {
+		 if (value.query.length>1){
+			 mapToStr=mapToStr.concat(value.query[0]).concat(' WHERE ').concat(value.query[1]);
+		 }else{
+			 mapToStr=mapToStr.concat(value.query[0]);
+		 }
+		 mapToStr=mapToStr.concat(value.des.substr(0,value.des.length-2)).concat(".\n");
+	}
+	
+	return mapToStr;
+}
