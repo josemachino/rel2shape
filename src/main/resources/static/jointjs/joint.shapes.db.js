@@ -1,7 +1,16 @@
 /*https://github.com/393799203/rappid/blob/master/apps/QAD/src/snippet.js*/
 let fontFamily="Arial";
-let fontSizeAttribute=12;
-let fontSizeEntity=15;
+let fontSizeAttribute=20;
+let fontSizeEntity=25;
+
+let colorbgEnt='#507255';
+let colorbgAtt='#488b49';
+
+let colorTEnt='white';
+let colorTAtt='white';
+
+let portColorOutPk='#c5e063';
+let portColorOutAtt='#6eb257';
 
 joint.shapes.db = {};
 joint.dia.Element.define('db.Table',{
@@ -50,7 +59,7 @@ joint.dia.Element.define('db.Table',{
                 attrs:{
                  portBody2: {
                         magnet: 'active',
-                        stroke: 'none', fill: '#31d0c6', r: 9
+                        stroke: 'none', fill: portColorOutAtt, r: 9
                  }
                 }
             },
@@ -59,7 +68,7 @@ joint.dia.Element.define('db.Table',{
                 attrs:{
                  portBody2: {
                         magnet: true,
-                        stroke: 'none', fill: '#7275db', r: 9
+                        stroke: 'none', fill: portColorOutPk, r: 9
                  }
                 }
             },
@@ -68,7 +77,7 @@ joint.dia.Element.define('db.Table',{
                 attrs:{
                  portBody2: {
                         magnet: true,
-                        stroke: 'none', fill: '#7275db', r: 9
+                        stroke: 'none', fill: portColorOutPk, r: 9
                  }
                 }
             }
@@ -82,24 +91,16 @@ joint.dia.Element.define('db.Table',{
         '.body': {
             width: 150, height: 150,
             rx: '1%', ry: '2%',
-            stroke: 'none',
-            fill: {
-                type: 'linearGradient',
-                stops: [
-                    { offset: '0%', color: '#7275db' },
-                    { offset: '100%', color: '#31D0C6' }
-                ],
-                // Top-to-bottom gradient.
-                attrs: { x1: '0%', y1: '0%', x2: '0%', y2: '100%' }
-            }
+            stroke: 'none',          
+            fill:colorbgEnt
         },
         '.options': { ref: '.body', 'ref-x': 0 },
 
         // Text styling.
         text: { 'font-family': fontFamily },
-        '.option-text': { 'font-size': fontSizeAttribute, fill: '#4b4a67', 'y-alignment': .7, 'x-alignment': 30 },
+        '.option-text': { 'font-size': fontSizeAttribute, fill: colorTAtt, 'y-alignment': .7, 'x-alignment': 30 },
         '.question-text': {
-            fill: 'black',
+            fill: colorTEnt,
             refX: '50%',
             refY: 15,
             'font-size': fontSizeEntity,
@@ -112,7 +113,7 @@ joint.dia.Element.define('db.Table',{
             rx: 3, ry: 3,
             stroke: 'white', 'stroke-width': 1, 'stroke-opacity': .5,
             'fill-opacity': .5,
-            fill: 'white',
+            fill: colorbgAtt,
             ref: '.body',
             'ref-width': 1
         }

@@ -1,8 +1,17 @@
+
+let shcolorbgEnt='#4e5340';
+let shcolorbgAtt='#697268';
+
+let shcolorTEnt='white';
+let shcolorTAtt='white';
+
+let shportColorOutPk='#b7d1da';
+let shportColorOutAtt='#e2e8dd';
 joint.shapes.shex = {};
 joint.dia.Element.define('shex.Type',{
     optionHeight: 30,
     questionHeight: 45,
-    paddingBottom: 30,
+    paddingBottom: 10,
     minWidth: 150,
     portMarkup: [{ tagName: 'rect', selector: 'portBody' },{ tagName: 'circle', selector: 'portBody2' }],
     ports: {
@@ -21,30 +30,30 @@ joint.dia.Element.define('shex.Type',{
             'refType':{position:'absolute',attrs: {  portBody: {width: 1, height: 1,stroke: '#4b4a67', fill: '#4b4a67', magnet: 'passive' }}},
             'outRefType':{position:'right',attrs:{portBody: {width: 5, height: 10,stroke: 'white', fill: '#feb663', magnet: 'passive' }}},
             out: {position: 'left',
-                attrs:{portBody2: {magnet: 'passive',stroke: 'none', fill: '#31d0c6', r: 9}}
+                attrs:{portBody2: {magnet: 'passive',stroke: 'none', fill: shportColorOutAtt, r: 9}}
             },
-            outype: {position: 'left', attrs:{portBody2: {magnet: 'passive', stroke: 'none', fill: '#31d0c6', r: 9 }}}
+            outype: {position: 'left', attrs:{portBody2: {magnet: 'passive', stroke: 'none', fill: shportColorOutAtt, r: 9 }}}
         },
         items: [{group:'inType'},{group:'refType'}]
     },
     attrs: {
         '.': { magnet: false },
         '.body': {
-            width: 150, height: 250,
+            width: 150, height: 120,
             rx: '1%', ry: '2%',
             stroke: 'none',            
-            fill:'#b2b2ba'
+            fill:shcolorbgEnt
         },
         '.options': { ref: '.body', 'ref-x': 0 },
 
         // Text styling.
-        text: { 'font-family': 'Arial' },
-        '.option-text': { 'font-size': 11, fill: '#4b4a67', 'y-alignment': .7, 'x-alignment': 20 },
+        text: { 'font-family': fontFamily },
+        '.option-text': { 'font-size': fontSizeAttribute, fill: shcolorTAtt, 'y-alignment': .7, 'x-alignment': 20 },
         '.question-text': {
-            fill: 'black',
+            fill: shcolorTEnt,
             refX: '50%',
             refY: 15,
-            'font-size': 15,
+            'font-size': fontSizeEntity,
             'text-anchor': 'middle',
             style: { 'text-shadow': '1px 1px 0px gray' }
         },
@@ -54,7 +63,7 @@ joint.dia.Element.define('shex.Type',{
             rx: 3, ry: 3,
             stroke: 'white', 'stroke-width': 1, 'stroke-opacity': .5,
             'fill-opacity': .5,
-            fill: 'white',
+            fill: shcolorbgAtt,
             ref: '.body',
             'ref-width': 1
         }
@@ -144,7 +153,7 @@ joint.dia.Element.define('shex.Type',{
         for (let option of options){            
             sizeOpt=Math.max(sizeOpt,option.label.length+option.type.length+option.mult.length)   
         }
-        var width = sizeOpt*9;		
+        var width = sizeOpt*8+(fontSizeAttribute/6)*32;		
         /*var width = joint.util.measureText(this.get('question'), {
             fontSize: this.attr('.question-text/font-size')
         }).width;*/

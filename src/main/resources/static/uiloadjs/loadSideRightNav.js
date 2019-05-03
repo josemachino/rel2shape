@@ -42,10 +42,10 @@ events: {
      "click .rem_green_tgd":"removeGreenTGD",
      "click .edit_red_tgd":"modifyLinkRed",
      "click .rem_red_tgd":"removeLinkRed",
+     "click .adc_green_tgd":"addCondition",
      "click .rem_param_blue_tgd":"removeParam",
      "click #rightCollapsed":"activate",
-     "click .edit_param_green":"editParamLinkGreen",
-     "click .rem_param_green_tgd":"removeParamGreen"
+     "click .dec_green_tgd":"removeParamGreen"
 },
 configure:function(e){
 	loadConfModal();
@@ -75,7 +75,7 @@ removeParamGreen:function(e){
         updateParamGreenLink(auxLink.id);
     }
 },
-editParamLinkGreen:function(e){
+addCondition:function(e){
 	//TODO
 	let auxLink;
     for (var link of graphTGDs.getLinks()){        

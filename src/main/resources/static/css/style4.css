@@ -400,10 +400,6 @@ ul.CTAs a {
   stroke-opacity: .6;
   stroke-width: 1px;
 }
-marker {
-	stroke: #999;
-	fill:rgba(124,240,10,0);
-}
 .node-text {
   font: 11px sans-serif;
   fill:black;

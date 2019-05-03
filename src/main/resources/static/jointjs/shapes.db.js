@@ -65,6 +65,11 @@ let tRectColor="#4b4a67";
 let typeNodeRect="round-rectangle";
 let typeNodeAtt="ellipse";
 
+let widthLink=4;
+/**
+ * For the lines that appear in the canvas
+ * */
+let widthsvgLink=2;
 /**
  * This variable stores in the id edge identifier and value array of edge and type 
  * */
@@ -193,6 +198,15 @@ paperTGDs.on('link:connect',function(linkView){
     	try{ 
     	
         var currentLink=linkView.model;  
+        currentLink.attr({
+            line: { // selector for the visible <path> SVGElement
+            	strokeWidth: widthLink, // SVG attribute and value
+            	targetMarker: {
+            		'type': 'path',
+            		'stroke-width': widthLink,
+            		'd': 'M 10 -3 10 -10 -2 0 10 10 10 3'
+            	}
+            }});
         //verify that are of the same type the connectors        
         if (linkView.sourceMagnet.nodeName==linkView.targetMagnet.nodeName && linkView.targetView.model.attributes.ports.items[1].id==currentLink.attributes.target.port){
         	currentLink.remove()
@@ -1630,7 +1644,12 @@ function link(g,source, portSource, target,portTarget,color,vertices){
         router: { name: 'manhattan' },
         connector: { name: 'jumpover' },
         vertices: vertices || [],
-        attrs:{line:{stroke:color}}
+        attrs:{line:{stroke:color,strokeWidth: widthLink, // SVG attribute and value
+        	targetMarker: {
+        		'type': 'path',
+        		'stroke-width': widthLink,
+        		'd': 'M 10 -3 10 -10 -2 0 10 10 10 3'
+        	}}}
 
     });    
     g.addCell(link);
@@ -2367,9 +2386,10 @@ function drawSVGGraph(){
 		"id":"arrowEnt",
 		"refX":0,
 		"refY":3,
-		"markerWidth":10,
-		"markerHeight":10,
-		"orient":"auto"
+		"markerWidth":widthsvgLink*5,
+		"markerHeight":widthsvgLink*5,
+		"orient":"auto",
+		"markerUnits":"strokeWidth"
 			
 	})
 	.append("path")
@@ -2381,9 +2401,10 @@ function drawSVGGraph(){
 		"id":"arrowAtt",
 		"refX":0,
 		"refY":3,
-		"markerWidth":10,
-		"markerHeight":10,
-		"orient":"auto"
+		"markerWidth":widthsvgLink*5,
+		"markerHeight":widthsvgLink*5,
+		"orient":"auto",
+		"markerUnits":"strokeWidth"
 			
 	})
 	.append("path")
@@ -2395,9 +2416,10 @@ function drawSVGGraph(){
 		"id":"arrowRefAtt",
 		"refX":0,
 		"refY":3,
-		"markerWidth":10,
-		"markerHeight":10,
-		"orient":"auto"
+		"markerWidth":widthsvgLink*5,
+		"markerHeight":widthsvgLink*5,
+		"orient":"auto",
+		"markerUnits":"strokeWidth"
 			
 	})
 	.append("path")
@@ -2418,11 +2440,16 @@ function drawSVGGraph(){
 		drawText(svg,curPosEX,curPosEY,tgdGreenCond.get(key)[3],widthText,heightText);		
 		//draw target Entity
 		drawText(svg,curPosEX+widthText+distanceEnts,curPosEY,tgdGreenCond.get(key)[4],widthText,heightText);
-		drawLineArrow(svg,curPosEX+widthText,curPosEY+heightText/2,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor,"Ent");				
+		drawLineArrowGreen(svg,curPosEX+widthText,curPosEY+heightText/2,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor,"Ent",tgdGreenCond.get(key)[0]);				
 		//draw IRI over line
 		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/2,curPosEY,tgdGreenCond.get(key)[2],widthText,heightText,key,"green_tgd");
+		//if there is condition create a tippy object
+		
+		
+		
 		curPosEY=curPosEY+heightText;
 		let pathAttTree=new Map(); 
+		let attDepth=new Map();
 		let attArr=[];
 		let attShArr=[];
 		let attMapPos=new Map();
@@ -2434,21 +2461,22 @@ function drawSVGGraph(){
 			let taArray=tgdPathLine.get(att.id)[0];						
 			if (taArray.length==1){								
 				
-				drawAtt(svg,tgdPathLine.get(att.id)[1],curPosEX,curPosEY,att.id,rightAlign,wTe,hTe);
-				tgdPosDB.set(att.id,[curPosEX+rightAlign+wTe,curPosEY]);
+				drawAtt(svg,tgdPathLine.get(att.id)[1],curPosEX,curPosEY,rightAlign,wTe,hTe);
+				tgdPosDB.set(att.id,[curPosEX+rightAlign+wTe,curPosEY]);				
 				curPosEY=curPosEY+hTe;
 			}			
 			taArray.forEach(function(ta){
 				taNames.add(ta);
 			});			
-			if (attMapPos.has(tgdPathLine.get(att.id)[2])){
+			/*if (attMapPos.has(tgdPathLine.get(att.id)[2])){
 				tgdPosSh.set(att.id,attMapPos.get(tgdPathLine.get(att.id)[2]))
 			}else{
 				tgdPosSh.set(att.id,[positionShX,positionShY]);
-				drawAtt(svg,tgdPathLine.get(att.id)[2],positionShX,positionShY,att.id,rightAlign,wTe,hTe);				
+				drawAtt(svg,tgdPathLine.get(att.id)[2],positionShX,positionShY,rightAlign,wTe,hTe);				
 				attMapPos.set(tgdPathLine.get(att.id)[2],[positionShX,positionShY]);
 				positionShY+=hTe;	
-			}			
+			}*/		
+			attDepth.set(tgdPathLine.get(att.id)[2],curPosEY);
 		}
 		
 		let k=0;	
@@ -2473,17 +2501,41 @@ function drawSVGGraph(){
 		console.log(matrix)
 		let curEX=[curPosEX];
 		let curEY=[curPosEY];
-		getTreeOrder(svg,attLines,curEX,curEY,matrix, indexTa,tgdGreenCond.get(key)[3],pathAttTree,tgdPosDB);				
+		getTreeOrder(svg,attLines,curEX,curEY,matrix, indexTa,tgdGreenCond.get(key)[3],pathAttTree,tgdPosDB,attDepth);	
+		let orderShAtt=orderByValue(attDepth);
+		console.log(orderShAtt)
+		let attSh=Array.from(orderShAtt.keys());
+		attSh.forEach(function(at){
+			drawAtt(svg,at,positionShX,positionShY,rightAlign,wTe,hTe);	
+			attMapPos.set(at,[positionShX,positionShY]);
+			positionShY+=hTe;
+		})
+		for (let att of attLines){
+			tgdPosSh.set(att.id,attMapPos.get(tgdPathLine.get(att.id)[2]));
+		}
 		//draw the paths and attributes
 		curPosEY=curEY[0]+margin;		
 		drawAttLines(svg,attLines,tgdPosDB,tgdPosSh);		
-	})	
+	});
+	tippy('[title]', {		
+		arrow: true,		
+		followCursor: 'initial',
+		delay:200
+	})
 }
 function drawText(svg,posX,posY,value,wText,hText){	
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
 	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto").text(value);		
 }
 function drawTextAndOptions(svg,posX,posY,value,wText,hText,linkId,classDiv){	
+	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
+	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto;display:inline").text(value);	
+	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"edit_"+classDiv}).html('<a data-tooltip="true" title="Edit IRI"><i class="fas fa-edit"></i></a>');
+	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"rem_"+classDiv}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-trash-alt"></i></a>');
+	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"adc_"+classDiv}).html('<a data-tooltip="true" title="Add Condition"><i class="fas fa-plus-square"></i></a>');
+	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"dec_"+classDiv}).html('<a data-tooltip="true" title="Delete Condition"><i class="fas fa-minus-square"></i></a>');
+}
+function drawTextAndOptionsRed(svg,posX,posY,value,wText,hText,linkId,classDiv){	
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
 	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto;display:inline").text(value);	
 	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"edit_"+classDiv}).html('<a data-tooltip="true" title="Edit IRI"><i class="fas fa-edit"></i></a>');
@@ -2506,9 +2558,33 @@ function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color,type){
     .attr("x2", posfinX)
     .attr("y2", posfinY)
     .style("stroke", color)
-    .style("stroke-width", 1);	
+    .style("stroke-width", widthsvgLink);	
 }
-function drawAtt(svg,att, posX,posY,lineId,rightAlign,wTe,hTe){		
+function drawLineArrowGreen(svg, posiniX,posiniY,posfinX,posfinY,color,type,condition){
+	if (condition!=null && condition.length>0){
+		svg.append("line")
+		.attr("marker-end","url(#arrow"+type+")")
+	    .attr("x1", posiniX)
+	    .attr("y1", posiniY)
+	    .attr("x2", posfinX)
+	    .attr("y2", posfinY)    
+	    .attr("title","<div>"+condition+"</div>")
+	    .style("stroke", color)
+	    .style("stroke-width", widthsvgLink);
+	}else{
+		svg.append("line")
+		.attr("marker-end","url(#arrow"+type+")")
+	    .attr("x1", posiniX)
+	    .attr("y1", posiniY)
+	    .attr("x2", posfinX)
+	    .attr("y2", posfinY)    
+	    .style("stroke", color)
+	    .style("stroke-width", widthsvgLink);	
+	}
+	
+	
+}
+function drawAtt(svg,att, posX,posY,rightAlign,wTe,hTe){		
 	drawLine(svg,posX,posY,posX+rightAlign,posY+hTe/2,"#0f0f10");
 	drawText(svg,posX+rightAlign,posY,att,wTe,hTe);	
 }
@@ -2521,12 +2597,12 @@ function drawAttLines(svg,attLines,tgdPosDB,tgdPosSh){
 		else{
 			drawLineArrow(svg,positionIni[0],positionIni[1],positionFin[0],positionFin[1],attributeRefLinkColor,"RefAtt");
 			
-			drawTextAndOptions(svg,positionIni[0]+(positionFin[0]-positionIni[0])/2,positionIni[1]+(positionFin[1]-positionIni[1])/2,tgdPathLine.get(att.id)[3],100,25,att.id,"red_tgd");
+			drawTextAndOptionsRed(svg,positionIni[0]+(positionFin[0]-positionIni[0])/2,positionIni[1]+(positionFin[1]-positionIni[1])/2,tgdPathLine.get(att.id)[3],100,25,att.id,"red_tgd");
 		}
 	}
 }
 
-function getTreeOrder(svg,attLines,posX,posY,matrix,indexTa,taName,pathAttTree,tgdPosDB){
+function getTreeOrder(svg,attLines,posX,posY,matrix,indexTa,taName,pathAttTree,tgdPosDB,attDetph){
 	//let posXRank=[posX];
 	let wEntNode=100;
 	let hEntNode=25;	
@@ -2539,26 +2615,36 @@ function getTreeOrder(svg,attLines,posX,posY,matrix,indexTa,taName,pathAttTree,t
 		}
 	}
 	let visited=Array(indexTa.size).fill(0);	
-	drawTree(svg,matrix,indexTa.get(taName),indexTa,posX,posY,wEntNode,hEntNode,visited,pathAttTree,tgdPosDB);
+	drawTree(svg,matrix,indexTa.get(taName),indexTa,posX,posY,wEntNode,hEntNode,visited,pathAttTree,tgdPosDB,attDetph);
 }
 /**
  *One character is equal to 8 pixel
  * */
-function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB){
+function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth){
 	let right=40;
 	let keys=Array.from( mapAtt.keys());
 	
 	for (let keyAtt of  keys){
 		let lenTePix=keyAtt.length*8+8;
-		drawText(svg,posX[0]+right,posY[0],keyAtt,lenTePix,hTe);		
+		drawText(svg,posX[0]+right,posY[0],keyAtt,lenTePix,hTe);
+		console.log(keyAtt)
 		mapAtt.get(keyAtt).forEach(function(id){
 			tgdPosDB.set(id,[posX[0]+right+lenTePix,posY[0]+hTe/2]);
+			console.log(tgdPathLine.get(id)[2]);
+			if (attDepth.has(tgdPathLine.get(id)[2])){			
+				attDepth.set(tgdPathLine.get(id)[2],attDepth.get(tgdPathLine.get(id)[2])>posY[0]+hTe/2?attDepth.get(tgdPathLine.get(id)[2]):posY[0]+hTe/2);
+			}else{
+				console.log(tgdPathLine.get(id)[2]);
+				attDepth.set(tgdPathLine.get(id)[2],posY[0]+hTe/2);
+			}
 		});
+		
+		
 		posY[0]=posY[0]+hTe;
 	}
 	
 }
-function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB){
+function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth){
 	for (let l=0;l<matrix.length;l++){
 		if (matrix[l][col]==1 && visited[l]==0){
 			console.log("posx "+curPosEX)
@@ -2566,11 +2652,11 @@ function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,
 			let name=getTextIndex(l,indexTa);
 			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText);
 			curPosEY[0]=curPosEY[0]+heightText;
-			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB);
+			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth);
 			curPosEX[0]=curPosEX[0]+50;		
 			curPosEY[0]=curPosEY[0]+heightText;
 			visited[l]=1;
-			drawTree(svg,matrix,l,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB);
+			drawTree(svg,matrix,l,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth);
 			console.log("posx "+curPosEX)
 			curPosEX[0]=before;
 		}
@@ -2586,4 +2672,7 @@ function getTextIndex(posT,indexTa){
 		}	
 	}
 	return te;	
+}
+function orderByValue(map){
+	return  new Map([...map.entries()].sort((a, b) => a[1] - b[1]));
 }
