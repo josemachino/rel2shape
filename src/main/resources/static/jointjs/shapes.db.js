@@ -2505,11 +2505,13 @@ function drawSVGGraph(){
 		let orderShAtt=orderByValue(attDepth);
 		console.log(orderShAtt)
 		let attSh=Array.from(orderShAtt.keys());
+		let posIniY=positionShY;
 		attSh.forEach(function(at){
 			drawAtt(svg,at,positionShX,positionShY,rightAlign,wTe,hTe);	
 			attMapPos.set(at,[positionShX,positionShY]);
 			positionShY+=hTe;
 		})
+		drawLine(svg,positionShX,posIniY,positionShX,positionShY-hTe,"#000000");
 		for (let att of attLines){
 			tgdPosSh.set(att.id,attMapPos.get(tgdPathLine.get(att.id)[2]));
 		}
@@ -2649,14 +2651,19 @@ function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,
 		if (matrix[l][col]==1 && visited[l]==0){
 			console.log("posx "+curPosEX)
 			let before=curPosEX[0];
+			let beforeY=curPosEY[0];
 			let name=getTextIndex(l,indexTa);
 			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText);
+			
 			curPosEY[0]=curPosEY[0]+heightText;
+			
 			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth);
 			curPosEX[0]=curPosEX[0]+50;		
 			curPosEY[0]=curPosEY[0]+heightText;
 			visited[l]=1;
 			drawTree(svg,matrix,l,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth);
+		walter16
+		drawLine(svg, before,beforeY,before,curPosEY[0],"#000000")
 			console.log("posx "+curPosEX)
 			curPosEX[0]=before;
 		}
