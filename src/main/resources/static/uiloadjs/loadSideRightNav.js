@@ -45,7 +45,13 @@ events: {
      "click .adc_green_tgd":"addCondition",
      "click .rem_param_blue_tgd":"removeParam",
      "click #rightCollapsed":"activate",
-     "click .dec_green_tgd":"removeParamGreen"
+     "click .dec_green_tgd":"removeParamGreen",
+     "click .rem_blue_tgd":"removeBlueTGD"
+},
+removeBlueTGD:function(e){
+	let currentLink=graphTGDs.getCell(e.currentTarget.id);
+	currentLink.remove();
+	drawSVGGraph();
 },
 configure:function(e){
 	loadConfModal();

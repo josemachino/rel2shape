@@ -925,7 +925,7 @@ function loadModalRedFromTable(currentLink,iris, parameters,functionsMap,valueRe
             }            
             let linkView=currentLink.findView(paperTGDs);      
             let sAtt=getSourceOptionNameLinkView(linkView);
-            drawUpdateRedLinkInTable(currentLink,linkView.sourceView.model.attributes.question,sAtt,joinPath,valueIRI,linkView.targetView.model.attributes.question)
+//            drawUpdateRedLinkInTable(currentLink,linkView.sourceView.model.attributes.question,sAtt,joinPath,valueIRI,linkView.targetView.model.attributes.question)
             //get the id and set by default the table						
             var paramValue=$('#ddParameter .btn').val();            
             if (paramValue===""){
@@ -977,6 +977,7 @@ function loadModalRedFromTable(currentLink,iris, parameters,functionsMap,valueRe
 	                drawNewGreenLinkInTable(linkParent,lastTableName,valueIRI,linkView.targetView.model.attributes.question)
                 }
 			}
+			drawSVGGraph();
         },
         onCancel: function(){            
         }        
@@ -1498,13 +1499,6 @@ function loadModalGreenFromTable(currentLink,iris, parameters,functionsMap,cy){
                 if (notFound){
                 	drawSVGGraph();
                 }
-                /*let objGraphic=$table.bootstrapTable('getRowByUniqueId',currentLink.id)                                                
-                var relName=$(objGraphic.ex)[0].textContent;
-                var typeName=$(objGraphic.ex)[2].textContent;
-                let graphicTGD=$('<div>').append($('<span>').attr('class','li_tgd').append(relName)).append($('<div>').attr('class','link_tgd').append(valueIRI).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:currentLink.id,class:'edit_green_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:'17px',width:widthSVGForLine}).append($('<line>').attr({class:'arrowGreen',x1:0,x2:widthSVGLine,y1:10,y2:10})))).append($('<span>').attr('class', 'li_tgd').append(typeName)).remove().html();
-                $table.bootstrapTable('updateByUniqueId',{id:currentLink.id,row:{ex:graphicTGD}})
-                */
-                
             }
         },        
         onCancel: function(){            
@@ -2377,9 +2371,23 @@ function arrayRemove(arr, value) {
 }
 
 function drawSVGGraph(){
+	$('.entRSVG').css({
+		'border':'solid 1px '+colorbgEnt		
+	});
+	$('.entSSVG').css({
+		'border':'solid 1px '+shcolorbgEnt		
+	});
 	$("#tableTGD").html("");
 	var svg = d3.select("#tableTGD")
-	   .append("svg").attr("width", svgCanvasTGDW).attr("height", svgCanvasTGDH);
+	.append("div")
+   .classed("svg-container", true) //container class to make it responsive
+   .append("svg")
+   //responsive SVG needs these 2 attributes and no width and height attr
+   .attr("preserveAspectRatio", "xMinYMin meet")
+   .attr("viewBox", "0 0 600 400")
+   //class to make it responsive
+   .classed("svg-content-responsive", true); 
+	   //.append("svg").attr("width", svgCanvasTGDW).attr("height", svgCanvasTGDH);
 	var defs = svg.append("defs")
 	defs.append("marker")
 	.attr({
@@ -2429,25 +2437,26 @@ function drawSVGGraph(){
 	let wTe=100;
 	let widthText=150;
 	let distanceEnts=200;
-	let heightText=50;
-	let curPosEY=0;
+	let heightText=25;
+	let curPosEY=20;
 	let curPosEX=10;
-	let margin=50;
+	let margin=40;
+	let beginSpace=10;
 	let tgdPosDB=new Map();
 	let tgdPosSh=new Map();	
 	tgdLines.forEach(function(attLines,key,map){
 		//draw source Entity
-		drawText(svg,curPosEX,curPosEY,tgdGreenCond.get(key)[3],widthText,heightText);		
+		drawText(svg,curPosEX,curPosEY,tgdGreenCond.get(key)[3],widthText,heightText,"rel");		
 		//draw target Entity
-		drawText(svg,curPosEX+widthText+distanceEnts,curPosEY,tgdGreenCond.get(key)[4],widthText,heightText);
+		drawText(svg,curPosEX+widthText+distanceEnts+widthsvgLink*6,curPosEY,tgdGreenCond.get(key)[4],widthText,heightText,"sh");
 		drawLineArrowGreen(svg,curPosEX+widthText,curPosEY+heightText/2,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor,"Ent",tgdGreenCond.get(key)[0]);				
 		//draw IRI over line
-		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/2,curPosEY,tgdGreenCond.get(key)[2],widthText,heightText,key,"green_tgd");
+		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/3,curPosEY-heightText/2,tgdGreenCond.get(key)[2],widthText,heightText,key,"green_tgd");
 		//if there is condition create a tippy object
 		
 		
 		
-		curPosEY=curPosEY+heightText;
+		curPosEY=curPosEY+heightText+beginSpace;
 		let pathAttTree=new Map(); 
 		let attDepth=new Map();
 		let attArr=[];
@@ -2460,22 +2469,14 @@ function drawSVGGraph(){
 		for (let att of attLines){			
 			let taArray=tgdPathLine.get(att.id)[0];						
 			if (taArray.length==1){								
-				
 				drawAtt(svg,tgdPathLine.get(att.id)[1],curPosEX,curPosEY,rightAlign,wTe,hTe);
-				tgdPosDB.set(att.id,[curPosEX+rightAlign+wTe,curPosEY]);				
+				let pix=tgdPathLine.get(att.id)[1].length*8+8;
+				tgdPosDB.set(att.id,[curPosEX+rightAlign+pix,curPosEY+hTe/2]);				
 				curPosEY=curPosEY+hTe;
 			}			
 			taArray.forEach(function(ta){
 				taNames.add(ta);
-			});			
-			/*if (attMapPos.has(tgdPathLine.get(att.id)[2])){
-				tgdPosSh.set(att.id,attMapPos.get(tgdPathLine.get(att.id)[2]))
-			}else{
-				tgdPosSh.set(att.id,[positionShX,positionShY]);
-				drawAtt(svg,tgdPathLine.get(att.id)[2],positionShX,positionShY,rightAlign,wTe,hTe);				
-				attMapPos.set(tgdPathLine.get(att.id)[2],[positionShX,positionShY]);
-				positionShY+=hTe;	
-			}*/		
+			});						
 			attDepth.set(tgdPathLine.get(att.id)[2],curPosEY);
 		}
 		
@@ -2501,28 +2502,34 @@ function drawSVGGraph(){
 		let curEX=[curPosEX];
 		let curEY=[curPosEY];
 		getTreeOrder(svg,attLines,curEX,curEY,matrix, indexTa,tgdGreenCond.get(key)[3],pathAttTree,tgdPosDB,attDepth);	
-		let orderShAtt=orderByValue(attDepth);
-		console.log(orderShAtt)
+		let orderShAtt=orderByValue(attDepth);		
 		let attSh=Array.from(orderShAtt.keys());
 		let posIniY=positionShY;
 		attSh.forEach(function(at){
-			drawAtt(svg,at,positionShX,positionShY,rightAlign,wTe,hTe);	
-			attMapPos.set(at,[positionShX,positionShY]);
+			drawAtt(svg,at,positionShX+widthsvgLink*6,positionShY,rightAlign,wTe,hTe);	
+			attMapPos.set(at,[positionShX+widthsvgLink*6,positionShY]);
 			positionShY+=hTe;
 		})
-		drawLine(svg,positionShX,posIniY,positionShX,positionShY-hTe,"#000000");
+		drawLine(svg,positionShX+widthsvgLink*6,posIniY,positionShX+widthsvgLink*6,positionShY-hTe,"#000000");
 		for (let att of attLines){
 			tgdPosSh.set(att.id,attMapPos.get(tgdPathLine.get(att.id)[2]));
 		}
 		//draw the paths and attributes
 		curPosEY=curEY[0]+margin;		
 		drawAttLines(svg,attLines,tgdPosDB,tgdPosSh);		
-	});
-	
+	});	
+	svg.attr("viewBox","0 0 600 "+curPosEY);
 }
-function drawText(svg,posX,posY,value,wText,hText){	
+function drawText(svg,posX,posY,value,wText,hText,type){	
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
-	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto").text(value);		
+	if (type=="rel")
+		fo.append("xhtml:div").attr("class","entRSVG").text(value)
+	else if (type=="sh"){
+		fo.append("xhtml:div").attr("class","entSSVG").text(value)
+	}else{
+		fo.append("xhtml:div").attr("class","attRSVG").text(value);
+	}
+	//.attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto").text(value);		
 }
 function drawTextAndOptions(svg,posX,posY,value,wText,hText,linkId,classDiv){	
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
@@ -2547,7 +2554,7 @@ function drawLine(svg, posiniX,posiniY,posfinX,posfinY,color){
     .style("stroke", color)
     .style("stroke-width", 1);	
 }
-function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color,type){
+function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color,type,linkId){
 	svg.append("line")
 	.attr("marker-end","url(#arrow"+type+")")
     .attr("x1", posiniX)
@@ -2556,6 +2563,10 @@ function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color,type){
     .attr("y2", posfinY)
     .style("stroke", color)
     .style("stroke-width", widthsvgLink);	
+	if (type=="Att"){
+		var fo=svg.append("foreignObject").attr("x", posfinX).attr("y", posfinY).attr("width", 5).attr("height", 5);
+		fo.append("xhtml:div").attr({id:linkId,class:"rem_blue_tgd"}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-minus-circle"></i></a>');
+	}
 }
 function drawLineArrowGreen(svg, posiniX,posiniY,posfinX,posfinY,color,type,condition){
 	if (condition!=null && condition.length>0){
@@ -2583,16 +2594,16 @@ function drawLineArrowGreen(svg, posiniX,posiniY,posfinX,posfinY,color,type,cond
 }
 function drawAtt(svg,att, posX,posY,rightAlign,wTe,hTe){		
 	drawLine(svg,posX,posY,posX+rightAlign,posY+hTe/2,"#0f0f10");
-	drawText(svg,posX+rightAlign,posY,att,wTe,hTe);	
+	drawText(svg,posX+rightAlign,posY,att,wTe,hTe,"");	
 }
 function drawAttLines(svg,attLines,tgdPosDB,tgdPosSh){
 	for (let att of attLines){
 		let positionIni=tgdPosDB.get(att.id);
 		let positionFin=tgdPosSh.get(att.id);
 		if (att.type=="att")
-			drawLineArrow(svg,positionIni[0],positionIni[1],positionFin[0],positionFin[1],attributeLinkColor,"Att");
+			drawLineArrow(svg,positionIni[0],positionIni[1],positionFin[0],positionFin[1],attributeLinkColor,"Att",att.id);
 		else{
-			drawLineArrow(svg,positionIni[0],positionIni[1],positionFin[0],positionFin[1],attributeRefLinkColor,"RefAtt");
+			drawLineArrow(svg,positionIni[0],positionIni[1],positionFin[0],positionFin[1],attributeRefLinkColor,"RefAtt",att.id);
 			
 			drawTextAndOptionsRed(svg,positionIni[0]+(positionFin[0]-positionIni[0])/2,positionIni[1]+(positionFin[1]-positionIni[1])/2,tgdPathLine.get(att.id)[3],100,25,att.id,"red_tgd");
 		}
@@ -2624,7 +2635,7 @@ function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth){
 	
 	for (let keyAtt of  keys){
 		let lenTePix=keyAtt.length*8+8;
-		drawText(svg,posX[0]+right,posY[0],keyAtt,lenTePix,hTe);
+		drawText(svg,posX[0]+right,posY[0],keyAtt,lenTePix,hTe,"");
 		console.log(keyAtt)
 		mapAtt.get(keyAtt).forEach(function(id){
 			tgdPosDB.set(id,[posX[0]+right+lenTePix,posY[0]+hTe/2]);			
@@ -2652,11 +2663,11 @@ function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,
 			drawLine(svg, before,posLevelY,before,curPosEY[0],"#000000");
 			if (!islastzeros(l+1,col,matrix)){
 				//horizontal line
-				drawLine(svg, before,curPosEY[0],curPosEX[0]+50,curPosEY[0],"#000000");	
+				drawLine(svg, before,curPosEY[0],curPosEX[0]+40,curPosEY[0],"#000000");	
 				curPosEX[0]=curPosEX[0]+40;	
 				lastYPos[0]=curPosEY[0];								
 			}
-			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText);			
+			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText,"");			
 			curPosEY[0]=curPosEY[0]+heightText;
 			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth);
 					
