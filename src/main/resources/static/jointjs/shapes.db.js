@@ -2431,7 +2431,7 @@ function drawSVGGraph(){
 	let distanceEnts=200;
 	let heightText=50;
 	let curPosEY=0;
-	let curPosEX=0;
+	let curPosEX=10;
 	let margin=50;
 	let tgdPosDB=new Map();
 	let tgdPosSh=new Map();	
@@ -2496,7 +2496,6 @@ function drawSVGGraph(){
 				}				
 			}
 		}
-		console.log(pathAttTree);
 		let matrix=Array(taNames.size).fill(null).map(() => Array(taNames.size).fill(0));
 		console.log(matrix)
 		let curEX=[curPosEX];
@@ -2519,11 +2518,7 @@ function drawSVGGraph(){
 		curPosEY=curEY[0]+margin;		
 		drawAttLines(svg,attLines,tgdPosDB,tgdPosSh);		
 	});
-	tippy('[title]', {		
-		arrow: true,		
-		followCursor: 'initial',
-		delay:200
-	})
+	
 }
 function drawText(svg,posX,posY,value,wText,hText){	
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
@@ -2616,8 +2611,9 @@ function getTreeOrder(svg,attLines,posX,posY,matrix,indexTa,taName,pathAttTree,t
 			matrix[row][col]=1;
 		}
 	}
-	let visited=Array(indexTa.size).fill(0);	
-	drawTree(svg,matrix,indexTa.get(taName),indexTa,posX,posY,wEntNode,hEntNode,visited,pathAttTree,tgdPosDB,attDetph);
+	let visited=Array(indexTa.size).fill(0);
+	let lastY=[posY[0]-hEntNode]
+	drawTree(svg,matrix,indexTa.get(taName),indexTa,posX,posY,wEntNode,hEntNode,visited,pathAttTree,tgdPosDB,attDetph,lastY);
 }
 /**
  *One character is equal to 8 pixel
@@ -2631,12 +2627,10 @@ function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth){
 		drawText(svg,posX[0]+right,posY[0],keyAtt,lenTePix,hTe);
 		console.log(keyAtt)
 		mapAtt.get(keyAtt).forEach(function(id){
-			tgdPosDB.set(id,[posX[0]+right+lenTePix,posY[0]+hTe/2]);
-			console.log(tgdPathLine.get(id)[2]);
+			tgdPosDB.set(id,[posX[0]+right+lenTePix,posY[0]+hTe/2]);			
 			if (attDepth.has(tgdPathLine.get(id)[2])){			
 				attDepth.set(tgdPathLine.get(id)[2],attDepth.get(tgdPathLine.get(id)[2])>posY[0]+hTe/2?attDepth.get(tgdPathLine.get(id)[2]):posY[0]+hTe/2);
 			}else{
-				console.log(tgdPathLine.get(id)[2]);
 				attDepth.set(tgdPathLine.get(id)[2],posY[0]+hTe/2);
 			}
 		});
@@ -2646,28 +2640,50 @@ function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth){
 	}
 	
 }
-function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth){
-	for (let l=0;l<matrix.length;l++){
-		if (matrix[l][col]==1 && visited[l]==0){
-			console.log("posx "+curPosEX)
+function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth,lastYPos){
+	let posLevelY=lastYPos[0];
+	for (let l=0;l<matrix.length;l++){		
+		if (matrix[l][col]==1 && visited[l]==0){					
 			let before=curPosEX[0];
 			let beforeY=curPosEY[0];
 			let name=getTextIndex(l,indexTa);
-			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText);
-			
+									
+			//vertical line
+			drawLine(svg, before,posLevelY,before,curPosEY[0],"#000000");
+			if (!islastzeros(l+1,col,matrix)){
+				//horizontal line
+				drawLine(svg, before,curPosEY[0],curPosEX[0]+50,curPosEY[0],"#000000");	
+				curPosEX[0]=curPosEX[0]+40;	
+				lastYPos[0]=curPosEY[0];								
+			}
+			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText);			
 			curPosEY[0]=curPosEY[0]+heightText;
-			
 			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth);
-			curPosEX[0]=curPosEX[0]+50;		
+					
 			curPosEY[0]=curPosEY[0]+heightText;
 			visited[l]=1;
-			drawTree(svg,matrix,l,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth);
-		walter16
-		drawLine(svg, before,beforeY,before,curPosEY[0],"#000000")
-			console.log("posx "+curPosEX)
+			drawTree(svg,matrix,l,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth,lastYPos);								
 			curPosEX[0]=before;
 		}
 	}
+}
+function getArrayColumFromMatrix(matrix,col){
+	let arr=[];
+	for (let i=0;i<matrix.length;i++){		
+		arr.push(matrix[i][col])
+	}	
+	return arr;
+}
+function islastzeros(pos,col,matrix){
+	let lz=true;
+	for (let i=pos;i<matrix.length;i++){
+		if (matrix[i][col]==1){
+			lz=false;
+			break;
+		}
+	}
+	return lz;
+	
 }
 function getTextIndex(posT,indexTa){
 	let te="";
