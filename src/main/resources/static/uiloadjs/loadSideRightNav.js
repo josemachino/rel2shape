@@ -302,9 +302,11 @@ modifyLinkGreen:function(e){
     }
     let linkView=auxLink.findView(paperTGDs)
     var pks=getKeys(linkView.sourceView.model.attributes.options);
-    if (pks.length>1 || mapSymbols.size>1){        
-        loadModalGreenFromTable(auxLink,auxKeySymbols,linkView.sourceView.model.attributes.options,mapSymbols);
-    }
+    
+    loadIRIAttWhereParam(auxLink,auxKeySymbols,linkView.sourceView.model.attributes.options,mapSymbols);
+    //if (pks.length>1 || mapSymbols.size>1){        
+    //    loadModalGreenFromTable(auxLink,auxKeySymbols,linkView.sourceView.model.attributes.options,mapSymbols);
+    //}
 },
 modifyLinkRed:function(e){
 	var auxKeySymbols=[];

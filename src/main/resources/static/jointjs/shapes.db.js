@@ -2106,6 +2106,133 @@ function updateParamGreenLink(pid){
     $table.bootstrapTable('updateByUniqueId',{id:pid,row:{ex:graphicTGD}})
     */
 }
+function loadIRIAttWhereParam(currentLink,iris, parameters,functionsMap){
+	let filAtt=[];
+	parameters.forEach(function(att){
+		if (att.iskey==false){			
+			if (att.type=='date'){
+				filAtt.push({id:att.id,field:att.text,type:att.type,
+					validation: {format: 'YYYY/MM/DD'},
+				    plugin: 'datepicker',
+				    plugin_config: {
+				      format: 'yyyy/mm/dd',
+				      todayBtn: 'linked',
+				      todayHighlight: true,
+				      autoclose: true
+				    }});
+			}else{
+				let typAtt="";
+				if (att.type.includes("CHAR")|| att.type=="text"){
+					typAtt="string";
+				}else{
+					typAtt=att.type;
+				}
+				filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal','contains'],default_operator: 'equal'});
+			}
+		}
+	});
+	
+	let keyParameters=filterKeyParam(parameters)
+    var CustomView = Backbone.View.extend({
+        initialize: function(opts) {
+            this.iris = opts.displayIris;
+            this.parameters=opts.displayParameters;
+        },
+        render: function() {
+            var divContainer=document.createElement('div');
+            divContainer.className="container";
+            var divDropdown=document.createElement('div');
+            divDropdown.id='ddIriConstructor';
+            divDropdown.className='dropdown';
+            
+            var iriUrl=createText("iriUrl");
+            
+            var items = createList(this.iris);            
+            var buttonDropIri=createButton(this.iris[0].text);
+            divDropdown.appendChild(buttonDropIri);
+            divDropdown.appendChild(iriUrl);
+            divDropdown.appendChild(items);
+            
+            var divDropdownParameters=document.createElement('div');
+            divDropdownParameters.id='ddParameter';
+            divDropdownParameters.className='dropdown';
+            var buttonDropParameter=createButton(this.parameters[0].text);
+            divDropdownParameters.appendChild(buttonDropParameter);
+            var itemsParameters=createList(this.parameters);        
+            divDropdownParameters.appendChild(itemsParameters);
+                        
+            divContainer.appendChild(divDropdown);        
+            divContainer.appendChild(divDropdownParameters);
+            
+            var divQuery=document.createElement('div');            
+            divQuery.id='queryB'; 
+            divContainer.appendChild(divQuery);
+            
+            this.$el.html(divContainer);        
+            return this;
+        },
+        events :{
+            "click .dropdown-menu a":"changeName",
+            "click #ddIriConstructor a":"changeInputText"
+        },
+        changeName: function(e) {                                           
+            $(e.target).parents(".dropdown").find('.btn').html($(e.target).text().replace(/,/g,'&#10781;') + ' <span class="caret"></span>');            
+            $(e.target).parents(".dropdown").find('.btn').val($(e.target).data('value'));
+        },
+        changeInputText:function (e) {
+            $("#iriUrl").val(functionsMap.get($(e.target).text().trim()));            
+        }
+    });
+    var modal = new BackboneBootstrapModals.ConfirmationModal({        
+        headerViewOptions:{showClose:false, label: 'Define IRI Constructor'},
+        bodyView: CustomView,
+        bodyViewOptions: { displayIris: iris, displayParameters:keyParameters },
+        onConfirm: function(a) {                                 
+            if ($("#ddParameter .btn").text().trim()=="Constructor Parameters" || $("#ddIriConstructor .btn").text().trim()=="IRI Constructors"){
+                alert("Need to specify IRI and Parameter")
+                this.isConfirmed=false;                
+            }else{            
+                var valueIRI=$("#ddIriConstructor .btn").text().trim();
+                valueIRI=valueIRI.concat("(");
+                valueIRI=valueIRI.concat($("#ddParameter .btn").text().trim());
+                valueIRI=valueIRI.concat(")");
+                if (currentLink.labels().length>0){
+                    currentLink.removeLabel(-1);
+                }            
+                currentLink.appendLabel({attrs: {text: {text: valueIRI}}});
+                //verify if it does not exist a link with the same IRI already in the canvas
+                let notFound=true;
+                if (notFound){
+                	drawSVGGraph();
+                }
+            }
+            
+            let conditions=$('#queryB').queryBuilder('getRules',{ skip_empty: true });
+        	if (conditions!=null && conditions.valid==true){        		
+        		let condToStr=getCondWhere(conditions.rules);
+        		currentLink.appendLabel({
+        			markup: [{tagName: 'rect',selector: 'labelBody'}, {tagName: 'text',selector: 'text'}],
+                    attrs: {
+                        text: {
+                            text: condToStr,
+                            fill: '#7c68fc',
+                            fontFamily: 'sans-serif',
+                            textAnchor: 'middle',
+                            textVerticalAnchor: 'middle'
+                        },
+                        labelBody: {ref: 'text',refX: -5,refY: -5,refWidth: '100%',refHeight: '100%',refWidth2: 10,refHeight2: 10,stroke: '#7c68fc',fill: 'white',strokeWidth: 2,rx: 5,ry: 5}
+                    },position: {offset: -40}});        		        		
+        		tgdGreenCond.get(currentLink.id)[0]=condToStr;
+        		
+        	}   
+        },        
+        onCancel: function(){            
+        }        
+    });
+    modal.render();
+    $('#queryB').queryBuilder({filters:filAtt});
+}
+
 /**
  * This methods is called from a entity mapping
  * */
@@ -2471,7 +2598,7 @@ function drawSVGGraph(){
 			if (taArray.length==1){								
 				drawAtt(svg,tgdPathLine.get(att.id)[1],curPosEX,curPosEY,rightAlign,wTe,hTe);
 				let pix=tgdPathLine.get(att.id)[1].length*8+8;
-				tgdPosDB.set(att.id,[curPosEX+rightAlign+pix,curPosEY+hTe/2]);				
+				tgdPosDB.set(att.id,[curPosEX+rightAlign+wTe,curPosEY+hTe/2]);				
 				curPosEY=curPosEY+hTe;
 			}			
 			taArray.forEach(function(ta){
@@ -2536,8 +2663,8 @@ function drawTextAndOptions(svg,posX,posY,value,wText,hText,linkId,classDiv){
 	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto;display:inline").text(value);	
 	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"edit_"+classDiv}).html('<a data-tooltip="true" title="Edit IRI"><i class="fas fa-edit"></i></a>');
 	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"rem_"+classDiv}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-trash-alt"></i></a>');
-	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"adc_"+classDiv}).html('<a data-tooltip="true" title="Add Condition"><i class="fas fa-plus-square"></i></a>');
-	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"dec_"+classDiv}).html('<a data-tooltip="true" title="Delete Condition"><i class="fas fa-minus-square"></i></a>');
+	//fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"adc_"+classDiv}).html('<a data-tooltip="true" title="Add Condition"><i class="fas fa-plus-square"></i></a>');
+	//fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"dec_"+classDiv}).html('<a data-tooltip="true" title="Delete Condition"><i class="fas fa-minus-square"></i></a>');
 }
 function drawTextAndOptionsRed(svg,posX,posY,value,wText,hText,linkId,classDiv){	
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
