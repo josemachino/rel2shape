@@ -153,7 +153,7 @@ joint.dia.Element.define('shex.Type',{
         for (let option of options){            
             sizeOpt=Math.max(sizeOpt,option.label.length+option.type.length+option.mult.length)   
         }
-        var width = sizeOpt*8+(fontSizeAttribute/6)*32;		
+        var width = sizeOpt*8+(fontSizeAttribute/6)*32+16;		
         /*var width = joint.util.measureText(this.get('question'), {
             fontSize: this.attr('.question-text/font-size')
         }).width;*/

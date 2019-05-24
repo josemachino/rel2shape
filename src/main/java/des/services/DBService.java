@@ -36,10 +36,16 @@ public class DBService {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
+	
+	
 	public byte[] getResultFile(String format, String[] queries) {
-
-		// proceed to the chase with sql inserting the values in the triple store
-		executeQueries(jdbcTemplate, Arrays.asList(queries));
+		
+		try {
+			// proceed to the chase with sql inserting the values in the triple store
+			executeQueries(jdbcTemplate, Arrays.asList(queries));
+		}catch(Exception ex) {
+			return null;
+		}
 		
 		termShTypes=jdbcTemplate.query("SELECT * FROM AllTyped",new ResultSetExtractor<Map<String,Set<String>>>(){
 			@Override

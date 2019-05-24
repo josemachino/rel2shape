@@ -2,6 +2,7 @@
 /*
  *change background when is a different path
  */
+//https://sample-videos.com/download-sample-sql.php
 //https://github.com/cytoscape/cytoscape.js/issues/2189
 //http://ceur-ws.org/Vol-1456/paper4.pdf
 //https://jsfiddle.net/zc3k1f48/42/
@@ -1152,7 +1153,8 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
     //loop all links that are table id to type id    
     let parentId;
     let idTable;
-    let greenTableName=relNames[relNames.length-1];    
+    let greenTableName=relNames[relNames.length-1];
+    console.log(mapTableIdCanvas)
     for (const [key,value] of mapTableIdCanvas){
         if (key==greenTableName){
             idTable=value;
@@ -1187,7 +1189,7 @@ function buildBlueLink(parentId,attLineId,path,sEnt,tEnt,sAtt,tAtt,condition){
 /**
  * This function creates the attribute ref lines in the table view
  * */
-function buildRedLink(parentId,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){	
+function buildRedLink(parentId,attLineId,path,sEnt,tEnt,sAtt,tAtt,fIRI){		
 	tgdLines.get(parentId).push({id:attLineId,type:'attRef'});
 	tgdPathLine.set(attLineId,[path,sAtt,tAtt,fIRI,sEnt,tEnt])
 }

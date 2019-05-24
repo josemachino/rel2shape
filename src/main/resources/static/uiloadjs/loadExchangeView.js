@@ -75,6 +75,19 @@ exchange:function(e){
 	      })
 	      .fail(function(jqXHR, textStatus, errorThrown) {        
 	        console.log(textStatus);
+	        //show an dialog box saything that must be loaded some a database
+	        var errorView = Backbone.View.extend({
+	        	render: function() {
+	        		 var divForm1 = document.createElement("div");
+	                 divForm1.setAttribute("class","form-group");
+	                 
+	        		this.$el.html(divForm1);                
+	                return this;
+	        	}
+	        	
+	        });
+	        var modal = new BackboneBootstrapModals.ConfirmationModal({ headerViewOptions:{showClose:false, label: 'No Database Loaded'},bodyView: errorView});
+	        modal.render();
 	      })
 	      .always(function() {
 	        

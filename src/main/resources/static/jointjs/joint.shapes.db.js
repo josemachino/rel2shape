@@ -175,7 +175,6 @@ joint.dia.Element.define('db.Table',{
 
             var portY = offsetY - optionHeight / 2 + questionHeight;
             if (option.iskey ){          
-            	console.log('pk-'.concat(this.get('question')).concat(option.id));
             	if(!this.getPort('pk-'.concat(this.get('question')).concat(option.id))){
             		this.addPort({group:'pk',id:'pk-'.concat(this.get('question')).concat(option.id),args:{y: portY }});
             	}

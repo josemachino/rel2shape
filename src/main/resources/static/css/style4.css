@@ -263,6 +263,7 @@ span {
 
 #sidebar ul li a {
     text-align: left;
+    color:white;
 }
 
 #sidebar.active ul li a {

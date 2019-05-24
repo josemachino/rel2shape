@@ -55,11 +55,13 @@ Exchange.prototype.getKeyByValue=function(object, value){
 
 Exchange.prototype.getSubjectFunctionTerm=function(graph, model,s_fterm, portType,bind){
 	    var aux_links=graph.getConnectedLinks(model, {outbound:true});
-	    for (var s_link of aux_links){                                
-	        if (model.getPort(s_link.attributes.source.port).group=='in' && s_link.attributes.target.port==portType){
-	            var fterm=s_link.labels()[0].attrs.text.text.split('(');
-	            s_fterm.push({function:fterm[0],args:[{rel:this.getKeyByValue(bind,model.attributes.question),attr:fterm[1].slice(0,-1)}]});
-	            break;
+	    for (var s_link of aux_links){
+	        if (s_link.attributes.target.port==portType){
+	        	if (model.getPort(s_link.attributes.source.port).group=='in'){
+		            var fterm=s_link.labels()[0].attrs.text.text.split('(');
+		            s_fterm.push({function:fterm[0],args:[{rel:this.getKeyByValue(bind,model.attributes.question),attr:fterm[1].slice(0,-1)}]});
+		            break;
+	        	}
 	        }
 	    }        
 };
@@ -217,11 +219,10 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
                             var mapBFD=new Map();
                             for (var element of graph.getElements()){                            
                                 if (mapTables.get(name)==element.id){
-                                    var elementView=element.findView(paper);  
-									
-									if (i==relNames.length-1)
+                                    var elementView=element.findView(paper);  									
+									if (i==relNames.length-1){										
 										this.getSubjectFunctionTerm(graph,elementView.model,s_fterm, linkView.targetView.model.attributes.ports.items[0].id,rule.bind);
-									
+									}
                                     mapFD.set(name,[]);
                                     mapFD.set(relNames[i+1],[]);
                                     for (var opt of elementView.model.attributes.options){                                        

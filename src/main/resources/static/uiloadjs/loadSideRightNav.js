@@ -100,9 +100,11 @@ activate:function(e){
 ,
 undost:function(e){
 	console.log("undo");
-	//remove all elements from table	
+	//remove all elements from table
+	mapTableIdCanvas=new Map();
 	tgdLines.clear();
 	tgdGreenCond.clear();
+	mapSymbols=new Map();
 	//and import
 	if (sessionGO.length>0){
 		let lastSaved=sessionGO.pop();
@@ -146,8 +148,7 @@ undost:function(e){
 			var edgeView=link.findView(paperTGDs);
 			if (edgeView.sourceView.model.attributes.type=="db.Table" && edgeView.targetView.model.attributes.type=="shex.Type"){				
 				let tLinkport=link.get('target').port.split(',');
-				if (tLinkport.length==3 && tLinkport[1]=='Literal'){
-					console.log("blue "+link.id);
+				if (tLinkport.length==3 && tLinkport[1]=='Literal'){					
 					drawNewBlueLinkInTable(link)
 				}
 				if (tLinkport.length==3 && tLinkport[1]!='Literal')	{				

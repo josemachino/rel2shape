@@ -28,15 +28,21 @@ public class DbController {
 	@PostMapping(path="/chase") 
 	@Transactional(timeout = 5000)
     public @ResponseBody ResponseEntity<StreamingResponseBody> chaseRule(@RequestParam("queries") String queries) {
-		String[] ls_Query=queries.split("\n");				
-        final StreamingResponseBody body = out -> out.write(dbService.getResultFile("RDF/JSON",ls_Query));       		
-
+		//check that database is not empty
+		String[] ls_Query=queries.split("\n");
+		byte[] resultMapping=dbService.getResultFile("RDF/JSON",ls_Query);
+		if (resultMapping==null) {
+			return ResponseEntity.unprocessableEntity().body(null);
+		}else {
+        final StreamingResponseBody body = out -> out.write(resultMapping);       		
+        
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentDispositionFormData("filename", "triples.rj");
         
         return ResponseEntity.ok()
                 .headers(headers)
                 .contentType(MediaType.valueOf("application/rdf+json"))
-                .body(body); 
+                .body(body);
+		}
     }
 }
