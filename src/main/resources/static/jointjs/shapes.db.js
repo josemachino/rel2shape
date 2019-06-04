@@ -91,7 +91,8 @@ var paperTGDs = new joint.dia.Paper({
     drawGrid: true,
     snapLinks: { radius: 75 },
     background: {
-        color: 'rgba(0, 255, 0, 0.3)'
+        //color: 'rgba(0, 255, 0, 0.3)'
+    	color: '#ffffcc'
     },
     snapLinks: {radius:75},
     interactive: { labelMove: true },

@@ -1,15 +1,16 @@
 /*https://github.com/393799203/rappid/blob/master/apps/QAD/src/snippet.js*/
-let fontFamily="Arial";
+let fontFamily="Lucida Sans";
 let fontSizeAttribute=20;
 let fontSizeEntity=25;
 
-let colorbgEnt='#507255';
-let colorbgAtt='#488b49';
+//let colorbgEnt='#507255';
+let colorbgEnt='#00664d'
+let colorbgAtt='#009973'//'#488b49';
 
 let colorTEnt='white';
 let colorTAtt='white';
 
-let portColorOutPk='#c5e063';
+let portColorOutPk='#e3d90d';
 let portColorOutAtt='#6eb257';
 
 joint.shapes.db = {};
@@ -98,7 +99,7 @@ joint.dia.Element.define('db.Table',{
 
         // Text styling.
         text: { 'font-family': fontFamily },
-        '.option-text': { 'font-size': fontSizeAttribute, fill: colorTAtt, 'y-alignment': .7, 'x-alignment': 30 },
+        '.option-text': { 'font-size': fontSizeAttribute, fill: colorTAtt, 'y-alignment': -1, 'x-alignment': 30 },
         '.question-text': {
             fill: colorTEnt,
             refX: '50%',

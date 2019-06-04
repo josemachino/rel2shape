@@ -1,12 +1,12 @@
 
-let shcolorbgEnt='#4e5340';
-let shcolorbgAtt='#697268';
+let shcolorbgEnt='#003366';
+let shcolorbgAtt='#004d99';
 
 let shcolorTEnt='white';
 let shcolorTAtt='white';
 
 let shportColorOutPk='#b7d1da';
-let shportColorOutAtt='#e2e8dd';
+let shportColorOutAtt='#03e3fc';
 joint.shapes.shex = {};
 joint.dia.Element.define('shex.Type',{
     optionHeight: 30,
@@ -32,7 +32,7 @@ joint.dia.Element.define('shex.Type',{
             out: {position: 'left',
                 attrs:{portBody2: {magnet: 'passive',stroke: 'none', fill: shportColorOutAtt, r: 9}}
             },
-            outype: {position: 'left', attrs:{portBody2: {magnet: 'passive', stroke: 'none', fill: shportColorOutAtt, r: 9 }}}
+            outype: {position: 'left', attrs:{portBody2: {magnet: 'passive', stroke: 'none', fill: shportColorOutPk, r: 9 }}}
         },
         items: [{group:'inType'},{group:'refType'}]
     },
@@ -48,7 +48,7 @@ joint.dia.Element.define('shex.Type',{
 
         // Text styling.
         text: { 'font-family': fontFamily },
-        '.option-text': { 'font-size': fontSizeAttribute, fill: shcolorTAtt, 'y-alignment': .7, 'x-alignment': 20 },
+        '.option-text': { 'font-size': fontSizeAttribute, fill: shcolorTAtt, 'y-alignment': -1, 'x-alignment': 20 },
         '.question-text': {
             fill: shcolorTEnt,
             refX: '50%',
