@@ -1422,10 +1422,11 @@ function loadModal(currentLink,iris, parameters,functionsMap){
                 currentLink.appendLabel({attrs: {text: {text: valueIRI}}});            
                 
                 createLinkTool(currentLink);
-                var linkView=currentLink.findView(paperTGDs)
+                //var linkView=currentLink.findView(paperTGDs)
                 /*let graphicTGD=$('<div>').append($('<span>').attr('class','li_tgd').append(linkView.sourceView.model.attributes.question)).append($('<div>').attr('class','link_tgd').append((((currentLink.labels()[0]|| {}).attrs||{}).text||{}).text).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:currentLink.id,class:'edit_green_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:'17px',width:widthSVGForLine}).append($('<line>').attr({class:'arrowGreen',x1:0,x2:widthSVGLine,y1:10,y2:10})))).append($('<span>').attr('class', 'li_tgd').append(linkView.targetView.model.attributes.question)).remove().html();
                 $table.bootstrapTable('append',[{id:currentLink.id,ex:graphicTGD}])
-                */            
+                */
+                drawSVGGraph();
             }
         },        
         onCancel: function(){
