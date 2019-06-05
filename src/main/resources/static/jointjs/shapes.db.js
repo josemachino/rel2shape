@@ -1174,10 +1174,11 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
     buildRedLink(parentId,redLink.id,relNames,greenTableName,tHead,sAtt,tAtt,fObject);
 }
 
-function buildGreenLink(greenLink,sHead,fSubject,tHead,condition,constructorDefIri){		
+function buildGreenLink(greenLink,sHead,fSubject,tHead,condition,constructorDefIri){
+	
 	tgdLines.set(greenLink.id,[]);	
 	tgdGreenCond.set(greenLink.id,[condition,constructorDefIri,fSubject,sHead,tHead]);
-
+	console.log(tgdLines);
 }
 
 /**
@@ -1201,6 +1202,7 @@ function drawNewGreenLinkInTable(greenLink,sHead,fSubject,tHead,condition){
 
 function drawNewBlueLinkInTable(blueLink){	
 	let joinPath=(((blueLink.labels()[0]|| {}).attrs||{}).text||{}).text;
+	console.log(joinPath)
 	let relNames=getTokens(joinPath)
 	let linkView=blueLink.findView(paperTGDs);
 	var inTargetLinks=graphTGDs.getConnectedLinks(linkView.targetView.model, {inbound:true});
@@ -1210,7 +1212,8 @@ function drawNewBlueLinkInTable(blueLink){
     //loop all links that are table id to type id    
     let parentId;
     let idTable;
-    let greenTableName=relNames[relNames.length-1];    
+    let greenTableName=relNames[relNames.length-1];
+    console.log(mapTableIdCanvas)
     for (const [key,value] of mapTableIdCanvas){
         if (key==greenTableName){
             idTable=value;
@@ -1231,7 +1234,7 @@ function drawNewBlueLinkInTable(blueLink){
 	let constraintAtt="";
 	if (blueLink.labels().length>1)
 		constraintAtt=(((blueLink.labels()[1]|| {}).attrs||{}).text||{}).text;
-	
+	console.log(parentId)
 	buildBlueLink(parentId,blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);	
 }
 
