@@ -260,9 +260,9 @@ paperTGDs.on('link:connect',function(linkView){
 							fIRI=keysMap[1]+"("+sAtt+")";
 						}else{
 							fIRI=keysMap[0]+"("+sAtt+")";
-						}
+						}                        
+                        currentLink.appendLabel({attrs: {text: {text: fIRI}},position: {offset: 10}});
                         currentLink.appendLabel({attrs: {text: {text: tablesConnected[0].text}},position: {offset: -10}});
-                        currentLink.appendLabel({attrs: {text: {text: fIRI}},position: {offset: 10}});                        
                         drawNewRedLinkInTable(currentLink,linkView.sourceView.model.attributes.question,sAtt,tablesConnected[0].text,fIRI,linkView.targetView.model.attributes.question)
                         drawSVGGraph();
                     }else{																	
@@ -1155,6 +1155,7 @@ function drawNewRedLinkInTable(redLink,sHead,sAtt,path,fObject,tHead){
     let parentId;
     let idTable;
     let greenTableName=relNames[relNames.length-1];
+    console.log(greenTableName);
     console.log(mapTableIdCanvas)
     for (const [key,value] of mapTableIdCanvas){
         if (key==greenTableName){
@@ -1422,10 +1423,8 @@ function loadModal(currentLink,iris, parameters,functionsMap){
                 currentLink.appendLabel({attrs: {text: {text: valueIRI}}});            
                 
                 createLinkTool(currentLink);
-                //var linkView=currentLink.findView(paperTGDs)
-                /*let graphicTGD=$('<div>').append($('<span>').attr('class','li_tgd').append(linkView.sourceView.model.attributes.question)).append($('<div>').attr('class','link_tgd').append((((currentLink.labels()[0]|| {}).attrs||{}).text||{}).text).append($('<a>').attr({'data-tooltip':'true',title:'Edit',id:currentLink.id,class:'edit_green_tgd'}).append($('<i>').attr('class','fas fa-edit'))).append($('<svg>').attr({height:'17px',width:widthSVGForLine}).append($('<line>').attr({class:'arrowGreen',x1:0,x2:widthSVGLine,y1:10,y2:10})))).append($('<span>').attr('class', 'li_tgd').append(linkView.targetView.model.attributes.question)).remove().html();
-                $table.bootstrapTable('append',[{id:currentLink.id,ex:graphicTGD}])
-                */
+                var linkView=currentLink.findView(paperTGDs)
+                drawNewGreenLinkInTable(currentLink,linkView.sourceView.model.attributes.question,valueIRI,linkView.targetView.model.attributes.question);
                 drawSVGGraph();
             }
         },        
@@ -2577,7 +2576,7 @@ function drawSVGGraph(){
 	let margin=40;
 	let beginSpace=10;
 	let tgdPosDB=new Map();
-	let tgdPosSh=new Map();	
+	let tgdPosSh=new Map();		
 	tgdLines.forEach(function(attLines,key,map){
 		//draw source Entity
 		drawText(svg,curPosEX,curPosEY,tgdGreenCond.get(key)[3],widthText,heightText,"rel");		

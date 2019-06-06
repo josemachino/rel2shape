@@ -159,6 +159,7 @@ undost:function(e){
 					
 					let fObject=(((link.labels()[0]|| {}).attrs||{}).text||{}).text;
 					let tHead=edgeView.targetView.model.attributes.question;
+					
 					drawNewRedLinkInTable(link,sHead,sAtt,path,fObject,tHead)
 				}
 			}
