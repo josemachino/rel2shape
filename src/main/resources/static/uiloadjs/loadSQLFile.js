@@ -23,7 +23,7 @@ render: function(){
     this.$el.html( template );
 },
 events: {
-    //"change input[type=file]": "doSearch",
+    //"change input[type=file]": "doSearchSQL",
     "submit":"uploadFile"
 },
 uploadFile:function (event){

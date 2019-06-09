@@ -58,12 +58,9 @@
 
 </head>
 <body>
-
-<div class="wrapper">
 <nav id="sidebar"></nav>
-
+<div class="wrapper">
 <div id="content">
-
 	<div class="tab-content">
 		<div class="tab-pane fade" id="database">
 			<div id="sql_container"></div>
@@ -89,43 +86,42 @@
 <script src="jointjs/Exchange.js"></script>
 <script src="jointjs/shapes.db.js"></script>
 <script type="text/template" id="side_template">
-        <div class="sidebar-header">
-            <a id="sideLeftcollapse"><h3>Data Exchange</h3></a>
-            <a id="sideLeftcollapse"><strong>DE</strong></a>
-        </div>
-        <ul class="list-unstyled components nav-tabs" role="tablist">
-            <li>
-                <a href="#database" role="tab" data-toggle="tab">
-                    <i class="fas fa-database"></i>
-                    Load Database
-                </a>
-            </li>
-            <li>
-                <a href="#shex" role="tab" data-toggle="tab">
-                    <i class="fas fa-cubes"></i>
-                    Load ShEx or SHACL
-                </a>
-            </li>            
-            <li>
-                <a href="#exchange" role="tab" data-toggle="tab">                    
-                    <i class="fas fa-file-export"></i>
-                    Materialize
-                </a>
-            </li>
-			<li id="tgd">
-                <a  href="#mappings" role="tab" data-toggle="tab">
-                    <i class="fas fa-exchange-alt"></i>
-                    GML
-                </a>
-            </li>
-			<!--<li id="testing">
-                <a  role="tab" data-toggle="tab">                    
-                    <i class="fas fa-tasks"></i>
-                    Unit Testing
-                </a>
-            </li>-->
-        </ul>
-    </script>
+<div class="menu-head">
+<div><i class="fas fa-database fa-lg"></i><h3>Load Database</h3></div>
+<input type="file" accept=".sql" class="form-control-file form-control" id="sqlFile" aria-describedby="filelHelp" placeholder="Enter SQL file"> 
+</div>
+<div class="menu-head">
+<div><i class="fas fa-cubes fa-lg"></i><h3>Load Shape Schema</h3></div>
+<input type="file" accept=".json" id="shapeFile"  class="form-control"/>
+</div>
+<div class="menu-head-lg">
+<div><i class="fas fa-file-export fa-lg"></i><h3>Materialize</h3></div>
+<div class="form-control">
+<select>
+  <option value="Turtle">Turtle</option>
+  <option value="N-Triples">N-Triples</option>
+  <option value="JSON-LD">JSON-LD</option>
+  <option value="RDF/XML">RDF/XML</option>
+  <option value="RDF/JSON">RDF/JSON</option>
+</select>
+<button class="btn" id="graphRDF" type="button" data-toggle="tooltip" data-placement="right" title="Export to Graph"><i class="fas fa-eye fa-lg"></i></button>
+<button class="btn btn-info" id="sqlTGD" type="button" data-toggle="tooltip" data-placement="right" title="Export to SQL"> SQL</button>
+<button class="btn btn-info" id="r2rmlTGD" type="button" data-toggle="tooltip" data-placement="right" title="Export to R2RML"> R2RML</button>
+</div>
+</div>
+<div class="menu-head">
+<div><i class="fas fa-file-import fa-lg"></i><h3>Load GML</h3></div>
+  <input id="importst" type="file" placeholder="Load GML" class="form-control-file form-control"/>
+</div>
+<div class="menu-head">
+<div><i class="fas fa-tasks fa-lg"></i> <h3>Editor</h3></div>
+<button class="btn" id="exportst" type="button" data-toggle="tooltip" data-placement="right" title="Export"> <i class="fas fa-file-export"></i></button>
+<button class="btn" id="undost" type="button" data-toggle="tooltip" data-placement="right" title="Undo" ><i class="fas fa-undo"></i></button>
+<button class="btn" id="savest" type="button" data-toggle="tooltip" data-placement="right" title="Save"><i class="far fa-save"></i></button>
+<button class="btn" id="conf" type="button" data-toggle="tooltip" data-placement="right" title="Color Line Configuration"><i class="fas fa-cog"></i></button>
+<button class="btn" id="gml" type="button" data-toggle="tooltip" data-placement="right" title="View Code"><i class="fas fa-code"></i></button>
+</div>
+</script>
 <script type="text/template" id="search_template">
 	<form>
 	<div class="form-group">
@@ -158,21 +154,10 @@
 		<div class="result"></div>
     </script>
 <script type="text/template" id="sideright_template">
-        <div class="sidebar-header">
-            <a id="rightCollapsed"><h3>Set of Mappings</h3></a>
-			<a id="rightCollapsed"><strong>ST-TGDs</strong></a>            
-        </div>
-		<div class="rightside">
-		<div class="form-group">
-		   <button class="btn" id="exportst" type="button" data-toggle="tooltip" data-placement="right" title="Export"> <i class="fas fa-file-export"></i></button>
-		   <button class="btn" id="undost" type="button" data-toggle="tooltip" data-placement="right" title="Undo" ><i class="fas fa-undo"></i></button>
-		   <button class="btn" id="savest" type="button" data-toggle="tooltip" data-placement="right" title="Save"><i class="far fa-save"></i></button>
-		   <button class="btn" id="conf" type="button" data-toggle="tooltip" data-placement="right" title="Line Configuration"><i class="fas fa-user-cog"></i></button>			
-		</div>
-		<div class="form-group">
-			<label for="importst">Import Graphic File</label>
-		   <input id="importst" type="file" placeholder="Import Graphics" class="form-control-file form-control"/> 
-		</div>        
+
+        <div class="sidebar-header">           
+			<button class="btn" id="rightCollapsed" type="button" data-toggle="tooltip" data-placement="right" title="Collapse"> <i class="fas fa-angle-double-right fa-2x"></i></button>			            
+        </div>		        
         <div id="tableTGD">
 		</div>    
     </script>

@@ -2566,14 +2566,15 @@ function drawSVGGraph(){
 	.append("path")
 		.attr("d", "M0,0 L0,6 L9,3 z")
 		.attr("style","fill:"+attributeRefLinkColor);
-	let hTe=25;
+	let hTe=27;
 	let wTe=100;
 	let widthText=150;
 	let distanceEnts=200;
-	let heightText=25;
+	let heightText=27;
 	let curPosEY=20;
 	let curPosEX=10;
-	let margin=40;
+	let margin=50;
+	let spaceHeight=15;
 	let beginSpace=10;
 	let tgdPosDB=new Map();
 	let tgdPosSh=new Map();		
@@ -2584,9 +2585,7 @@ function drawSVGGraph(){
 		drawText(svg,curPosEX+widthText+distanceEnts+widthsvgLink*6,curPosEY,tgdGreenCond.get(key)[4],widthText,heightText,"sh");
 		drawLineArrowGreen(svg,curPosEX+widthText,curPosEY+heightText/2,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor,"Ent",tgdGreenCond.get(key)[0]);				
 		//draw IRI over line
-		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/3,curPosEY-heightText/2,tgdGreenCond.get(key)[2],widthText,heightText,key,"green_tgd");
-		//if there is condition create a tippy object
-		
+		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/3,curPosEY-heightText/2,tgdGreenCond.get(key)[2],widthText,heightText,key,"green_tgd");		
 		
 		
 		curPosEY=curPosEY+heightText+beginSpace;
@@ -2605,7 +2604,7 @@ function drawSVGGraph(){
 				drawAtt(svg,tgdPathLine.get(att.id)[1],curPosEX,curPosEY,rightAlign,wTe,hTe);
 				let pix=tgdPathLine.get(att.id)[1].length*8+8;
 				tgdPosDB.set(att.id,[curPosEX+rightAlign+wTe,curPosEY+hTe/2]);				
-				curPosEY=curPosEY+hTe;
+				curPosEY=curPosEY+hTe+spaceHeight;
 			}			
 			taArray.forEach(function(ta){
 				taNames.add(ta);
@@ -2638,10 +2637,13 @@ function drawSVGGraph(){
 		let orderShAtt=orderByValue(attDepth);		
 		let attSh=Array.from(orderShAtt.keys());
 		let posIniY=positionShY;
+		/*
+		 * Draws the attributes of each shex type
+		 * */
 		attSh.forEach(function(at){
-			drawAtt(svg,at,positionShX+widthsvgLink*6,positionShY,rightAlign,wTe,hTe);	
+			drawAttSh(svg,at,positionShX+widthsvgLink*6,positionShY,rightAlign,wTe,hTe);	
 			attMapPos.set(at,[positionShX+widthsvgLink*6,positionShY]);
-			positionShY+=hTe;
+			positionShY+=hTe+spaceHeight;
 		})
 		drawLine(svg,positionShX+widthsvgLink*6,posIniY,positionShX+widthsvgLink*6,positionShY-hTe,"#000000");
 		for (let att of attLines){
@@ -2659,8 +2661,10 @@ function drawText(svg,posX,posY,value,wText,hText,type){
 		fo.append("xhtml:div").attr("class","entRSVG").text(value)
 	else if (type=="sh"){
 		fo.append("xhtml:div").attr("class","entSSVG").text(value)
-	}else{
+	}else if (type=="rel-att"){
 		fo.append("xhtml:div").attr("class","attRSVG").text(value);
+	}else{
+		fo.append("xhtml:div").attr("class","attSSVG").text(value);
 	}
 	//.attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto").text(value);		
 }
@@ -2725,8 +2729,14 @@ function drawLineArrowGreen(svg, posiniX,posiniY,posfinX,posfinY,color,type,cond
 	
 	
 }
-function drawAtt(svg,att, posX,posY,rightAlign,wTe,hTe){		
-	drawLine(svg,posX,posY,posX+rightAlign,posY+hTe/2,"#0f0f10");
+function drawAtt(svg,att, posX,posY,rightAlign,wTe,hTe){
+	drawLine(svg,posX,posY,posX,posY+hTe/2,"#0f0f10");
+	drawLine(svg,posX,posY+hTe/2,posX+rightAlign,posY+hTe/2,"#0f0f10");
+	drawText(svg,posX+rightAlign,posY,att,wTe,hTe,"rel-att");	
+}
+function drawAttSh(svg,att, posX,posY,rightAlign,wTe,hTe){
+	drawLine(svg,posX,posY,posX,posY+hTe/2,"#0f0f10");
+	drawLine(svg,posX,posY+hTe/2,posX+rightAlign,posY+hTe/2,"#0f0f10");
 	drawText(svg,posX+rightAlign,posY,att,wTe,hTe,"");	
 }
 function drawAttLines(svg,attLines,tgdPosDB,tgdPosSh){
@@ -2746,7 +2756,7 @@ function drawAttLines(svg,attLines,tgdPosDB,tgdPosSh){
 function getTreeOrder(svg,attLines,posX,posY,matrix,indexTa,taName,pathAttTree,tgdPosDB,attDetph){
 	//let posXRank=[posX];
 	let wEntNode=100;
-	let hEntNode=25;	
+	let hEntNode=27;	
 	for (let att of attLines){
 		let taArray=tgdPathLine.get(att.id)[0];
 		for (let i=taArray.length-2;i>=0;i--){
@@ -2757,7 +2767,8 @@ function getTreeOrder(svg,attLines,posX,posY,matrix,indexTa,taName,pathAttTree,t
 	}
 	let visited=Array(indexTa.size).fill(0);
 	let lastY=[posY[0]-hEntNode]
-	drawTree(svg,matrix,indexTa.get(taName),indexTa,posX,posY,wEntNode,hEntNode,visited,pathAttTree,tgdPosDB,attDetph,lastY);
+	let spaceH=15;
+	drawTree(svg,matrix,indexTa.get(taName),indexTa,posX,posY,wEntNode,hEntNode,visited,pathAttTree,tgdPosDB,attDetph,lastY,spaceH);
 }
 /**
  *One character is equal to 8 pixel
@@ -2768,8 +2779,10 @@ function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth){
 	
 	for (let keyAtt of  keys){
 		let lenTePix=keyAtt.length*8+8;
-		drawText(svg,posX[0]+right,posY[0],keyAtt,lenTePix,hTe,"");
-		console.log(keyAtt)
+		drawLine(svg,posX[0],posY[0],posX[0],posY[0]+hTe/2,"#0f0f10");
+		drawLine(svg,posX[0],posY[0]+hTe/2,posX[0]+right,posY[0]+hTe/2,"#0f0f10");
+		
+		drawText(svg,posX[0]+right,posY[0],keyAtt,lenTePix,hTe,"rel-att");		
 		mapAtt.get(keyAtt).forEach(function(id){
 			tgdPosDB.set(id,[posX[0]+right+lenTePix,posY[0]+hTe/2]);			
 			if (attDepth.has(tgdPathLine.get(id)[2])){			
@@ -2784,7 +2797,7 @@ function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth){
 	}
 	
 }
-function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth,lastYPos){
+function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth,lastYPos,spaceHeight){
 	let posLevelY=lastYPos[0];
 	for (let l=0;l<matrix.length;l++){		
 		if (matrix[l][col]==1 && visited[l]==0){					
@@ -2798,13 +2811,13 @@ function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,
 				//horizontal line
 				drawLine(svg, before,curPosEY[0],curPosEX[0]+40,curPosEY[0],"#000000");	
 				curPosEX[0]=curPosEX[0]+40;	
-				lastYPos[0]=curPosEY[0];								
+				lastYPos[0]=curPosEY[0]+spaceHeight;								
 			}
-			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText,"");			
-			curPosEY[0]=curPosEY[0]+heightText;
+			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText,"rel");			
+			curPosEY[0]=curPosEY[0]+heightText+spaceHeight;
 			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth);
 					
-			curPosEY[0]=curPosEY[0]+heightText;
+			curPosEY[0]=curPosEY[0]+heightText+spaceHeight;
 			visited[l]=1;
 			drawTree(svg,matrix,l,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth,lastYPos);								
 			curPosEX[0]=before;
@@ -2842,4 +2855,27 @@ function getTextIndex(posT,indexTa){
 }
 function orderByValue(map){
 	return  new Map([...map.entries()].sort((a, b) => a[1] - b[1]));
+}
+
+function loadGMLCode(){	
+	var exchange=new Exchange();
+	let textCode=exchange.GMLCan(mapSymbols,tgdLines,mapTableIdCanvas,tgdGreenCond);
+	var ExtendedModal = BackboneBootstrapModals.BaseModal.extend({
+		  headerView: BackboneBootstrapModals.BaseHeaderView,
+		  headerViewOptions: {
+		    label: 'GML Code',		    
+		    showClose:true,
+		  },
+		  bodyView: BackboneBootstrapModals.BaseBodyView,
+          bodyViewOptions: {
+              text: textCode
+            },		  
+          footerView: BackboneBootstrapModals.BaseFooterView,
+		  footerViewOptions: {
+		    buttons: [		      		      
+		    ]
+		  }
+		});
+		var modal = new ExtendedModal();
+		modal.render();	
 }

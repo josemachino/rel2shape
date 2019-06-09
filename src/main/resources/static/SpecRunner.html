@@ -33,3 +33,156 @@
 <div id="mydb" style="display:none">&nbsp;</div>
 </body>
 </html>
+
+
+#sidebar.active {
+    min-width: 80px;
+    max-width: 80px;
+    text-align: center;
+}
+
+#sidebar.active .sidebar-header h3,
+#sidebar.active .CTAs {
+    display: none;
+}
+
+#sidebar.active .sidebar-header strong {
+    display: block;
+}
+
+#sidebar ul li a {
+    text-align: left;
+    color:white;
+}
+
+#sidebar.active ul li a {
+    padding: 20px 10px;
+    text-align: center;
+    font-size: 0.85em;
+}
+
+#sidebar.active ul li a i {
+    margin-right: 0;
+    display: block;
+    font-size: 1.8em;
+    margin-bottom: 5px;
+}
+
+#sidebar.active ul ul a {
+    padding: 10px !important;
+}
+
+#sidebar.active .dropdown-toggle::after {
+    top: auto;
+    bottom: 10px;
+    right: 50%;
+    -webkit-transform: translateX(50%);
+    -ms-transform: translateX(50%);
+    transform: translateX(50%);
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #6d7fcc;
+}
+
+#sidebar .sidebar-header strong {
+    display: none;
+    font-size: 1.8em;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #47748b;
+}
+
+#sidebar ul li a {
+    padding: 10px;
+    font-size: 1.1em;
+    display: block;
+}
+
+#sidebar ul li a:hover {
+    color: #7386D5;
+    background: #fff;
+}
+
+#sidebar ul li a i {
+    margin-right: 10px;
+}
+
+#sidebar ul li.active>a,
+a[aria-expanded="true"] {
+    color: #fff;
+    background: #6d7fcc;
+}
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+.dropdown-toggle::after {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+ul ul a {
+    font-size: 0.9em !important;
+    padding-left: 30px !important;
+    background: #6d7fcc;
+}
+
+ul.CTAs {
+    padding: 20px;
+}
+
+ul.CTAs a {
+    text-align: center;
+    font-size: 0.9em !important;
+    display: block;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+
+<script type="text/template" id="side_template">
+        <div class="sidebar-header">
+            <a id="sideLeftcollapse"><h3>Data Exchange</h3></a>
+            <a id="sideLeftcollapse"><strong>DE</strong></a>
+        </div>
+        <ul class="list-unstyled components nav-tabs" role="tablist">
+            <li>
+                <a href="#database" role="tab" data-toggle="tab">
+                    <i class="fas fa-database"></i>
+                    Load Database
+                </a>
+            </li>
+            <li>
+                <a href="#shex" role="tab" data-toggle="tab">
+                    <i class="fas fa-cubes"></i>
+                    Load ShEx or SHACL
+                </a>
+            </li>            
+            <li>
+                <a href="#exchange" role="tab" data-toggle="tab">                    
+                    <i class="fas fa-file-export"></i>
+                    Materialize
+                </a>
+            </li>
+			<li id="tgd">
+                <a  href="#mappings" role="tab" data-toggle="tab">
+                    <i class="fas fa-exchange-alt"></i>
+                    GML
+                </a>
+            </li>
+			<!--<li id="testing">
+                <a  role="tab" data-toggle="tab">                    
+                    <i class="fas fa-tasks"></i>
+                    Unit Testing
+                </a>
+            </li>-->
+        </ul>
+    </script>

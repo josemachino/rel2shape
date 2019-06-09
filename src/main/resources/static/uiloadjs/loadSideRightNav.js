@@ -28,7 +28,8 @@ initialize: function(){
     
 },
 render: function(){
-    var template = _.template( $("#sideright_template").html(), {} );
+    var template = _.template( $("#side_template").html(), {} );
+    
     this.$el.html( template );
 },
 events: {
@@ -36,7 +37,10 @@ events: {
      "click #undost":"undost",
      "click #savest":"savest",
      "click #conf":"configure",
-     "change input[type=file]":"import",
+     "click #gml":"viewCode",
+     "change input[type=file]#importst ":"import",
+     "change input[type=file]#sqlFile": "doSearchSQL",
+     "change input[type=file]#shapeFile": "doSearchShape",
      "click .edit_tgd":"modifyTGD",
      "click .edit_green_tgd":"modifyLinkGreen",
      "click .rem_green_tgd":"removeGreenTGD",
@@ -47,6 +51,204 @@ events: {
      "click #rightCollapsed":"activate",
      "click .dec_green_tgd":"removeParamGreen",
      "click .rem_blue_tgd":"removeBlueTGD"
+},
+doSearchShape:function(event){
+	var reader = new FileReader();
+    reader.onload = function onReaderLoad(event){        
+	    var obj = JSON.parse(event.target.result);
+	    mapSymbols=new Map();
+	    positionShexType=getPositionFromDB(graphTGDs)
+	    //TODO IDENTIFY IF IT IS SHACL OR SHEX
+	    try{
+	    let contextObj=obj["@context"];
+	    console.log(typeof(contextObj));
+	    if(typeof(contextObj)==="string" && contextObj.includes("shex") && typeof(obj.shapes)!=="undefined"){	    	
+	    	obj.shapes.forEach(function(shape){
+		        if (shape.type=='Shape'){                
+		            let tcs=[];
+		            if (shape.expression.type=='EachOf'){
+		                tc={};
+		                shape.expression.expressions.forEach(function(expression){                      
+		                    if (expression.type=='TripleConstraint'){
+		                        typeLabel='';
+		                        if (typeof(expression.valueExpr)==='string'){
+		                            typeLabel=expression.valueExpr.split('/').pop();
+		                        }else{
+		                            typeLabel='Literal'; 
+		                        }
+		                        multiplicity='';
+		                        if (typeof(expression.max)==='undefined' || expression.max==expression.min){
+		                            multiplicity='1';
+		                        }else{
+		                            if (expression.max==1 && expression.min==0){
+		                            	multiplicity='?';
+		                            }
+		                            if (expression.max==-1 && expression.min==0){
+		                            	multiplicity='*';
+		                            }
+		                            if (expression.max>1 && expression.min==1){
+		                            	multiplicity='+';
+		                            }
+		                        }
+		                        
+		                                        
+		                    tc={label:expression.predicate.split('/').pop(),type:typeLabel, mult:multiplicity};                        
+		                    tcs.push(tc);
+		                    }
+		                });      
+		                var num=mapSymbols.size+1;
+		                let subF="shape"+num;
+		                let nameShape=shape.id.split('/').pop();
+		                if (nameShape.length>3){
+		                	console.log(nameShape)
+		                	subF=nameShape.substr(0,3)
+		                }
+		                mapSymbols.set(subF+"2iri",shape.id);
+		                var sExpression=createShexType(nameShape,tcs,positionShexType);
+		                let mapExpr=new Map();	                
+		                mapExpr.set(sExpression.attributes.id+","+sExpression.attributes.ports.items[1].id,tcs)
+		                expressions.set(sExpression.attributes.question,mapExpr)	                
+		                graphShex.addCell(sExpression);                
+		            }
+		            
+		        }
+		    });
+	    
+		    
+	    }else{
+	    	//parse shacl
+	    	
+	    	let shapes=obj['@graph'];
+	    	shapes.forEach(function(shape){
+	    		if (shape['@type']=="NodeShape"){
+	    			let tcs=[];
+	    			let propArr=shape.property;	
+	    			if (typeof(propArr)!=="undefined"){
+		    			if (propArr instanceof Array){	    					    				
+		    				for (var prop of propArr){		    					
+		    					if (typeof(prop.path)==="string"){
+		    						addTC(prop,tcs);			    
+		    					}
+					    	};
+		    			}else{
+		    				if (typeof(propArr.path)==="string"){		    				
+		    					addTC(propArr,tcs);
+		    				}
+		    			}
+			    		var num=mapSymbols.size+1;
+			    		
+			    		let idText="";
+			    		if (shape['@id'].includes("http")){
+			    			idText=shape['@id'].split("/").pop();
+			    		}else{
+			    			idText=shape['@id'].split(":").pop();
+			    		}
+			    		mapSymbols.set("f"+num,shape['@id']);
+			    		var sExpression=createShexType(idText,tcs,positionShexType);		    		
+			    		let mapExpr=new Map();	                
+			    		mapExpr.set(sExpression.attributes.id+","+sExpression.attributes.ports.items[1].id,tcs)
+			    		expressions.set(sExpression.attributes.question,mapExpr)	                
+			    		graphShex.addCell(sExpression);
+	    			}
+	    		}
+	    	});	    		 
+	    }
+	    }catch(err){
+	    	alert("Error in parsing ShEx or Shacl "+err.message);	    	
+	    }	    
+	    if (graphShex.getCells().length>0){
+	    	try{
+		    drawRefTypes(graphShex,expressions)	;
+	    	}catch(errExpr){
+	    		alert("Error in drawing references "+errExpr.message+". Review if the schema has everything specified.");	
+	    	}
+	    	joint.layout.DirectedGraph.layout(graphShex.getCells(),getLayoutOptionsNotVertices());
+		    let pos=getPositionFromDB(graphTGDs)
+		    graphShex.getCells().forEach(function(cell){	    	
+		    	if (!cell.isLink()){		    	
+			    	cell.set('position',{x:cell.get('position').x+pos.x,y:cell.get('position').y})
+			    	graphTGDs.addCell(cell)
+		    	}else{
+		    		let arrayVert=cell.get('vertices')
+		    		arrayVert.forEach(function(it){
+		    			it.x=it.x+pos.x
+		    		})
+		    		cell.set('vertices',arrayVert)
+		    		graphTGDs.addCell(cell)
+		    	}
+		    });
+			paperTGDs.fitToContent({padding: 50,allowNewOrigin: 'any' });
+	    }
+    };
+    try{
+    reader.readAsText(event.currentTarget.files[0]);
+    }
+    catch(errExpr){
+    	alert("No File chosen");    	
+    }
+    
+    var form = new FormData();
+	form.append("file", event.currentTarget.files[0]);	
+	$.ajax({
+        url: "uploadShexFile",
+        type: "POST",
+        data: form,
+        processData: false,
+        contentType: false,
+        enctype: 'multipart/form-data'
+      })
+      .done(function(data) {        
+    	  
+		console.log("File Uploaded")
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {        
+        console.log(textStatus);
+      })
+      .always(function() {
+        
+      });
+},
+doSearchSQL:function(e){	
+	var fileName= $('#sqlFile')[0].files[0];			
+	var form = new FormData();
+	form.append("file", fileName);	
+	$.ajax({
+        url: "uploadFile",
+        type: "POST",
+        data: form,
+        processData: false,
+        contentType: false,
+        enctype: 'multipart/form-data'
+      })
+      .done(function(data) {
+    	  console.log(data);
+        positionTable= { x: 70, y: 10 };
+        graphTGDs.clear();        
+        mapTableIdCanvas=new Map();
+        
+        //Add the tables
+        for (var i=0;i< data.length ;i++){      
+            var tableCanvas=createTable(data[i].key,data[i].items,positionTable);           
+            mapTableIdCanvas.set(data[i].key,tableCanvas.id);
+            graphTGDs.addCell(tableCanvas);    
+        }
+        drawReferences(graphTGDs,data,mapTableIdCanvas);        
+        joint.layout.DirectedGraph.layout(graphTGDs.getCells(),getLayoutOptions());
+		paperTGDs.fitToContent({
+                padding: 50,
+                allowNewOrigin: 'any'
+            });
+		console.log("File Uploaded")
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {        
+        console.log(textStatus);
+      })
+      .always(function() {
+        
+      });
+},
+viewCode:function(e){
+	loadGMLCode();
 },
 removeBlueTGD:function(e){
 	let currentLink=graphTGDs.getCell(e.currentTarget.id);
@@ -121,7 +323,11 @@ undost:function(e){
 				mapTableIdCanvas.set(element.attributes.question,element.id)
 			}
 			if (element.attributes.type=="shex.Type"){
-				mapSymbols.set("f"+num,namespace+element.attributes.question);
+				let subF="shape"+num;
+				if (element.attributes.question.length>3){
+					subF=element.attributes.question.substr(0,3);
+				}
+				mapSymbols.set(subF+"2iri",namespace+element.attributes.question);
 				num++;
 			}
 		})
@@ -358,303 +564,4 @@ removeParam:function(e){
 }
 });
 
-var side_view = new sideView({ el: $("#sidebar-right") });
-
-/*var tgdsCy=cytoscape({container: document.getElementById('tableTGD'),
-	style: [
-	    {
-	      selector: 'node',
-	      css: {
-	        'label': 'data(label)',
-	        'shape': 'data(type)',
-	        'text-valign': 'center',
-	        'text-halign': 'center',
-	        'height': 40	        
-	      }
-	    },
-	    {
-		      selector: 'node.rentity',
-		      css: {
-		        'background-color':rRectColor,
-		        'background-opacity': '0'
-		      }
-		    },				    
-		    {
-			      selector: 'node.tentity',
-			      css: {
-			    	  'background-color':tRectColor,
-				      'background-opacity': '0'
-			      }
-			    },
-	    {
-	       selector: ':parent',
-	       css: {
-	          'text-valign': 'top',
-	          'text-halign': 'center',
-	       }
-	    },
-	    {
-	       selector: 'edge[label]',
-	       css: {
-	          'label': 'data(label)',			          
-	          'width': 3,
-	          'curve-style': 'bezier',
-	          'target-arrow-shape': 'triangle',
-	          'text-valign': 'top',
-	          'text-halign': 'center',
-	          'text-background-color':'#ffffff',
-	          'text-background-opacity': 1
-	          //'text-margin-y': -10
-	       }
-	    },
-	    {
-    	  selector: 'edge.entity',
-    	  css: {    		
-    	    'curve-style': 'taxi',
-    	    'taxi-direction': 'upward',
-    	    'taxi-turn': 20,
-    	    'taxi-turn-min-distance': 5,
-    	    'source-endpoint': 'outside-to-node',
-    	    'target-endpoint': 'outside-to-node',
-    	    'line-color':subjectLinkColor
-    	  }
-	    },
-    	{
-    	  selector: 'edge.att',
-    	  css: {				    	   		    		  
-    	    'line-color':attributeLinkColor
-    	  }
-	    },
-	    {
-	      selector: 'edge.attRef',
-	      css: {				    	   
-	        'line-color':attributeRefLinkColor
-	      }
-		}
-	    ],
-  layout: { name: 'grid', columns: 2}});
-
-tgdsCy.contextMenus({
-menuItems: [
-      {
-        id: 'remove',
-        content: 'remove',
-        tooltipText: 'remove',
-        image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
-        selector: 'edge',
-        onClickFunction: function (event) {
-          var target = event.target || event.cyTarget;
-          
-          let currentLink=graphTGDs.getCell(target.id());
-	    	  currentLink.remove();	    	  
-        },
-        hasTrailingDivider: true
-      },
-      {
-          id: 'remove-condition',
-          content: 'remove Condition',
-          tooltipText: 'remove Condition',
-          image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
-          selector: 'edge.entity',
-          onClickFunction: function (event) {
-            var target = event.target || event.cyTarget;
-            
-            let auxLink;
-            for (var link of graphTGDs.getLinks()){        
-                if (link.id==target.id()){
-                    auxLink=link;
-                    break;
-                }
-            }
-            if (auxLink.labels().length>1){
-                auxLink.removeLabel(-1)
-                //update link 
-                //tgdsCy.$('#'+auxLink.id).data('labelS','');     
-                tgdGreenCond.get(auxLink.id)[0]='';
-                if (tgdGreenPopper.has(auxLink.id)){
-                	tgdGreenPopper.get(auxLink.id).destroy();
-                }
-                                
-            }
-          }
-        },
-        {
-            id: 'remove-Param',
-            content: 'remove Parameter',
-            tooltipText: 'remove Parameter',
-            image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
-            selector: 'edge.att',
-            onClickFunction: function (event) {
-              var target = event.target || event.cyTarget;
-              
-              let auxLink;
-              for (var link of graphTGDs.getLinks()){        
-                  if (link.id==target.id()){
-                      auxLink=link;
-                      break;
-                  }
-              }
-              if (auxLink.labels().length>1){
-                  auxLink.removeLabel(-1)
-                  //update link 
-                  tgdsCy.$('#'+auxLink.id).data('label','');                        
-              }
-            }
-          },
-      {
-          id: 'add-Where',
-          content: 'add Conditions',
-          selector: 'edge.entity',
-          tooltipText: 'add Conditions to the Entity Mapping',
-          image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-          coreAsWell: true,
-          onClickFunction: function (event) {                	  
-        	  var target = event.target || event.cyTarget;
-        	  try{
-        	  let auxLink;
-        	  for (var link of graphTGDs.getLinks()){        
-        	        if (link.id==target.id()){
-        	            auxLink=link;
-        	            break;
-        	        }
-        	    }
-        	  let linkView=auxLink.findView(paperTGDs);
-        	  loadWhereParam(auxLink,linkView.sourceView.model.attributes.options,tgdsCy);
-        	  }catch(err){
-        		  console.log("id not selected");
-        	  }
-          }
-        },
-        {
-            id: 'attach-file',
-            content: 'Attach file Constructor',
-            selector: 'edge.entity',
-            tooltipText: 'Attach file Constructor',
-            image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-            onClickFunction: function (event) {                	  
-          	  var target = event.target || event.cyTarget;                  	  
-          	  let auxLink;
-          	  for (var link of graphTGDs.getLinks()){        
-      	        if (link.id==target.id()){
-      	            auxLink=link;
-      	            break;
-      	        }
-          	  }
-          	  let linkView=auxLink.findView(paperTGDs);
-          	  loadAttachFile(auxLink,tgdsCy);                	  
-            }
-          },
-          {
-              id: 'unattach-file',
-              content: 'Unattach file Constructor',
-              selector: 'edge.entity',
-              tooltipText: 'Unattach file Constructor',
-              image: {src : "cytoscape/remove.svg", width : 12, height : 12, x : 6, y : 4},
-              onClickFunction: function (event) {                	              	   
-            	  tgdCy.$id(target.id()).data('labelT','');
-              }
-            },
-        {
-            id: 'add-Param',
-            content: 'add Parameters',
-            selector: 'edge.att',
-            tooltipText: 'add Parameters to the attribute',
-            image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-            coreAsWell: true,
-            onClickFunction: function (event) {                  	  
-          	  var target = event.target || event.cyTarget;                  	
-              	let auxLink;
-                for (var link of graphTGDs.getLinks()){        
-                    if (link.id==target.id()){
-                        auxLink=link;
-                        break;
-                    }
-                }
-                loadModalFunctions(auxLink,tgdsCy);
-            }
-          },
-        {
-            id: 'modify-IRI',
-            content: 'modify IRI',
-            selector: 'edge.entity',
-            tooltipText: 'add Conditions to the Entity Mapping',
-            image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},
-            coreAsWell: true,
-            onClickFunction: function (event) {  
-            	var target = event.target || event.cyTarget;
-            	var auxKeySymbols=[];
-                for (const key of mapSymbols.keys()) {
-                    var obj={text:key};                        
-                    auxKeySymbols.push(obj);
-                }
-                let auxLink;
-                for (var link of graphTGDs.getLinks()){        
-                    if (link.id==target.id()){
-                        auxLink=link;
-                        break;
-                    }
-                }
-                let linkView=auxLink.findView(paperTGDs)
-                var pks=getKeys(linkView.sourceView.model.attributes.options);
-                if (pks.length>1 || mapSymbols.size>1){        
-                    loadModalGreenFromTable(auxLink,auxKeySymbols,linkView.sourceView.model.attributes.options,mapSymbols,tgdsCy);
-                }
-            }
-          },
-          {
-              id: 'modify-IRI-Ref',
-              content: 'modify IRI',
-              selector: 'edge.attRef',
-              tooltipText: 'Modify IRI',
-              image: {src : "cytoscape/add.svg", width : 12, height : 12, x : 6, y : 4},                      
-              onClickFunction: function (event) {  
-              	var target = event.target || event.cyTarget;
-              	var auxKeySymbols=[];
-                for (const key of mapSymbols.keys()) {
-                    var obj={text:key};                        
-                    auxKeySymbols.push(obj);
-                }
-                let auxLink;
-                for (var link of graphTGDs.getLinks()){        
-                    if (link.id==e.currentTarget.id){
-                        auxLink=link;
-                        break;
-                    }
-                }
-                let linkView=auxLink.findView(paperTGDs);
-            	var tablesConnected=[{id:linkView.sourceView.model.id,text:linkView.sourceView.model.attributes.question}];   	
-                var intargetLinks=graphTGDs.getConnectedLinks(linkView.targetView.model, {inbound:true});
-                var portType=linkView.targetView.model.attributes.ports.items[0];
-                var tLinks=getLinkTarget(intargetLinks,portType);                                        
-                let sourceAtt=getSourceOptionNameLinkView(linkView)
-                for (var tlink of tLinks){							
-                    var tView=tlink.findView(paperTGDs);  							
-                    var visited=[];
-                    getJoinsTableFromTo(linkView.sourceView.model,tablesConnected,tView.sourceView.model.id,visited,tablesConnected[0]);	
-                }
-                
-                if (tablesConnected.length>1 || auxKeySymbols.length>1){
-                	loadModalRedFromTable(auxLink,auxKeySymbols,tablesConnected,mapSymbols,sourceAtt,intargetLinks,tgdsCy);
-            	}
-              }
-            }
-      ]});
-tgdsCy.panzoom({});
-var makeTippy = function(node, text){
-	return tippy( node.popperRef(), {
-		content: function(){
-			var div = document.createElement('div');
-
-			div.innerHTML = text;
-
-			return div;
-		},
-		trigger: 'manual',
-		distance:30,
-		arrow: true,
-		placement: 'top',
-		hideOnClick: false,
-		multiple: true,
-		sticky: true
-	} );
-};*/
+var side_view = new sideView({ el: $("#sidebar") });

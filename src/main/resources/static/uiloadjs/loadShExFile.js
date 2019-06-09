@@ -72,7 +72,7 @@ render: function(){
     this.$el.html( template );
 },
 events: {
-    "change input[type=file]": "doSearch"
+    "change input[type=file]": "doSearchShape"
 },
 doSearch: function( event ){
     // Button clicked, you can access the element that was clicked with event.currentTarget      
@@ -121,8 +121,14 @@ doSearch: function( event ){
 		                    }
 		                });      
 		                var num=mapSymbols.size+1;
-		                mapSymbols.set("f"+num,shape.id);
-		                var sExpression=createShexType(shape.id.split('/').pop(),tcs,positionShexType);
+		                let subF="shape"+num;
+		                let nameShape=shape.id.split('/').pop();
+		                if (nameShape.length>3){
+		                	console.log(nameShape)
+		                	subF=nameShape.substr(0,3)
+		                }
+		                mapSymbols.set(subF+"2iri",shape.id);
+		                var sExpression=createShexType(nameShape,tcs,positionShexType);
 		                let mapExpr=new Map();	                
 		                mapExpr.set(sExpression.attributes.id+","+sExpression.attributes.ports.items[1].id,tcs)
 		                expressions.set(sExpression.attributes.question,mapExpr)	                
