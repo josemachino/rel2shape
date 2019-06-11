@@ -258,20 +258,29 @@ span {
     transition: all 0.3s;
 }
 .menu-head-lg{
-	width:20.5%;
+	width:22%;
 	display:inline-block;
 }
 .menu-head-lg h3{
 	margin-left:5px;
 	display:inline-block;
 }
+.menu-head-md{
+	width:21%;
+	display:inline-block;
+}
+.menu-head-md h3{
+	margin-left:5px;
+	display:inline-block;
+}
 .menu-head{
-	width:19%;
+	width:18%;
 	display:inline-block;
 }
 .menu-head h3{
 	margin-left:5px;
 	display:inline-block;
+	width:80%;
 }
 
 

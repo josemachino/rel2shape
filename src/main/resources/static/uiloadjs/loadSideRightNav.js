@@ -48,9 +48,85 @@ events: {
      "click .rem_red_tgd":"removeLinkRed",
      "click .adc_green_tgd":"addCondition",
      "click .rem_param_blue_tgd":"removeParam",
-     "click #rightCollapsed":"activate",
      "click .dec_green_tgd":"removeParamGreen",
-     "click .rem_blue_tgd":"removeBlueTGD"
+     "click .rem_blue_tgd":"removeBlueTGD",
+     "click #sqlTGD":"getSQL",
+     "click #r2rmlTGD":"getR2RML",
+     "click #graphRDF":"materialize"
+},
+materialize:function(e){
+	var exchange=new Exchange();
+	exchange.generateQuery(mapSymbols,graphTGDs,paperTGDs,mapTableIdCanvas);
+	console.log($( "select#formats" ).val());
+	$.ajax({	  
+        url: "chase",
+        type: "POST",
+        data:  {queries:exchange.chaseQueryDB,format:$( "select#formats" ).val()}
+      })
+      .done(function(data) {
+        console.log(data)        
+		/*var triples=[];
+        for(var uri in data){
+        	for(var property in data[uri]){
+        		for(var i=0; i<data[uri][property].length; i++ ){
+      	          var s = uri;
+      	          var p = property;
+      	          var o = data[uri][property][i]['value'];	        	          
+      	          triples.push({subject:s,predicate:p,object:o})
+        		}
+      	  	}  
+        }*/
+        let nameExt="";
+        if ($( "select#formats" ).val()=="Turtle"){
+        	nameExt="ttl";
+        }else if ($( "select#formats" ).val()=="N-Triples"){
+        	nameExt="nt";
+        }else{
+        	nameExt="rj";
+        }
+        
+        const fileStream = streamSaver.createWriteStream('triples.'+nameExt)
+		const writer = fileStream.getWriter()
+		const encoder = new TextEncoder		
+		let uint8array = encoder.encode(JSON.stringify(data))	
+		writer.write(uint8array)
+		writer.close();
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {        
+        console.log(textStatus);
+        //show an dialog box saything that must be loaded some a database
+        var errorView = Backbone.View.extend({
+        	render: function() {
+        		 var divForm1 = document.createElement("div");
+                 divForm1.setAttribute("class","form-group");
+                 
+        		this.$el.html(divForm1);                
+                return this;
+        	}
+        	
+        });
+        var modal = new BackboneBootstrapModals.ConfirmationModal({ headerViewOptions:{showClose:false, label: 'No Database Loaded'},bodyView: errorView});
+        modal.render();
+      })
+      .always(function() {
+        
+      });
+},
+getR2RML:function(e){
+	var exchange=new Exchange();
+	exchange.generateQuery(mapSymbols,graphTGDs,paperTGDs,mapTableIdCanvas);
+	var linkC = document.createElement("a");
+	linkC.download = 'R2RML.ttl';
+	linkC.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(exchange.RMLScript);
+	linkC.click();
+},
+getSQL:function(e){
+	var exchange=new Exchange();
+	exchange.generateQuery(mapSymbols,graphTGDs,paperTGDs,mapTableIdCanvas);
+	var linkC = document.createElement("a");	
+	linkC.download = 'chase.sql';
+    linkC.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(exchange.chaseScript);
+    linkC.click();
 },
 doSearchShape:function(event){
 	var reader = new FileReader();
@@ -234,10 +310,10 @@ doSearchSQL:function(e){
         }
         drawReferences(graphTGDs,data,mapTableIdCanvas);        
         joint.layout.DirectedGraph.layout(graphTGDs.getCells(),getLayoutOptions());
-		paperTGDs.fitToContent({
+		/*paperTGDs.fitToContent({
                 padding: 50,
                 allowNewOrigin: 'any'
-            });
+            });*/
 		console.log("File Uploaded")
       })
       .fail(function(jqXHR, textStatus, errorThrown) {        
@@ -296,10 +372,6 @@ addCondition:function(e){
     loadWhereParam(auxLink,linkView.sourceView.model.attributes.options);
     
 },
-activate:function(e){    
-    $('#sidebar-right').toggleClass('active');
-}
-,
 undost:function(e){
 	console.log("undo");
 	//remove all elements from table
@@ -312,10 +384,10 @@ undost:function(e){
 		let lastSaved=sessionGO.pop();
 		
 		graphTGDs.fromJSON(lastSaved);   
-		paperTGDs.fitToContent({
+		/*paperTGDs.fitToContent({
 	        padding: 50,
 	        allowNewOrigin: 'any'
-	    });    	
+	    });*/    	
 		let num=1;
 		let namespace="http://example.com/"
 		graphTGDs.getElements().forEach(function(element){
@@ -389,10 +461,10 @@ import:function(e){
     	tgdGreenCond.clear();
     	//TODO create the table of mappings and load the global variables
     	graphTGDs.fromJSON(obj);   
-    	paperTGDs.fitToContent({
+    	/*paperTGDs.fitToContent({
             padding: 50,
             allowNewOrigin: 'any'
-        });    	
+        });*/    	
     	let num=1;
     	let namespace="http://example.com/"
     	graphTGDs.getElements().forEach(function(element){
@@ -400,9 +472,13 @@ import:function(e){
     			mapTableIdCanvas.set(element.attributes.question,element.id)
     		}
     		if (element.attributes.type=="shex.Type"){
-    			mapSymbols.set("f"+num,namespace+element.attributes.question);
-    			num++;
-    		}
+				let subF="shape"+num;
+				if (element.attributes.question.length>3){
+					subF=element.attributes.question.substr(0,3);
+				}
+				mapSymbols.set(subF+"2iri",namespace+element.attributes.question);
+				num++;
+			}
     	})
     	var links=graphTGDs.getLinks();			
     	for (var link of links){

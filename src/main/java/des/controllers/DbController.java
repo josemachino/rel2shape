@@ -27,21 +27,36 @@ public class DbController {
 	}	
 	@PostMapping(path="/chase") 
 	@Transactional(timeout = 5000)
-    public @ResponseBody ResponseEntity<StreamingResponseBody> chaseRule(@RequestParam("queries") String queries) {
+    public @ResponseBody ResponseEntity<StreamingResponseBody> chaseRule(@RequestParam("queries") String queries,@RequestParam("format") String format) {
 		//check that database is not empty
 		String[] ls_Query=queries.split("\n");
-		byte[] resultMapping=dbService.getResultFile("RDF/JSON",ls_Query);
+		System.out.println(format);
+		byte[] resultMapping=dbService.getResultFile(format,ls_Query);
 		if (resultMapping==null) {
+			System.out.println("error null mapping");
 			return ResponseEntity.unprocessableEntity().body(null);
 		}else {
         final StreamingResponseBody body = out -> out.write(resultMapping);       		
         
         final HttpHeaders headers = new HttpHeaders();
-        headers.setContentDispositionFormData("filename", "triples.rj");
-        
+        String nameTripleFile="triples.";
+        String mediaType="application/";
+        if (format.equals("Turtle")) {
+        	nameTripleFile+="ttl";
+        	mediaType+="x-turtle";
+        }else if (format.equals("N-Triples")) {
+        	nameTripleFile+="nt";
+        	mediaType="text/plain";
+        }else {
+        	nameTripleFile+="rj";
+        	mediaType+="rdf+json";
+        }
+        System.out.println(nameTripleFile);
+        headers.setContentDispositionFormData("filename",nameTripleFile);
+        System.out.println(mediaType);
         return ResponseEntity.ok()
                 .headers(headers)
-                .contentType(MediaType.valueOf("application/rdf+json"))
+                .contentType(MediaType.valueOf(mediaType))
                 .body(body);
 		}
     }

@@ -73,8 +73,10 @@ public class FileUploadController {
         final InputStream in = new FileInputStream(sqlFile.getFile());
 		final String sqlContent = util.read(in);
 		//create the database in a parallel process
+		System.out.println("error date");
 		final Database database = sqlImport.getDatabase(sqlContent);		
         //Return the structure that will draw the graphic        
+		System.out.println("error date2");
         return dbService.createH2DB(database);
     }
 	
