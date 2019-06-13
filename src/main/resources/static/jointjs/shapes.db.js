@@ -2668,13 +2668,13 @@ function drawSVGGraph(){
 function drawText(svg,posX,posY,value,wText,hText,type){	
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
 	if (type=="rel")
-		fo.append("xhtml:div").attr("class","entRSVG").text(value)
+		fo.append("xhtml:div").attr({"class":"entRSVG","data-tooltip":true,"title":value}).text(value)
 	else if (type=="sh"){
-		fo.append("xhtml:div").attr("class","entSSVG").text(value)
+		fo.append("xhtml:div").attr({"class":"entSSVG","data-tooltip":true,"title":value}).text(value)
 	}else if (type=="rel-att"){
-		fo.append("xhtml:div").attr("class","attRSVG").text(value);
+		fo.append("xhtml:div").attr({"class":"attRSVG","data-tooltip":true,"title":value}).text(value);
 	}else{
-		fo.append("xhtml:div").attr("class","attSSVG").text(value);
+		fo.append("xhtml:div").attr({"class":"attSSVG","data-tooltip":true,"title":value}).text(value);
 	}
 	//.attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto").text(value);		
 }
@@ -2795,8 +2795,8 @@ function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth,spaceH){
 		posY[0]+=spaceH;
 	}	
 	for (let keyAtt of  keys){
-		let lenTePix=keyAtt.length*8+8;
-		
+		//let lenTePix=keyAtt.length*8+8;
+		let lenTePix=70;
 		drawLine(svg,posX[0]+spacewMargin,posY[0]-spacehMargin,posX[0]+spacewMargin,posY[0]+hTe/2,"#0f0f10");
 		drawLine(svg,posX[0]+spacewMargin,posY[0]+hTe/2,posX[0]+spacewMargin+right,posY[0]+hTe/2,"#0f0f10");
 		
@@ -2830,14 +2830,15 @@ function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,
 				//horizontal line
 				drawLine(svg, before,curPosEY[0],curPosEX[0]+40,curPosEY[0],"#000000");	
 				curPosEX[0]=curPosEX[0]+40;	
-				lastYPos[0]=curPosEY[0];								
+				//lastYPos[0]=curPosEY[0];								
 			}
 			//vertical line
 			drawLine(svg, before+spacewMargin,posLevelY,before+spacewMargin,curPosEY[0],"#000000");
 			
 			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText,"rel");			
 			curPosEY[0]=curPosEY[0]+heightText;
-			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth,spaceHeight);			
+			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth,spaceHeight);
+			lastYPos[0]=curPosEY[0];
 			curPosEY[0]=curPosEY[0]+heightText+spaceHeight;
 			visited[l]=1;
 			drawTree(svg,matrix,l,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth,lastYPos,spaceHeight);								

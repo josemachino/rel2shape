@@ -3,6 +3,7 @@
     display: inline-block;
     position: relative;
     width: 100%;
+    height:100%;
     padding-bottom: 100%; /* aspect ratio */
     vertical-align: top;
     overflow: hidden;
@@ -20,6 +21,8 @@
 	border:solid 1px #000;
 	text-align:center;	
 	background-color:#A2D9CC;
+	overflow:hidden;
+	text-overflow:ellipsis;
 }
 .entSSVG{
 	-moz-border-radius:10px 10px 10px 10px;  
@@ -27,6 +30,8 @@
 	border:solid 1px #000;
 	text-align:center;
 	background-color:#A2B4C7;
+	overflow:hidden;
+	text-overflow:ellipsis;
 }
 
 .attRSVG{
@@ -37,6 +42,8 @@
 	overflow-x:auto;
 	background-color:#D0ECE5;
 	padding-left:3px;
+	overflow:hidden;
+	text-overflow:ellipsis;
 }
 .attSSVG{
 	-moz-border-radius:10px 10px 10px 10px;  
@@ -46,6 +53,8 @@
 	overflow-x:auto;
 	background-color:#D0DEEC;
 	padding-left:3px;
+	overflow:hidden;
+	text-overflow:ellipsis;
 }
 
 .rowTGD{
