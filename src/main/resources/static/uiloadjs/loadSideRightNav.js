@@ -461,10 +461,10 @@ import:function(e){
     	tgdGreenCond.clear();
     	//TODO create the table of mappings and load the global variables
     	graphTGDs.fromJSON(obj);   
-    	/*paperTGDs.fitToContent({
+    	paperTGDs.fitToContent({
             padding: 50,
             allowNewOrigin: 'any'
-        });*/    	
+        });    	
     	let num=1;
     	let namespace="http://example.com/"
     	graphTGDs.getElements().forEach(function(element){

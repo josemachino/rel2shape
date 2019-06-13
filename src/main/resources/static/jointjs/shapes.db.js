@@ -2779,19 +2779,21 @@ function getTreeOrder(svg,attLines,posX,posY,matrix,indexTa,taName,pathAttTree,t
 	}
 	let visited=Array(indexTa.size).fill(0);
 	let lastY=[posY[0]-hEntNode]
-	let spaceH=15;	
+	let spaceH=10;	
 	console.log(lastY);
 	drawTree(svg,matrix,indexTa.get(taName),indexTa,posX,posY,wEntNode,hEntNode,visited,pathAttTree,tgdPosDB,attDetph,lastY,spaceH);
 }
 /**
  *One character is equal to 8 pixel
  * */
-function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth){
+function drawAttNested(svg,mapAtt,posX,posY,wTe,hTe,tgdPosDB,attDepth,spaceH){
 	let right=40;
 	let keys=Array.from( mapAtt.keys());
 	let spacewMargin=10;
 	let spacehMargin=10;
-	
+	if (keys.length>0){
+		posY[0]+=spaceH;
+	}	
 	for (let keyAtt of  keys){
 		let lenTePix=keyAtt.length*8+8;
 		
@@ -2823,18 +2825,19 @@ function drawTree(svg,matrix,col,indexTa,curPosEX,curPosEY,widthText,heightText,
 									
 			let spacewMargin=10;
 			//let spacehMargin=10;
-			//vertical line
-			drawLine(svg, before+spacewMargin,posLevelY,before+spacewMargin,curPosEY[0],"#000000");
+			
 			if (!islastzeros(l+1,col,matrix)){
 				//horizontal line
 				drawLine(svg, before,curPosEY[0],curPosEX[0]+40,curPosEY[0],"#000000");	
 				curPosEX[0]=curPosEX[0]+40;	
-				lastYPos[0]=curPosEY[0]+spaceHeight;								
+				lastYPos[0]=curPosEY[0];								
 			}
+			//vertical line
+			drawLine(svg, before+spacewMargin,posLevelY,before+spacewMargin,curPosEY[0],"#000000");
+			
 			drawText(svg,curPosEX[0],curPosEY[0],name,widthText,heightText,"rel");			
-			curPosEY[0]=curPosEY[0]+heightText+spaceHeight;
-			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth);
-					
+			curPosEY[0]=curPosEY[0]+heightText;
+			drawAttNested(svg,pathAttTree.get(name),curPosEX,curPosEY,widthText,heightText,tgdPosDB,attDepth,spaceHeight);			
 			curPosEY[0]=curPosEY[0]+heightText+spaceHeight;
 			visited[l]=1;
 			drawTree(svg,matrix,l,indexTa,curPosEX,curPosEY,widthText,heightText,visited,pathAttTree,tgdPosDB,attDepth,lastYPos,spaceHeight);								
