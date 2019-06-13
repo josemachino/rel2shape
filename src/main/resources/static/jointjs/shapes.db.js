@@ -2200,14 +2200,18 @@ function loadIRIAttWhereParam(currentLink,iris, parameters,functionsMap){
                 valueIRI=valueIRI.concat($("#ddParameter .btn").text().trim());
                 valueIRI=valueIRI.concat(")");
                 if (currentLink.labels().length>0){
-                    currentLink.removeLabel(-1);
-                }            
-                currentLink.appendLabel({attrs: {text: {text: valueIRI}}});
-                //verify if it does not exist a link with the same IRI already in the canvas
-                let notFound=true;
-                if (notFound){
-                	drawSVGGraph();
+                    currentLink.label(0,{attrs: {text: {text: valueIRI}}});     
+                    console.log("draw again")
+                    drawSVGGraph();
                 }
+                
+                //verify if it does not exist a link with the same IRI already in the canvas
+                //let notFound=true;
+                //if (notFound){
+                //	console.log("draw again")
+                //	drawSVGGraph();
+                //}
+                
             }
             
             let conditions=$('#queryB').queryBuilder('getRules',{ skip_empty: true });
