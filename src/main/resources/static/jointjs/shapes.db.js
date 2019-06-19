@@ -2893,25 +2893,50 @@ function loadGMLCode(){
                         
             var textArea = document.createElement("textarea");
             textArea.setAttribute("style","width:100%;height:150px;");
+            textArea.setAttribute("readOnly",true);
             textArea.value=textCode;               
             divContainer.appendChild(textArea);            
             this.$el.html(divContainer);        
             return this;
         }
     });
-	var ExtendedModal = BackboneBootstrapModals.BaseModal.extend({
-		  headerView: BackboneBootstrapModals.BaseHeaderView,
+	var ExtendedModal = new BackboneBootstrapModals.ConfirmationModal({        
+        headerViewOptions:{showClose:false, label: 'GML Code'},
+        bodyView: CustomView,        
+        footerViewOptions: {
+		    buttons: [	
+		    	{ className: 'btn btn-info', value: 'Confirm', attributes: { 'data-dismiss': 'modal', 'aria-hidden': 'true' }},
+		    ]
+		  }        
+    });
+	ExtendedModal.render();	
+}
+function loadRDFModal(data){
+	var CustomView = Backbone.View.extend({        
+        render: function() {
+            var divContainer=document.createElement('div');
+            divContainer.className="container";            
+                        
+            var textArea = document.createElement("textarea");
+            textArea.setAttribute("style","width:100%;height:150px;");
+            textArea.setAttribute("readOnly",true);
+            textArea.value=data;               
+            divContainer.appendChild(textArea);            
+            this.$el.html(divContainer);        
+            return this;
+        }
+    });
+	var ExtendedModal = new BackboneBootstrapModals.ConfirmationModal({		  
 		  headerViewOptions: {
-		    label: 'GML Code',		    
-		    showClose:true,
+		    label: 'RDF Data',		    
+		    showClose:false,
 		  },
 		  bodyView: CustomView,          		  
-          footerView: BackboneBootstrapModals.BaseFooterView,
 		  footerViewOptions: {
-		    buttons: [		      		      
+		    buttons: [
+		    	{ className: 'btn btn-info', value: 'Confirm', attributes: { 'data-dismiss': 'modal', 'aria-hidden': 'true' }}
 		    ]
 		  }
-		});
-		var modal = new ExtendedModal();
-		modal.render();	
+		});		
+	ExtendedModal.render();
 }

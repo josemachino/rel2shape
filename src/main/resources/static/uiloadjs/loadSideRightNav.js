@@ -56,6 +56,28 @@ materialize:function(e){
       })
       .done(function(data) {
         console.log(data)        
+        loadRDFModal(data);
+        var store = $rdf.graph();
+        var uri = 'https://example.org/triples.ttl'
+    	var body = data
+    	var mimeType = 'text/turtle'
+    	var store = $rdf.graph()
+
+    	try {
+    	    $rdf.parse(body, store, uri, mimeType);    	    
+            const allTriples = store.statementsMatching(undefined, undefined, undefined);
+            allTriples.forEach(function(triple) {
+            	console.log('<'+triple.object.uri+'>');
+            	 if(triple.object.termType === "NamedNode") {
+                		console.log('<' + triple.object.uri + '>');
+                	
+            	 }else  {
+	           		console.log('\'' + triple.object.value + '\'');
+	          	 }
+            });
+    	} catch (err) {
+    	    console.log(err)
+    	}
 		/*var triples=[];
         for(var uri in data){
         	for(var property in data[uri]){
