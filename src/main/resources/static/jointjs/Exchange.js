@@ -228,9 +228,11 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
                                     for (var opt of elementView.model.attributes.options){                                        
                                         if (!!opt.ref){											
                                             if (i<relNames.length && opt.ref.name==relNames[i+1]){
+                                            	console.log("bbbbbbbbbbbbbbbbbb")
+                                            	console.log(name)
                                                 var joinsA=mapFD.get(name);
                                                 joinsA.push({name:opt.text});
-                                                
+                                                console.log(opt.text)
                                                 //obtain the attribute to which goes
                                                 var nameAttRef="";
                                                 for (var taElem of graph.getElements()){
@@ -272,8 +274,11 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
                                 rule.constraints[rule.constraints.length-1].left.attrs=mapBFD.get(relNames[i-2]);
                                 rule.constraints[rule.constraints.length-1].right.attrs=mapBFD.get(name);                                
                             }
-							if (i<relNames.length-1)
-								rule.constraints.push({type:"eq",left:{rel:name,attrs:mapFD.get(name)},right:{rel:relNames[i+1],attrs:mapFD.get(relNames[i+1])}});							
+							if (i<relNames.length-1){
+								rule.constraints.push({type:"eq",left:{rel:name,attrs:mapFD.get(name)},right:{rel:relNames[i+1],attrs:mapFD.get(relNames[i+1])}});
+								console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+								console.log(mapFD.get(relNames[i+1]));
+							}
                             
                         }
                         

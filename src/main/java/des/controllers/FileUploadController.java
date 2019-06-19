@@ -72,11 +72,9 @@ public class FileUploadController {
         Resource sqlFile = storageService.loadAsResource(file.getOriginalFilename());        
         final InputStream in = new FileInputStream(sqlFile.getFile());
 		final String sqlContent = util.read(in);
-		//create the database in a parallel process
-		System.out.println("error date");
+		//create the database in a parallel process		
 		final Database database = sqlImport.getDatabase(sqlContent);		
-        //Return the structure that will draw the graphic        
-		System.out.println("error date2");
+        //Return the structure that will draw the graphic        		
         return dbService.createH2DB(database);
     }
 	

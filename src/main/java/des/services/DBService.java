@@ -71,7 +71,7 @@ public class DBService {
 				RdfInstance triples = new RdfInstance();
 				while (rs.next()) {
 					Resource rSubject = ResourceFactory.createResource(rs.getString(1));
-					Property predicate = ResourceFactory.createProperty(rs.getString(2));
+					Property predicate = ResourceFactory.createProperty("http://example.com/"+rs.getString(2));
 					if (rs.getString(3).contains("http")) {
 						// https://stackoverflow.com/questions/45309944/adding-blank-nodes-to-a-jena-model
 						Resource rObject = ResourceFactory.createResource(rs.getString(3));
@@ -105,54 +105,45 @@ public class DBService {
 			String sep = ",";
 			AttRel[] atts = new AttRel[ta.getColumnByNames().size()];
 			int i = 0;
+
 			for (Column col : ta.getColumnByNames().values()) {
-				if (pks.contains(col.getName())) {
-					if (ta.getForeignKeyForColumnNameOrigin(col) == null) {
-						atts[i] = new AttRel(ta.getName() + i, col.getName(), pks.contains(col.getName()),
-								col.getType());
-					} else {
-						Table refTa = db.getTableForName(ta.getForeignKeyForColumnNameOrigin(col).getTableNameTarget());
-						int j = 0;
-						String refColName = ta.getForeignKeyForColumnNameOrigin(col).getColumnNameTargets().get(0);
-						for (Column refCol : refTa.getColumnByNames().values()) {
-							if (refCol.getName().equals(refColName)) {
-								break;
-							}
-							j++;
+
+				if (ta.getForeignKeyForColumnNameOrigin(col) == null) {
+					atts[i] = new AttRel(ta.getName() + i, col.getName(), pks.contains(col.getName()), col.getType());
+				} else {
+					Table refTa = db.getTableForName(ta.getForeignKeyForColumnNameOrigin(col).getTableNameTarget());
+					int j = 0;
+					String refColName = ta.getForeignKeyForColumnNameOrigin(col).getColumnNameTargets().get(0);
+					for (Column refCol : refTa.getColumnByNames().values()) {
+						if (refCol.getName().equals(refColName)) {
+							break;
 						}
-						// Set id of the column
-						atts[i] = new AttRel(ta.getName() + i, col.getName(), pks.contains(col.getName()),
-								col.getType(), new ReFK(refTa.getName(), refTa.getName() + j));
+						j++;
 					}
-					rString.append(col.getName()).append(" ").append(col.getType()).append(sep);
-					i++;
+					// Set id of the column
+					atts[i] = new AttRel(ta.getName() + i, col.getName(), pks.contains(col.getName()), col.getType(),
+							new ReFK(refTa.getName(), refTa.getName() + j));
+				}
+				rString.append(col.getName()).append(" ").append(col.getType()).append(sep);
+				i++;
+
+			}
+			AttRel[] attsOrdPk = new AttRel[ta.getColumnByNames().size()];
+			int m = 0;
+			for (AttRel att : atts) {
+				if (pks.contains(att.getText())) {
+					attsOrdPk[m] = att;
+					m++;
 				}
 			}
-			for (Column col : ta.getColumnByNames().values()) {
-				if (!pks.contains(col.getName())) {
-					if (ta.getForeignKeyForColumnNameOrigin(col) == null) {
-						atts[i] = new AttRel(ta.getName() + i, col.getName(), pks.contains(col.getName()),
-								col.getType());
-					} else {
-						Table refTa = db.getTableForName(ta.getForeignKeyForColumnNameOrigin(col).getTableNameTarget());
-						int j = 0;
-						String refColName = ta.getForeignKeyForColumnNameOrigin(col).getColumnNameTargets().get(0);
-						for (Column refCol : refTa.getColumnByNames().values()) {
-							if (refCol.getName().equals(refColName)) {
-								break;
-							}
-							j++;
-						}
-						// Set id of the column
-						atts[i] = new AttRel(ta.getName() + i, col.getName(), pks.contains(col.getName()),
-								col.getType(), new ReFK(refTa.getName(), refTa.getName() + j));
-					}
-					rString.append(col.getName()).append(" ").append(col.getType()).append(sep);
-					i++;
+			for (AttRel att : atts) {
+				if (!pks.contains(att.getText())) {
+					attsOrdPk[m] = att;
+					m++;
 				}
 			}
 			rString.setLength(rString.length() - 1);
-			schemaTables.add(new SchemaTableJSON(ta.getName(), atts));
+			schemaTables.add(new SchemaTableJSON(ta.getName(), attsOrdPk));
 			String taQ = "CREATE TABLE " + ta.getName() + " ( " + rString.toString() + " )";
 			jdbcTemplate.execute(taQ);
 		}
