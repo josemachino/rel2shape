@@ -532,7 +532,15 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 						})
 					}
 					triplesAllRML=triplesAllRML.concat(qTri).concat(whereQ).concat(" UNION ");
-					qTri=qTri.concat(whereQ).concat(";\n");									
+					qTri=qTri.concat(whereQ);		
+					if (atom.cond.length>0){
+						if (whereQ.includes("WHERE"))
+							qTri=qTri.concat(" AND ").concat(atom.cond);
+						else{
+							qTri=qTri.concat(" WHERE ").concat(atom.cond);
+						}
+					}
+					qTri=qTri.concat(";\n");
 					simpleQRML=simpleQRML.concat(whereQ);
 				}
 				q=q.concat(qTri);

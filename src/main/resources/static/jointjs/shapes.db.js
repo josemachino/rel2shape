@@ -1653,8 +1653,8 @@ function link(g,source, portSource, target,portTarget,color,vertices){
 
 function linkDataBase(g,source, portSource, target,taTarget,portTarget,vertices) {      	
     var link = new joint.shapes.standard.Link({
-        source: { id: target , port:'pk-'.concat(taTarget).concat(portTarget)},
-        target: { id: source , port:'fk-'.concat(portSource)}, 
+    	target: { id: target , port:'pk-'.concat(taTarget).concat(portTarget)},
+        source: { id: source , port:'fk-'.concat(portSource)}, 
         router: { name: 'manhattan' },
         connector: { name: 'jumpover' },
         vertices: vertices || []
