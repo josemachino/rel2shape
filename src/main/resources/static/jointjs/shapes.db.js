@@ -2350,7 +2350,7 @@ function getCondWhere(conditions){
 			if (cond.type=="double"|| cond.type=="integer" )
 				stmt=stmt.concat(cond.field).concat(operatorStrToChar(cond.operator)).concat(cond.value);
 			else
-				stmt=stmt.concat(cond.field).concat(operatorStrToChar(cond.operator)).concat('"').concat(cond.value).concat('"');
+				stmt=stmt.concat(cond.field).concat(operatorStrToChar(cond.operator)).concat("'").concat(cond.value).concat("'");
 		}
 		stmt=stmt.concat(",");
 		
@@ -2586,7 +2586,7 @@ function drawSVGGraph(){
 		drawText(svg,curPosEX+widthText+distanceEnts+widthsvgLink*6,curPosEY,tgdGreenCond.get(key)[4],widthText,heightText,"sh");
 		drawLineArrowGreen(svg,curPosEX+widthText,curPosEY+heightText/2,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor,"Ent",tgdGreenCond.get(key)[0]);				
 		//draw IRI over line
-		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/3,curPosEY-heightText/2,tgdGreenCond.get(key)[2],widthText,heightText,key,"green_tgd");		
+		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/4,curPosEY-heightText/2,tgdGreenCond.get(key)[2],widthText,heightText,key,"green_tgd");		
 		
 		
 		curPosEY=curPosEY+heightText+beginSpace;
@@ -2762,7 +2762,7 @@ function drawAttLines(svg,attLines,tgdPosDB,tgdPosSh,hTe,minusWA){
 		else{
 			drawLineArrow(svg,positionIni[0],positionIni[1],positionFin[0]-minusWA,positionFin[1]+hTe/2,attributeRefLinkColor,"RefAtt",att.id);
 			
-			drawTextAndOptionsRed(svg,positionIni[0]+(positionFin[0]-positionIni[0])/2,positionIni[1]+(positionFin[1]-positionIni[1])/2,tgdPathLine.get(att.id)[3],100,25,att.id,"red_tgd");
+			drawTextAndOptionsRed(svg,positionIni[0]+(positionFin[0]-positionIni[0])/3,positionIni[1]+(positionFin[1]-positionIni[1])/2,tgdPathLine.get(att.id)[3],100,25,att.id,"red_tgd");
 		}
 	}
 }

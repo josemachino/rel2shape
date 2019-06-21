@@ -53,13 +53,24 @@ Exchange.prototype.getKeyByValue=function(object, value){
 	  return Object.keys(object).find(key => object[key] === value);
 };
 
-Exchange.prototype.getSubjectFunctionTerm=function(graph, model,s_fterm, portType,bind){
+Exchange.prototype.replaceAll = function(data,search, replacement) {    
+    return data.replace(new RegExp(search, 'g'), replacement);
+};
+
+
+Exchange.prototype.getSubjectFunctionTerm=function(graph, model,s_fterm, portType,bind,cond){
 	    var aux_links=graph.getConnectedLinks(model, {outbound:true});
 	    for (var s_link of aux_links){
 	        if (s_link.attributes.target.port==portType){
 	        	if (model.getPort(s_link.attributes.source.port).group=='in'){
 		            var fterm=s_link.labels()[0].attrs.text.text.split('(');
 		            s_fterm.push({function:fterm[0],args:[{rel:this.getKeyByValue(bind,model.attributes.question),attr:fterm[1].slice(0,-1)}]});
+		            if (s_link.labels().length>1){
+		            	let condition=s_link.labels()[1].attrs.text.text;
+		            	cond.push(this.replaceAll(condition,'/','-'));
+		            }else{
+		            	cond.push('');
+		            }
 		            break;
 	        	}
 	        }
@@ -183,8 +194,9 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
             //construct body terms
             var objterm=[];
             var s_fterm=[];
+            var cond=[];
 			var relNames;			
-            for (var lab of link.labels()){
+            for (var lab of link.labels()){            	
                 var annotation=lab.attrs.text.text;                
                 if (annotation.includes('(')){
                     var fterm=annotation.split('(');                                        
@@ -209,7 +221,7 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
                     relNames=this.getTokens(annotation);                    
                     if (relNames.length==1){
                         //get subject term 
-                        this.getSubjectFunctionTerm(graph,linkView.sourceView.model,s_fterm, linkView.targetView.model.attributes.ports.items[0].id,rule.bind);
+                        this.getSubjectFunctionTerm(graph,linkView.sourceView.model,s_fterm, linkView.targetView.model.attributes.ports.items[0].id,rule.bind,cond);
                         
                     }else{
                         
@@ -221,7 +233,7 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
                                 if (mapTables.get(name)==element.id){
                                     var elementView=element.findView(paper);  									
 									if (i==relNames.length-1){										
-										this.getSubjectFunctionTerm(graph,elementView.model,s_fterm, linkView.targetView.model.attributes.ports.items[0].id,rule.bind);
+										this.getSubjectFunctionTerm(graph,elementView.model,s_fterm, linkView.targetView.model.attributes.ports.items[0].id,rule.bind,cond);
 									}
                                     mapFD.set(name,[]);
                                     mapFD.set(relNames[i+1],[]);
@@ -293,13 +305,13 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
 			}
             var triTerms=[];
             //Add the type
-            rule.yield.push({atom:linkView.targetView.model.attributes.question,args:s_fterm});
+            rule.yield.push({atom:linkView.targetView.model.attributes.question,args:s_fterm,cond:cond[0]});
             //Add the triple
             var iriProperty=link.attributes.target.port.split(",")[0];
             triTerms.push(s_fterm);
             triTerms.push(iriProperty);
 			triTerms.push(objterm);
-            rule.yield.push({atom:"Triple",args:triTerms});
+            rule.yield.push({atom:"Triple",args:triTerms,cond:cond[0]});
 			sigma.rules.push(rule)
         }
     	}
@@ -414,9 +426,9 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 				//consider that the length of args in case of type atom will allays be one 			
 				q=q.concat("SELECT").concat(" ").concat("CONCAT('").concat(tgds.functions[atom.args[0].function]).concat("/',").concat(atom.args[0].args[0].attr).concat(")").concat(",").concat("'").concat(atom.atom).concat("'").concat(" ").concat("FROM").concat(" ").concat(atom.args[0].args[0].rel);
 				//check if there is a condition to be applied to all the query
-				/*if (){
-					q=q.concat(" WHERE ").concat(cond);
-				}*/
+				if (atom.cond.length>0){
+					q=q.concat(" WHERE ").concat(atom.cond);
+				}
 				
 				typesRML=typesRML.concat("SELECT").concat(" ").concat("CONCAT('").concat(tgds.functions[atom.args[0].function]).concat("/',").concat(atom.args[0].args[0].attr).concat(") as term").concat(",").concat("'").concat(atom.atom).concat("'").concat(" as type ").concat("FROM").concat(" ").concat(atom.args[0].args[0].rel).concat(" UNION ");
 				q=q.concat(";\n");			
@@ -448,7 +460,10 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 				}
 				if (rule.constraints.length==0){
 					
-					qTri=qTri.concat(" FROM ").concat(lastRel);									
+					qTri=qTri.concat(" FROM ").concat(lastRel);			
+					if (atom.cond.length>0){
+						qTri=qTri.concat(" WHERE ").concat(atom.cond);
+					}
 					triplesAllRML=triplesAllRML.concat(qTri).concat(" UNION ");
 					qTri=qTri.concat(";\n");
 					simpleQRML=simpleQRML.concat(" FROM ").concat(lastRel);
