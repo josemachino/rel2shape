@@ -228,11 +228,9 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
                                     for (var opt of elementView.model.attributes.options){                                        
                                         if (!!opt.ref){											
                                             if (i<relNames.length && opt.ref.name==relNames[i+1]){
-                                            	console.log("bbbbbbbbbbbbbbbbbb")
-                                            	console.log(name)
+                                            	
                                                 var joinsA=mapFD.get(name);
-                                                joinsA.push({name:opt.text});
-                                                console.log(opt.text)
+                                                joinsA.push({name:opt.text});                                                
                                                 //obtain the attribute to which goes
                                                 var nameAttRef="";
                                                 for (var taElem of graph.getElements()){
@@ -276,7 +274,6 @@ Exchange.prototype.stTGD=function(mapSymbols,graph,paper,mapTables){
                             }
 							if (i<relNames.length-1){
 								rule.constraints.push({type:"eq",left:{rel:name,attrs:mapFD.get(name)},right:{rel:relNames[i+1],attrs:mapFD.get(relNames[i+1])}});
-								console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 								console.log(mapFD.get(relNames[i+1]));
 							}
                             
@@ -392,15 +389,14 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	let max=Math.max.apply(Math, deePath);
 	//construct sql query
 	let tgds=this.stTGD(mapSymbols,graphST,paperTGDs,mapTables);
-	
-	
-	
+	console.log(tgds);
 	let TyName="TypesFact";
 	let TriName="Triples";
 	let ShName="SHEX";
 	let c1="CREATE TABLE "+ TriName +" (s varchar,p varchar, o varchar);\n";
 	let c2="CREATE TABLE "+TyName +" (term varchar,type varchar);\n";
-	let c3="DROP TABLE IF EXISTS "+ShName+";\n CREATE TABLE "+ShName+ "(typeS varchar,label varchar,typeO varchar, mult varchar);\n";	
+	//let c3="DROP TABLE IF EXISTS "+ShName+";\n CREATE TABLE IF NOT EXISTS "+ShName+ "(typeS varchar,label varchar,typeO varchar, mult varchar);\n";	
+	let c3="CREATE TABLE IF NOT EXISTS "+ShName+ "(typeS varchar,label varchar,typeO varchar, mult varchar);\n DELETE FROM "+ShName+";\n";
 	let chase="";
 	
 	let indexTM=1;
@@ -417,6 +413,11 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 				q=q.concat("CREATE OR REPLACE VIEW").concat(" ").concat(TyName).concat(indexTM).concat(" (term,type) AS ");			
 				//consider that the length of args in case of type atom will allays be one 			
 				q=q.concat("SELECT").concat(" ").concat("CONCAT('").concat(tgds.functions[atom.args[0].function]).concat("/',").concat(atom.args[0].args[0].attr).concat(")").concat(",").concat("'").concat(atom.atom).concat("'").concat(" ").concat("FROM").concat(" ").concat(atom.args[0].args[0].rel);
+				//check if there is a condition to be applied to all the query
+				/*if (){
+					q=q.concat(" WHERE ").concat(cond);
+				}*/
+				
 				typesRML=typesRML.concat("SELECT").concat(" ").concat("CONCAT('").concat(tgds.functions[atom.args[0].function]).concat("/',").concat(atom.args[0].args[0].attr).concat(") as term").concat(",").concat("'").concat(atom.atom).concat("'").concat(" as type ").concat("FROM").concat(" ").concat(atom.args[0].args[0].rel).concat(" UNION ");
 				q=q.concat(";\n");			
 			}else if (atom.args.length==3){//it is the triple atom				

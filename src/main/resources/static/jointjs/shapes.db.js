@@ -118,11 +118,9 @@ graphTGDs.on('remove', function(cell, collection, opt) {
 			for (var link of links){				
 				var linkView=link.findView(paperTGDs);
 				if (linkView.sourceView.model.id== cell.attributes.source.id && linkView.targetView.model.id==cell.attributes.target.id){									
-					link.remove();
+					link.remove();					
 				}
 			}
-			               
-	    	
 			links=graphTGDs.getLinks();
 			for (var link of links){
 				var edgeView=link.findView(paperTGDs);
@@ -152,9 +150,9 @@ graphTGDs.on('remove', function(cell, collection, opt) {
         			  break;
         		  }
         			  
-        		}	
-        		
-        }                                        
+        		}	        		
+        }
+        drawSVGGraph();
    }
 })
 
