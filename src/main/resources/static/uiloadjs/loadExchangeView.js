@@ -1,8 +1,8 @@
-var containerEditor = document.getElementById("tgds_list");
-var optionsQuill={readOnly: true, theme: 'bubble'};
+//var containerEditor = document.getElementById("tgds_list");
+//var optionsQuill={readOnly: true, theme: 'bubble'};
 //var optionsJSON = {mode:'view'};
 //var editorJSON = new JSONEditor(containerEditor, optionsJSON);
-var editor=new Quill(containerEditor, optionsQuill);
+//var editor=new Quill(containerEditor, optionsQuill);
 var sideExchangeView = Backbone.View.extend({
 initialize: function(){
     this.render();

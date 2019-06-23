@@ -514,7 +514,7 @@ export:function(e){
         });*/
 	const jsonStr = JSON.stringify(graphJson);
     var link = document.createElement("a");
-    link.download = 'gstgds.json';
+    link.download = 'supplier.gml';
     link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(jsonStr);
     //link.href=window.URL.createObjectURL('data:text/plain;charset=utf-8,' + encodeURIComponent(jsonStr))
     link.click();

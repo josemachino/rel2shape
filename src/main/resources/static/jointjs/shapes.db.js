@@ -2123,12 +2123,23 @@ function loadIRIAttWhereParam(currentLink,iris, parameters,functionsMap){
 				    }});
 			}else{
 				let typAtt="";
-				if (att.type.includes("CHAR")|| att.type=="text"){
+				if (att.type.toLowerCase().includes("char")|| att.type.toLowerCase()=="text"){
 					typAtt="string";
-				}else{
-					typAtt=att.type;
+					filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal','contains'],default_operator: 'equal'});
+				}else if (att.type.toLowerCase().includes("int")) {
+					typAtt="integer";
+					filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal','less','less_or_equal','greater','greater_or_equal'],default_operator: 'equal'});
+				} else if (att.type.toLowerCase()=="double" || att.type.toLowerCase()== "decimal" || att.type.toLowerCase()=="float"){
+					typAtt="double";
+					filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal','less','less_or_equal','greater','greater_or_equal'],default_operator: 'equal'});
+				} else if (att.type.toLowerCase().includes("bool")) {
+					typAtt="bool";
+					filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal'],default_operator: 'equal'});
+				} else {
+					typAtt="string";
+					filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal','contains'],default_operator: 'equal'});
 				}
-				filAtt.push({id:att.id,field:att.text,type:typAtt,operators: ['equal', 'not_equal','contains'],default_operator: 'equal'});
+				
 			}
 		}
 	});
@@ -2328,11 +2339,11 @@ function operatorStrToChar(operator){
 		return "!=";
 	case "less":
 		return "<";
-	case "less or equal":
+	case "less_or_equal":
 		return "<=";
 	case "greater":
 		return ">";
-	case "greater or equal":
+	case "greater_or_equal":
 		return ">=";	
 	case "contains":
 		return " like ";
@@ -2578,7 +2589,6 @@ function drawSVGGraph(){
 	let rightAlign=40;
 	let tgdPosDB=new Map();
 	let tgdPosSh=new Map();
-	console.log(tgdPosDB);
 	tgdLines.forEach(function(attLines,key,map){
 		//draw source Entity
 		drawText(svg,curPosEX,curPosEY,tgdGreenCond.get(key)[3],widthText,heightText,"rel");		
@@ -2587,10 +2597,8 @@ function drawSVGGraph(){
 		drawLineArrowGreen(svg,curPosEX+widthText,curPosEY+heightText/2,curPosEX+widthText+distanceEnts,curPosEY+heightText/2,subjectLinkColor,"Ent",tgdGreenCond.get(key)[0]);				
 		//draw IRI over line
 		drawTextAndOptions(svg,curPosEX+widthText+distanceEnts/4,curPosEY-heightText/2,tgdGreenCond.get(key)[2],widthText,heightText,key,"green_tgd");		
-		
-		
-		curPosEY=curPosEY+heightText+beginSpace;
-		console.log(curPosEY);
+		let iniPosTaY=curPosEY+heightText;		
+		curPosEY=curPosEY+heightText+beginSpace;		
 		let pathAttTree=new Map(); 
 		let attDepth=new Map();
 		let attArr=[];
@@ -2598,17 +2606,16 @@ function drawSVGGraph(){
 		let attMapPos=new Map();
 		let positionShX=curPosEX+distanceEnts+widthText;
 		let positionShY=curPosEY;
+		
 		//drawLine(svg,curPosEX,curPosEY-10,curPosEX,curPosEY,"#000000");
 		let taNames=new Set();
-		console.log(tgdPosDB);
-		console.log(attLines);
+		let attBool=false;
 		for (let att of attLines){			
-			let taArray=tgdPathLine.get(att.id)[0];
-			console.log(taArray);
-			if (taArray.length==1){								
+			let taArray=tgdPathLine.get(att.id)[0];			
+			if (taArray.length==1){
+				attBool=true;
 				drawAtt(svg,tgdPathLine.get(att.id)[1],curPosEX,curPosEY,rightAlign,wTe,hTe);
-				let pix=tgdPathLine.get(att.id)[1].length*8+8;
-				console.log(curPosEY+hTe/2);
+				let pix=tgdPathLine.get(att.id)[1].length*8+8;				
 				tgdPosDB.set(att.id,[curPosEX+rightAlign+wTe,curPosEY+hTe/2]);				
 				curPosEY=curPosEY+hTe+spaceHeight;
 			}			
@@ -2617,15 +2624,20 @@ function drawSVGGraph(){
 			});						
 			attDepth.set(tgdPathLine.get(att.id)[2],curPosEY);
 		}
-		console.log(tgdPosDB);
+		
+		//Draw vertical line in the table
+		if (attBool){
+			let wTaleft=10;
+			drawLine(svg,curPosEX+wTaleft,iniPosTaY,curPosEX+wTaleft,curPosEY-spaceHeight-hTe/2,"#000000");
+		}
+		
 		let k=0;	
 		let indexTa=new Map();		
 		taNames.forEach(function(ta){
 			indexTa.set(ta,k);
 			pathAttTree.set(ta,new Map());
 			k++;
-		})
-		console.log(indexTa);
+		})		
 		for (let att of attLines){
 			let taArray=tgdPathLine.get(att.id)[0];						
 			if (taArray.length>1){
@@ -2639,12 +2651,8 @@ function drawSVGGraph(){
 		let matrix=Array(taNames.size).fill(null).map(() => Array(taNames.size).fill(0));
 		console.log(matrix)
 		let curEX=[curPosEX];
-		let curEY=[curPosEY];
-		console.log(tgdPosDB);
-		console.log(attDepth);
-		console.log(pathAttTree);
-		getTreeOrder(svg,attLines,curEX,curEY,matrix, indexTa,tgdGreenCond.get(key)[3],pathAttTree,tgdPosDB,attDepth);
-		console.log(curEY);
+		let curEY=[curPosEY];		
+		getTreeOrder(svg,attLines,curEX,curEY,matrix, indexTa,tgdGreenCond.get(key)[3],pathAttTree,tgdPosDB,attDepth);		
 		let orderShAtt=orderByValue(attDepth);		
 		let attSh=Array.from(orderShAtt.keys());
 		let posIniY=positionShY;
@@ -2684,15 +2692,15 @@ function drawTextAndOptions(svg,posX,posY,value,wText,hText,linkId,classDiv){
 	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
 	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto;display:inline").text(value);	
 	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"edit_"+classDiv}).html('<a data-tooltip="true" title="Edit IRI"><i class="fas fa-edit"></i></a>');
-	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"rem_"+classDiv}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-trash-alt"></i></a>');
+	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"rem_"+classDiv}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-minus-circle"></i></a>');
 	//fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"adc_"+classDiv}).html('<a data-tooltip="true" title="Add Condition"><i class="fas fa-plus-square"></i></a>');
 	//fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"dec_"+classDiv}).html('<a data-tooltip="true" title="Delete Condition"><i class="fas fa-minus-square"></i></a>');
 }
 function drawTextAndOptionsRed(svg,posX,posY,value,wText,hText,linkId,classDiv){	
-	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText).attr("height", hText);
+	var fo=svg.append("foreignObject").attr("x", posX).attr("y", posY).attr("width", wText+30).attr("height", hText);
 	fo.append("xhtml:div").attr("style", "width:"+wText+"px; height:"+hText+"px; overflow-x:auto;display:inline").text(value);	
 	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"edit_"+classDiv}).html('<a data-tooltip="true" title="Edit IRI"><i class="fas fa-edit"></i></a>');
-	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"rem_"+classDiv}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-trash-alt"></i></a>');
+	fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"rem_"+classDiv}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-minus-circle"></i></a>');
 }
 function drawLine(svg, posiniX,posiniY,posfinX,posfinY,color){
 	svg.append("line")
@@ -2713,7 +2721,7 @@ function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color,type,linkId){
     .style("stroke", color)
     .style("stroke-width", widthsvgLink);	
 	if (type=="Att"){
-		var fo=svg.append("foreignObject").attr("x", posfinX).attr("y", posfinY).attr("width", 5).attr("height", 5);
+		var fo=svg.append("foreignObject").attr("x", posfinX).attr("y", posfinY).attr("width", 20).attr("height", 20);
 		fo.append("xhtml:div").attr({id:linkId,class:"rem_blue_tgd"}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-minus-circle"></i></a>');
 	}
 }
@@ -2744,7 +2752,7 @@ function drawLineArrowGreen(svg, posiniX,posiniY,posfinX,posfinY,color,type,cond
 function drawAtt(svg,att, posX,posY,rightAlign,wTe,hTe){
 	let spacewMargin=10;
 	let spacehMargin=10;
-	drawLine(svg,posX+spacewMargin,posY-spacehMargin,posX+spacewMargin,posY+hTe/2,"#0f0f10");
+	//drawLine(svg,posX+spacewMargin,posY-spacehMargin,posX+spacewMargin,posY+hTe/2,"#0f0f10");
 	drawLine(svg,posX+spacewMargin,posY+hTe/2,posX+spacewMargin+rightAlign,posY+hTe/2,"#0f0f10");
 	drawText(svg,posX+rightAlign,posY,att,wTe,hTe,"rel-att");	
 }

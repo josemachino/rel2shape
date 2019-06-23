@@ -1,7 +1,7 @@
 /*https://github.com/393799203/rappid/blob/master/apps/QAD/src/snippet.js*/
 let fontFamily="Lucida Sans";
-let fontSizeAttribute=20;
-let fontSizeEntity=25;
+let fontSizeAttribute=18;
+let fontSizeEntity=21;
 
 //let colorbgEnt='#507255';
 let colorbgEnt='#00664d'
@@ -211,7 +211,12 @@ joint.dia.Element.define('db.Table',{
         var options = this.get('options') || [];
         var gap = this.get('paddingBottom') || 20;
         var height = options.length * this.get('optionHeight') + this.get('questionHeight') + gap;
-        var width = 150;
+        
+        let sizeOpt=this.get('question').length;
+        for (let option of options){            
+            sizeOpt=Math.max(sizeOpt,option.text.length);   
+        }
+        var width = sizeOpt*15;
         /*var width = joint.util.measureText(this.get('question'), {
             fontSize: this.attr('.question-text/font-size')
         }).width;*/
