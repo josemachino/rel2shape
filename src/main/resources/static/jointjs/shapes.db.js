@@ -66,6 +66,7 @@ let tRectColor="#4b4a67";
 let typeNodeRect="round-rectangle";
 let typeNodeAtt="ellipse";
 
+let curNameschema="";
 let widthLink=4;
 /**
  * For the lines that appear in the canvas
@@ -2945,4 +2946,117 @@ function loadRDFModal(data){
 		  }
 		});		
 	ExtendedModal.render();
+}
+
+
+function loadWarnMsg(dataMsg,queryDB){
+	var CustomView = Backbone.View.extend({        
+        render: function() {
+            var divContainer=document.createElement('div');
+            divContainer.className="container";
+            var ul=document.createElement('ul');
+            ul.setAttribute("class","list-group scrollUL")
+            for (var i=0; i<dataMsg.length; i++){
+
+                var li=document.createElement('li');
+                li.setAttribute("class","list-group-item list-group-item-action list-group-item-warning");
+                ul.appendChild(li);
+                li.innerHTML=li.innerHTML+dataMsg[i];
+
+            }                   
+            divContainer.appendChild(ul);
+            var divAlert=document.createElement('div');            
+            divAlert.setAttribute("class","alert alert-danger");
+            divAlert.setAttribute("role","alert");
+            divAlert.innerHTML='The chase SQL script will generate additional blank nodes to satisfy approximatelly the Shape schema';
+            divContainer.appendChild(divAlert);
+            this.$el.html(divContainer);        
+            return this;
+        }
+    });
+	var ExtendedModal = BackboneBootstrapModals.BaseModal.extend({		  
+		  headerViewOptions: {
+		    label: 'Warning Messages',		    
+		    showClose:false,
+		  },
+		  bodyView: CustomView,          		  
+		  footerViewOptions: {
+		    buttons: [
+		    	{ id:'continueWarn',className: 'btn btn-info', value: 'Continue'},
+		    	{ className: 'btn btn-default', value: 'Cancel', attributes: { 'data-dismiss': 'modal', 'aria-hidden': 'true' }}
+		    ]
+		  },
+		  events: {
+	          'click #continueWarn': 'onContinue'
+	        },
+	        onContinue:function(e){
+	        	$.ajax({	  
+	                url: "chase",
+	                type: "POST",
+	                data:  {queries:queryDB,format:$( "select#formats" ).val()}
+	              })
+	              .done(function(data) {
+	                console.log(data)        
+	                loadRDFModal(data);
+	                var store = $rdf.graph();
+	                var uri = 'https://example.org/triples.ttl'
+	            	var body = data
+	            	var mimeType = 'text/turtle'
+	            	var store = $rdf.graph()
+
+	            	try {
+	            	    $rdf.parse(body, store, uri, mimeType);    	    
+	                    const allTriples = store.statementsMatching(undefined, undefined, undefined);
+	                    allTriples.forEach(function(triple) {
+	                    	console.log('<'+triple.object.uri+'>');
+	                    	 if(triple.object.termType === "NamedNode") {
+	                        		console.log('<' + triple.object.uri + '>');
+	                        	
+	                    	 }else  {
+	        	           		console.log('\'' + triple.object.value + '\'');
+	        	          	 }
+	                    });
+	            	} catch (err) {
+	            	    console.log(err)
+	            	}		
+	                let nameExt="";
+	                if ($( "select#formats" ).val()=="Turtle"){
+	                	nameExt="ttl";
+	                }else if ($( "select#formats" ).val()=="N-Triples"){
+	                	nameExt="nt";
+	                }else{
+	                	nameExt="rj";
+	                }
+	                
+	                const fileStream = streamSaver.createWriteStream(curNameschema+'RDF.'+nameExt)
+	        		const writer = fileStream.getWriter()
+	        		const encoder = new TextEncoder		
+	        		let uint8array = encoder.encode(JSON.stringify(data))	
+	        		writer.write(uint8array)
+	        		writer.close();
+	              })
+	              .fail(function(jqXHR, textStatus, errorThrown) {        
+	                console.log(textStatus);
+	                //show an dialog box saything that must be loaded some a database
+	                var errorView = Backbone.View.extend({
+	                	render: function() {
+	                		 var divForm1 = document.createElement("div");
+	                         divForm1.setAttribute("class","form-group");
+	                         
+	                		this.$el.html(divForm1);                
+	                        return this;
+	                	}
+	                	
+	                });
+	                var modal = new BackboneBootstrapModals.ConfirmationModal({ headerViewOptions:{showClose:false, label: 'No Database Loaded'},bodyView: errorView});
+	                modal.render();
+	              })
+	              .always(function() {
+	                
+	              });
+	          this.hide();
+	        }
+		});
+	var modalMsg=new ExtendedModal(); 
+	modalMsg.render();
 }

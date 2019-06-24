@@ -1,4 +1,10 @@
 /*FOR SVG*/
+.scrollUL{
+	max-height: 300px;
+    margin-bottom: 10px;
+    overflow-y:scroll;
+    -webkit-overflow-scrolling: touch;
+}
 .svg-container {
     display: inline-block;
     position: relative;

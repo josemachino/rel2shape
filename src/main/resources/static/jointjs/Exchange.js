@@ -347,7 +347,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	let msgs=[];
 	let miShex=new Map();
 	let schShex=new Map();
-	let missing=false;
+	
 	graphST.getElements().forEach(function(element){		
 		if (element.attributes.type=="shex.Type"){				
 			miShex.set(element.attributes.question,[]);
@@ -356,11 +356,10 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 			if (intargetLinks.length==0){
 				element.attributes.options.forEach(function(tc) {					  				
 				  if (tc.mult=="1" || tc.mult=="+"){
-					  let msg='<div class="alert alert-warning alert-dismissible fade show" role="alert"> <strong>'+element.attributes.question+'</strong> Triple constraint ('+tc.label+":"+tc.type +') needs to be linked.<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>'					  
+					  let msg='Triple constraint ('+tc.label+":"+tc.type +') needs to be linked in '+ element.attributes.question;					  
 					  msgs.push(msg)
 					  var tcs=miShex.get(element.attributes.question);
-					  tcs.push(tc)
-					  missing=true;
+					  tcs.push(tc)					  
 				  }
 				});
 			}else{				
@@ -371,11 +370,10 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 						})){
 							var tc=pt.id.split(",");
 							if (tc[2]=="1" || tc[2]=="+"){
-								let msg='<div class="alert alert-warning alert-dismissible fade show" role="alert"> <strong>'+element.attributes.question+'</strong> Triple constraint ('+tc[0]+":"+tc[1]+') needs to be linked.<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>'
+								let msg='Triple constraint ('+tc[0]+":"+tc[1]+') needs to be linked  in '+element.attributes.question;
 								msgs.push(msg)
 								var tcs=miShex.get(element.attributes.question);
-								tcs.push({label:tc[0],type:tc[1],mult:tc[2]})
-								missing=true;
+								tcs.push({label:tc[0],type:tc[1],mult:tc[2]})								
 							}
 						}
 					}					  
@@ -653,13 +651,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	chaseQ=chaseQ.concat(solution);
 	chase=chase.concat(solution);
 	chaseQ=chaseQ.concat(allTyped);
-	chase=chase.concat(allTyped);
-	
-	if (missing){
-		let msgDanger='<div class="alert alert-danger alert-dismissible fade show" role="alert"> The chase SQL script generates additional rows to satisfy approximatelly ShEx schema<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>';
-		msgs.push(msgDanger);
-		
-	}
+	chase=chase.concat(allTyped);	
 			
 	//return a set of triples
 	let comment="/*";
@@ -674,6 +666,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	this.chaseQueryDB=chaseQ;
 	this.chaseScript=chase;
 	this.RMLScript=file2RML;
+	this.warnMsgs=msgs;
 };
 
 Exchange.prototype.ParamtoSQL = function(param,colName){	

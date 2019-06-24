@@ -1,12 +1,12 @@
 
-let shcolorbgEnt='#B9CEE3';
+let shcolorbgEnt='#DABFFF';
 let shcolorbgAtt='#8BAED0';
 
 let shcolorTEnt='black';
 let shcolorTAtt='black';
 
-let shportColorOutPk='#b7d1da';
-let shportColorOutAtt='#03e3fc';
+let shportColorOutPk='#E80000';
+let shportColorOutAtt='#FF9B85';
 joint.shapes.shex = {};
 joint.dia.Element.define('shex.Type',{
     optionHeight: 30,

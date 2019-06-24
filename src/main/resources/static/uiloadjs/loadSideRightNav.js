@@ -49,6 +49,9 @@ materialize:function(e){
 	var exchange=new Exchange();
 	exchange.generateQuery(mapSymbols,graphTGDs,paperTGDs,mapTableIdCanvas);
 	console.log($( "select#formats" ).val());
+	if (exchange.warnMsgs.length>0){
+		loadWarnMsg(exchange.warnMsgs,exchange.chaseQueryDB);
+	}else {
 	$.ajax({	  
         url: "chase",
         type: "POST",
@@ -77,18 +80,7 @@ materialize:function(e){
             });
     	} catch (err) {
     	    console.log(err)
-    	}
-		/*var triples=[];
-        for(var uri in data){
-        	for(var property in data[uri]){
-        		for(var i=0; i<data[uri][property].length; i++ ){
-      	          var s = uri;
-      	          var p = property;
-      	          var o = data[uri][property][i]['value'];	        	          
-      	          triples.push({subject:s,predicate:p,object:o})
-        		}
-      	  	}  
-        }*/
+    	}		
         let nameExt="";
         if ($( "select#formats" ).val()=="Turtle"){
         	nameExt="ttl";
@@ -98,7 +90,7 @@ materialize:function(e){
         	nameExt="rj";
         }
         
-        const fileStream = streamSaver.createWriteStream('triples.'+nameExt)
+        const fileStream = streamSaver.createWriteStream(curNameschema+'RDF.'+nameExt)
 		const writer = fileStream.getWriter()
 		const encoder = new TextEncoder		
 		let uint8array = encoder.encode(JSON.stringify(data))	
@@ -124,6 +116,7 @@ materialize:function(e){
       .always(function() {
         
       });
+	}
 },
 getR2RML:function(e){
 	var exchange=new Exchange();
@@ -270,13 +263,16 @@ doSearchShape:function(event){
 	    }
     };
     try{
-    reader.readAsText(event.currentTarget.files[0]);
+    	reader.readAsText(event.currentTarget.files[0]);
     }
     catch(errExpr){
     	alert("No File chosen");    	
     }
     
     var form = new FormData();
+    curNameschema=event.currentTarget.files[0].name;
+    curNameschema=curNameschema.substr(0,curNameschema.length-5);
+    
 	form.append("file", event.currentTarget.files[0]);	
 	$.ajax({
         url: "uploadShexFile",
@@ -514,7 +510,7 @@ export:function(e){
         });*/
 	const jsonStr = JSON.stringify(graphJson);
     var link = document.createElement("a");
-    link.download = 'supplier.gml';
+    link.download = curNameschema+'TGD.gml';
     link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(jsonStr);
     //link.href=window.URL.createObjectURL('data:text/plain;charset=utf-8,' + encodeURIComponent(jsonStr))
     link.click();

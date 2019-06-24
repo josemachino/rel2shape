@@ -212,6 +212,8 @@ doSearch: function( event ){
     }
     
     var form = new FormData();
+    curNameschema=event.currentTarget.files[0];
+    console.log(curNameschema)
 	form.append("file", event.currentTarget.files[0]);	
 	$.ajax({
         url: "uploadShexFile",
