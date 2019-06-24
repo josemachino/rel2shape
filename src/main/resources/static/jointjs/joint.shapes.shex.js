@@ -1,9 +1,9 @@
 
-let shcolorbgEnt='#003366';
-let shcolorbgAtt='#004d99';
+let shcolorbgEnt='#B9CEE3';
+let shcolorbgAtt='#8BAED0';
 
-let shcolorTEnt='white';
-let shcolorTAtt='white';
+let shcolorTEnt='black';
+let shcolorTAtt='black';
 
 let shportColorOutPk='#b7d1da';
 let shportColorOutAtt='#03e3fc';
