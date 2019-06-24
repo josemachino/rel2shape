@@ -2898,7 +2898,7 @@ function loadGMLCode(){
             divContainer.className="container";            
                         
             var textArea = document.createElement("textarea");
-            textArea.setAttribute("style","width:100%;height:150px;");
+            textArea.setAttribute("style","width:100%;height:300px;");
             textArea.setAttribute("readOnly",true);
             textArea.value=textCode;               
             divContainer.appendChild(textArea);            
@@ -2924,7 +2924,7 @@ function loadRDFModal(data){
             divContainer.className="container";            
                         
             var textArea = document.createElement("textarea");
-            textArea.setAttribute("style","width:100%;height:150px;");
+            textArea.setAttribute("style","width:100%;height:300px;");
             textArea.setAttribute("readOnly",true);
             textArea.value=data;               
             divContainer.appendChild(textArea);            
