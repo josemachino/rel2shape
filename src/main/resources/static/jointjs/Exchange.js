@@ -606,10 +606,10 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	chase=chase.concat(c3).concat(schQ);
 	chaseQ=chaseQ.concat(c3).concat(schQ);
 	
-	let F="SELECT Ts.term,Sh.label,CASE WHEN Sh.typeO ='Literal' THEN '@PERU@' ELSE CONCAT('http://example.com/',Sh.typeO,'/','@PERU@')  END AS typeO FROM Shex AS Sh,Types AS Ts WHERE Ts.type=Sh.typeS AND Sh.mult IN ('1','+') AND CONCAT(Ts.term,Sh.typeS,Sh.label) NOT IN (SELECT CONCAT(T.s,Ty.type,T.p) FROM Triples as T, Types AS Ty WHERE T.s=Ty.term);\n";
+	let F="SELECT Ts.term,Sh.label,CASE WHEN Sh.typeO ='Literal' THEN '@@@' ELSE CONCAT('http://example.com/',Sh.typeO,'/','@@@')  END AS typeO FROM Shex AS Sh,Types AS Ts WHERE Ts.type=Sh.typeS AND Sh.mult IN ('1','+') AND CONCAT(Ts.term,Sh.typeS,Sh.label) NOT IN (SELECT CONCAT(T.s,Ty.type,T.p) FROM Triples as T, Types AS Ty WHERE T.s=Ty.term);\n";
 	let tripleSimulation="CREATE OR REPLACE VIEW TripleSim (s,p,o) AS SELECT * FROM Triples UNION ".concat(F);
 	
-	let tripleSimRML="SELECT Ts.term as s,Sh.label as p,CASE WHEN Sh.typeO ='Literal' THEN '@PERU@' ELSE CONCAT('http://example.com/',Sh.typeO,'/','@PERU@')  END AS o FROM "+shexView +","+typesRML+" WHERE Ts.type=Sh.typeS AND Sh.mult IN ('1','+') AND CONCAT(Ts.term,Sh.typeS,Sh.label) NOT IN (SELECT CONCAT(T.s,Ts.type,T.p) FROM "+triplesAllRML+", "+typesRML+" WHERE T.s=Ts.term) ORDER BY Sh.label";
+	let tripleSimRML="SELECT Ts.term as s,Sh.label as p,CASE WHEN Sh.typeO ='Literal' THEN '@@@' ELSE CONCAT('http://example.com/',Sh.typeO,'/','@@@')  END AS o FROM "+shexView +","+typesRML+" WHERE Ts.type=Sh.typeS AND Sh.mult IN ('1','+') AND CONCAT(Ts.term,Sh.typeS,Sh.label) NOT IN (SELECT CONCAT(T.s,Ts.type,T.p) FROM "+triplesAllRML+", "+typesRML+" WHERE T.s=Ts.term) ORDER BY Sh.label";
 	let qRML="<#TM>\n";
 	qRML=qRML.concat(this.buildRMLMap(tripleSimRML));	
 	file2RML=file2RML.concat(qRML);
@@ -632,7 +632,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 		let typesM="CREATE OR REPLACE VIEW Types"+idx+" (term,type) AS ".concat(objectTypes);
 		chaseQ=chaseQ.concat(typesM);
 		chase=chase.concat(typesM);
-		let MTriples="SELECT Ts.term,Sh.label,CASE WHEN Sh.typeO ='Literal' THEN '@PERU@' ELSE CONCAT('http://example.com/',Sh.typeO,'/','@PERU@')  END AS typeO FROM Shex AS Sh,Types"+idx+" AS Ts WHERE Ts.type=Sh.typeS AND Sh.mult IN ('1','+') AND CONCAT(Ts.term,Sh.typeS,Sh.label) NOT IN (SELECT CONCAT(T.s,Ty.type,T.p) FROM TripleSim"+numPrefix+" as T, Types"+numPrefix+" AS Ty WHERE T.s=Ty.term);\n";
+		let MTriples="SELECT Ts.term,Sh.label,CASE WHEN Sh.typeO ='Literal' THEN '@@@' ELSE CONCAT('http://example.com/',Sh.typeO,'/','@@@')  END AS typeO FROM Shex AS Sh,Types"+idx+" AS Ts WHERE Ts.type=Sh.typeS AND Sh.mult IN ('1','+') AND CONCAT(Ts.term,Sh.typeS,Sh.label) NOT IN (SELECT CONCAT(T.s,Ty.type,T.p) FROM TripleSim"+numPrefix+" as T, Types"+numPrefix+" AS Ty WHERE T.s=Ty.term);\n";
 		let tripleSimIt="CREATE OR REPLACE VIEW TripleSim".concat(idx).concat(" (s,p,o) AS ").concat(MTriples);
 		chaseQ=chaseQ.concat(tripleSimIt);
 		chase=chase.concat(tripleSimIt);
