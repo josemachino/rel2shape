@@ -8,7 +8,7 @@ render: function(){
 },
 events: {
     "click #rightCollapsed":"activate",
-    "click .edit_tgd":"modifyTGD",
+    "click .edit_blue_tgd":"modifyTGD",
     "click .edit_green_tgd":"modifyLinkGreen",
     "click .rem_green_tgd":"removeGreenTGD",
     "click .edit_red_tgd":"modifyLinkRed",

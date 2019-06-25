@@ -5,8 +5,10 @@ let shcolorbgAtt='#8BAED0';
 let shcolorTEnt='black';
 let shcolorTAtt='black';
 
-let shportColorOutPk='#E80000';
-let shportColorOutAtt='#FF9B85';
+//let shportColorOutPk='#E80000';
+let shportColorOutPk='#FF5A25';
+//let shportColorOutAtt='#FF9B85';
+let shportColorOutAtt='#6eb257';
 joint.shapes.shex = {};
 joint.dia.Element.define('shex.Type',{
     optionHeight: 30,

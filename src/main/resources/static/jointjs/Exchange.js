@@ -112,7 +112,7 @@ Exchange.prototype.GML=function(mapSymbols,rows,mapTables){
 			$('<div>', {html: row.ex }).find('span').each(function(){
 				entities.push( $(this).text() );
 			});
-			let gml="\n=>\n";
+			let gml="=>\n\t";
 			let annotations=[];
 			$('<div>', {html: row.ex }).find('div.iri_tgd').each(function(){
 				annotations.push( $(this).text() );
@@ -156,9 +156,9 @@ Exchange.prototype.GML=function(mapSymbols,rows,mapTables){
 			}).get();
 			if (iri.length>0){
 				let fIri=iri[0].split("(");
-				detailTGD.des=detailTGD.des.concat('\t:').concat(entities[1]).concat(' ').concat(fIri[0]).concat("(").concat(taNames[0]).concat(".").concat(fIri[1]).concat(';\n');
+				detailTGD.des=detailTGD.des.concat('\t\t:').concat(entities[1]).concat(' ').concat(fIri[0]).concat("(").concat(taNames[0]).concat(".").concat(fIri[1]).concat(';\n');
 			}else{
-				detailTGD.des=detailTGD.des.concat('\t:').concat(entities[1]).concat(' ').concat(taNames[0]).concat(".").concat(entities[0]).concat(';\n');
+				detailTGD.des=detailTGD.des.concat('\t\t:').concat(entities[1]).concat(' ').concat(taNames[0]).concat(".").concat(entities[0]).concat(';\n');
 			}
 		}
 	});
@@ -170,7 +170,7 @@ Exchange.prototype.GML=function(mapSymbols,rows,mapTables){
 		 }else{
 			 mapToStr=mapToStr.concat(value.query[0]);
 		 }
-		 mapToStr=mapToStr.concat(value.des.substr(0,value.des.length-2)).concat(".\n");
+		 mapToStr=mapToStr.concat(value.des.substr(0,value.des.length-2)).concat(".\n\n");
 	}
 	
 	return mapToStr;
@@ -357,7 +357,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 				element.attributes.options.forEach(function(tc) {					  				
 				  if (tc.mult=="1" || tc.mult=="+"){
 					  let msg='Triple constraint ('+tc.label+":"+tc.type +') needs to be linked in '+ element.attributes.question;					  
-					  msgs.push(msg)
+					  msgs.push({text:msg,level:0})
 					  var tcs=miShex.get(element.attributes.question);
 					  tcs.push(tc)					  
 				  }
@@ -371,7 +371,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 							var tc=pt.id.split(",");
 							if (tc[2]=="1" || tc[2]=="+"){
 								let msg='Triple constraint ('+tc[0]+":"+tc[1]+') needs to be linked  in '+element.attributes.question;
-								msgs.push(msg)
+								msgs.push({text:msg,level:0})
 								var tcs=miShex.get(element.attributes.question);
 								tcs.push({label:tc[0],type:tc[1],mult:tc[2]})								
 							}
@@ -751,6 +751,7 @@ Exchange.prototype.GMLfromCy = function(mapSymbols,tgdLines,mapTables,tgdCy,tgdG
 
 Exchange.prototype.GMLCan = function(mapSymbols,tgdLines,mapTables,tgdGreenCond){
 	let mapLines=new Map();
+	let prefix=":";
 	tgdLines.forEach(function(edgesAtt, key, map){						
 		
 		let sN=tgdGreenCond.get(key)[3]
@@ -758,7 +759,7 @@ Exchange.prototype.GMLCan = function(mapSymbols,tgdLines,mapTables,tgdGreenCond)
 		let entities= [];
 		entities.push(sN);
 		entities.push(tN);						
-		let gml="\n=>\n";
+		let gml=" =>\n\t";
 		let annotations=[];
 		annotations.push( tgdGreenCond.get(key)[2]);						
 		let iri=annotations[0];
@@ -788,15 +789,15 @@ Exchange.prototype.GMLCan = function(mapSymbols,tgdLines,mapTables,tgdGreenCond)
 			}
 			if (edge.type=="att"){											
 				if (ed[3].length>0){				
-					detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(Exchange.prototype.ParamtoSQL.call(this,ed[3],ed[4]+"."+sNAtt)).concat(';\n');
+					detailTGD.des=detailTGD.des.concat('\t\t').concat(prefix).concat(tNAtt).concat(' ').concat(Exchange.prototype.ParamtoSQL.call(this,ed[3],ed[4]+"."+sNAtt)).concat(';\n');
 				}else{
-					detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(ed[4]).concat(".").concat(sNAtt).concat(';\n');
+					detailTGD.des=detailTGD.des.concat('\t\t').concat(prefix).concat(tNAtt).concat(' ').concat(ed[4]).concat(".").concat(sNAtt).concat(';\n');
 				}
 			}else{						
 				let iri=ed[3];
 				let fIri=iri.split("(");
 				//console.log(tgdCy.$id(sNAtt).parent()); it works we can use for delete
-				detailTGD.des=detailTGD.des.concat('\t:').concat(tNAtt).concat(' ').concat(fIri[0]).concat("(").concat(ed[4]).concat(".").concat(fIri[1]).concat(';\n');
+				detailTGD.des=detailTGD.des.concat('\t\t').concat(prefix).concat(tNAtt).concat(' ').concat(fIri[0]).concat("(").concat(ed[4]).concat(".").concat(fIri[1]).concat(';\n');
 			}
 		});
 	
@@ -817,7 +818,7 @@ Exchange.prototype.GMLCan = function(mapSymbols,tgdLines,mapTables,tgdGreenCond)
 		 }else{
 			 mapToStr=mapToStr.concat(value.query[0]);
 		 }
-		 mapToStr=mapToStr.concat(value.des.substr(0,value.des.length-2)).concat(".\n");
+		 mapToStr=mapToStr.concat(value.des.substr(0,value.des.length-2)).concat(".\n\n");
 	}
 	
 	return mapToStr;

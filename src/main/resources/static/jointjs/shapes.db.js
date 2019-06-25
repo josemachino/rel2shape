@@ -58,9 +58,9 @@ let svgCanvasTGDW=650;
 let svgCanvasTGDH=500;
 
 let sessionGO=[];
-let subjectLinkColor="#0E4D92";
-let attributeLinkColor="#73C2FB";
-let attributeRefLinkColor="#3FE0D0";
+let subjectLinkColor="#09325D";
+let attributeLinkColor="#6eb257";
+let attributeRefLinkColor="#FF9B85";
 let rRectColor="#7275db";
 let tRectColor="#4b4a67";
 let typeNodeRect="round-rectangle";
@@ -458,6 +458,10 @@ function loadModalFunctions(currentLink,cy){
             
         	if ($('#att-func').val().length>0){        		
         		constraintAtt="[function:"+ $('#att-func').val()+"]";
+        	}else{
+        		if (currentLink.labels().length==1){
+        			currentLink.removeLabel(-1);
+        		}
         	}                        
             var offsetNew=currentLink.labels().length+1*10;
             if (constraintAtt.length>0){
@@ -494,7 +498,7 @@ function loadModalFunctions(currentLink,cy){
             }else{
             	currentLink.label(index,{attrs: {text: {text: constraintAtt}}});             
             }
-            cy.$('#'+currentLink.id).data('label',constraintAtt);
+            //cy.$('#'+currentLink.id).data('label',constraintAtt);
            }
         },
         onCancel: function(){
@@ -2211,7 +2215,7 @@ function loadIRIAttWhereParam(currentLink,iris, parameters,functionsMap){
                 valueIRI=valueIRI.concat(")");
                 if (currentLink.labels().length>0){
                     currentLink.label(0,{attrs: {text: {text: valueIRI}}});     
-                    console.log("draw again")
+                    console.log("draw again");
                     drawSVGGraph();
                 }
                 
@@ -2227,18 +2231,23 @@ function loadIRIAttWhereParam(currentLink,iris, parameters,functionsMap){
             let conditions=$('#queryB').queryBuilder('getRules',{ skip_empty: true });
         	if (conditions!=null && conditions.valid==true){        		
         		let condToStr=getCondWhere(conditions.rules);
-        		currentLink.appendLabel({
-        			markup: [{tagName: 'rect',selector: 'labelBody'}, {tagName: 'text',selector: 'text'}],
-                    attrs: {
-                        text: {
-                            text: condToStr,
-                            fill: '#7c68fc',
-                            fontFamily: 'sans-serif',
-                            textAnchor: 'middle',
-                            textVerticalAnchor: 'middle'
-                        },
-                        labelBody: {ref: 'text',refX: -5,refY: -5,refWidth: '100%',refHeight: '100%',refWidth2: 10,refHeight2: 10,stroke: '#7c68fc',fill: 'white',strokeWidth: 2,rx: 5,ry: 5}
-                    },position: {offset: -40}});        		        		
+        		if (currentLink.labels().length==1){
+        			currentLink.appendLabel({
+            			markup: [{tagName: 'rect',selector: 'labelBody'}, {tagName: 'text',selector: 'text'}],
+                        attrs: {
+                            text: {
+                                text: condToStr,
+                                fill: '#7c68fc',
+                                fontFamily: 'sans-serif',
+                                textAnchor: 'middle',
+                                textVerticalAnchor: 'middle'
+                            },
+                            labelBody: {ref: 'text',refX: -5,refY: -5,refWidth: '100%',refHeight: '100%',refWidth2: 10,refHeight2: 10,stroke: '#7c68fc',fill: 'white',strokeWidth: 2,rx: 5,ry: 5}
+                        },position: {offset: -40}});
+        		}else{
+        			 currentLink.label(1,{attrs: {text: {text: condToStr}}})
+        		}
+        		        		        		
         		tgdGreenCond.get(currentLink.id)[0]=condToStr;
         		
         	}   
@@ -2722,8 +2731,9 @@ function drawLineArrow(svg, posiniX,posiniY,posfinX,posfinY,color,type,linkId){
     .style("stroke", color)
     .style("stroke-width", widthsvgLink);	
 	if (type=="Att"){
-		var fo=svg.append("foreignObject").attr("x", posfinX).attr("y", posfinY).attr("width", 20).attr("height", 20);
-		fo.append("xhtml:div").attr({id:linkId,class:"rem_blue_tgd"}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-minus-circle"></i></a>');
+		var fo=svg.append("foreignObject").attr("x", posfinX-20).attr("y", posfinY).attr("width", 40).attr("height", 20);
+		fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"edit_blue_tgd"}).html('<a data-tooltip="true" title="Add Filter"><i class="fas fa-edit"></i></a>');
+		fo.append("xhtml:div").style("display", "inline").attr({id:linkId,class:"rem_blue_tgd"}).html('<a data-tooltip="true" title="Remove Link"><i class="fas fa-minus-circle"></i></a>');
 	}
 }
 function drawLineArrowGreen(svg, posiniX,posiniY,posfinX,posfinY,color,type,condition){
@@ -2959,9 +2969,14 @@ function loadWarnMsg(dataMsg,queryDB){
             for (var i=0; i<dataMsg.length; i++){
 
                 var li=document.createElement('li');
-                li.setAttribute("class","list-group-item list-group-item-action list-group-item-warning");
+                
+                if (dataMsg[i].level==0){
+                	li.setAttribute("class","list-group-item list-group-item-action list-group-item-warning");
+                } else {
+                	li.setAttribute("class","list-group-item list-group-item-action list-group-item-danger");
+                }
+                li.innerHTML=li.innerHTML+dataMsg[i].text;
                 ul.appendChild(li);
-                li.innerHTML=li.innerHTML+dataMsg[i];
 
             }                   
             divContainer.appendChild(ul);

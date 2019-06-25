@@ -10,8 +10,9 @@ let colorbgAtt='#009973'//'#488b49';
 let colorTEnt='white';
 let colorTAtt='white';
 
-let portColorOutPk='#e3d90d';
+let portColorOutPk='#6eb257';
 let portColorOutAtt='#6eb257';
+let portColorOutFK='#FF5A25';
 
 joint.shapes.db = {};
 joint.dia.Element.define('db.Table',{
@@ -69,7 +70,7 @@ joint.dia.Element.define('db.Table',{
                 attrs:{
                  portBody2: {
                         magnet: true,
-                        stroke: 'none', fill: portColorOutPk, r: 9
+                        stroke: 'none', fill: portColorOutFK, r: 9
                  }
                 }
             },
@@ -108,7 +109,6 @@ joint.dia.Element.define('db.Table',{
             'text-anchor': 'middle',
             style: { 'text-shadow': '1px 1px 0px gray' }
         },
-
         // Options styling.
         '.option-rect': {
             rx: 3, ry: 3,
@@ -169,8 +169,13 @@ joint.dia.Element.define('db.Table',{
             var selector = '.option-' + option.id;            
 
             attrsUpdate[selector] = { transform: 'translate(0, ' + offsetY + ')', dynamic: true };
-            attrsUpdate[selector + ' .option-rect'] = { height: optionHeight, dynamic: true };            
-            attrsUpdate[selector + ' .option-text'] = { text: option.text, dynamic: true };
+            attrsUpdate[selector + ' .option-rect'] = { height: optionHeight, dynamic: true };
+            if (option.iskey){
+            	attrsUpdate[selector + ' .option-text'] = { text: option.text, dynamic: true, style: {'text-decoration':'underline'}};
+            }else{
+            	attrsUpdate[selector + ' .option-text'] = { text: option.text, dynamic: true };	
+            }
+            
 
             offsetY += optionHeight;
 
