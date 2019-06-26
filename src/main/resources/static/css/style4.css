@@ -267,9 +267,9 @@ span {
 
 #sidebar {
     width: 100%;
-    /*only for demo */
-    height: 120px;
-    /*height: 100px;*/    
+    /*only for demo 
+    height: 120px;*/
+    height: 100px;    
     
     background: #7386D5;
     color: #fff;
@@ -277,9 +277,9 @@ span {
     margin:5px;
 }
 .menu-head-lg{
-	/*width:22%;*/
-	/*only for demo */
-	width:19%;
+	width:22%;
+	/*only for demo 
+	width:19%;*/
 	display:inline-block;
 }
 .menu-head-lg h3{
@@ -287,9 +287,9 @@ span {
 	display:inline-block;
 }
 .menu-head-md{
-	/*width:21%;*/
-	/*only for demo */
-	width:28%;
+	width:21%;
+	/*only for demo 
+	width:28%;*/
 	display:inline-block;
 }
 .menu-head-md h3{
@@ -297,9 +297,9 @@ span {
 	display:inline-block;
 }
 .menu-head{
-	/*width:18%;*/
-	/*only for demo */
-	width:14%;
+	width:18%;
+	/*only for demo 
+	width:14%;*/
 	display:inline-block;
 	margin:5px;
 }
@@ -400,7 +400,13 @@ span {
   fill:grey;
 }
 
-/* only for demo */
+/* only for demo 
 #sqlTGD{
 	margin-top:4px;
+}
+*/
+
+
+.modal-dialog {
+    max-width: 600px !important;
 }

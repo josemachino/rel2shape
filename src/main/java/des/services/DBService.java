@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,20 +66,38 @@ public class DBService {
 		});
 
 		// query the triples solution
-		RdfInstance rdfInstance = jdbcTemplate.query("SELECT * FROM Solution", new ResultSetExtractor<RdfInstance>() {
+		RdfInstance rdfInstance = jdbcTemplate.query("SELECT * FROM Solution ORDER BY S ASC,P ", new ResultSetExtractor<RdfInstance>() {
 			@Override
 			public RdfInstance extractData(ResultSet rs) throws SQLException, DataAccessException {
 				RdfInstance triples = new RdfInstance();
+				List<Object []> tripleList=new ArrayList<Object []>();
 				while (rs.next()) {
 					Resource rSubject = ResourceFactory.createResource(rs.getString(1));
 					Property predicate = ResourceFactory.createProperty("http://example.com/"+rs.getString(2));
 					if (rs.getString(3).contains("http")) {
 						// https://stackoverflow.com/questions/45309944/adding-blank-nodes-to-a-jena-model
 						Resource rObject = ResourceFactory.createResource(rs.getString(3));
-						triples.getTripleSet().add(rSubject, predicate, rObject);
+						Object [] objs= {rSubject, predicate, rObject};
+						//triples.getTripleSet().add(rSubject, predicate, rObject);
+						tripleList.add(objs );
 					} else {
 						Literal rObjectLit = ResourceFactory.createStringLiteral(rs.getString(3));
-						triples.getTripleSet().add(rSubject, predicate, rObjectLit);
+						Object [] objs= {rSubject, predicate, rObjectLit};
+						//triples.getTripleSet().add(rSubject, predicate, rObjectLit);
+						tripleList.add(objs );
+					}
+				}
+				
+				//Collections.reverse(tripleList);
+				for (Object [] temp : tripleList) {
+					System.out.println(temp[0]);
+					System.out.println(temp[1]);
+					System.out.println(temp[2]);
+					if (temp[2] instanceof Resource) {
+						triples.getTripleSet().add((Resource)temp[0],(Property)temp[1],(Resource)temp[2]);
+					}
+					else {
+						triples.getTripleSet().add((Resource)temp[0],(Property)temp[1],(Literal)temp[2]);
 					}
 				}
 				return triples;

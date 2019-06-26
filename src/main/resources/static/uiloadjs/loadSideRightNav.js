@@ -143,7 +143,6 @@ doSearchShape:function(event){
 	    //TODO IDENTIFY IF IT IS SHACL OR SHEX
 	    try{
 	    let contextObj=obj["@context"];
-	    console.log(typeof(contextObj));
 	    if(typeof(contextObj)==="string" && contextObj.includes("shex") && typeof(obj.shapes)!=="undefined"){	    	
 	    	obj.shapes.forEach(function(shape){
 		        if (shape.type=='Shape'){                
@@ -181,8 +180,7 @@ doSearchShape:function(event){
 		                var num=mapSymbols.size+1;
 		                let subF="shape"+num;
 		                let nameShape=shape.id.split('/').pop();
-		                if (nameShape.length>3){
-		                	console.log(nameShape)
+		                if (nameShape.length>3){		                	
 		                	subF=nameShape.substr(0,3)
 		                }
 		                mapSymbols.set(subF+"2iri",shape.id);
@@ -306,7 +304,6 @@ doSearchSQL:function(e){
         enctype: 'multipart/form-data'
       })
       .done(function(data) {
-    	  console.log(data);
         positionTable= { x: 70, y: 10 };
         graphTGDs.clear();        
         mapTableIdCanvas=new Map();

@@ -60,7 +60,7 @@ let svgCanvasTGDH=500;
 let sessionGO=[];
 let subjectLinkColor="#09325D";
 let attributeLinkColor="#6eb257";
-let attributeRefLinkColor="#FF9B85";
+let attributeRefLinkColor="#FF5A25";
 let rRectColor="#7275db";
 let tRectColor="#4b4a67";
 let typeNodeRect="round-rectangle";
@@ -68,6 +68,12 @@ let typeNodeAtt="ellipse";
 
 let curNameschema="";
 let widthLink=4;
+
+/**
+ * font size for the labels that appear
+ **/
+let pathfontSizeLabel=17;
+let iriCfontSizeLabel=15;
 /**
  * For the lines that appear in the canvas
  * */
@@ -260,8 +266,8 @@ paperTGDs.on('link:connect',function(linkView){
 						}else{
 							fIRI=keysMap[0]+"("+sAtt+")";
 						}                        
-                        currentLink.appendLabel({attrs: {text: {text: fIRI}},position: {offset: 10}});
-                        currentLink.appendLabel({attrs: {text: {text: tablesConnected[0].text}},position: {offset: -10}});
+                        currentLink.appendLabel({attrs: {text: {text: fIRI ,'font-size':iriCfontSizeLabel}},position: {offset: 10}});
+                        currentLink.appendLabel({attrs: {text: {text: tablesConnected[0].text, 'font-size':pathfontSizeLabel}},position: {offset: -10}});
                         drawNewRedLinkInTable(currentLink,linkView.sourceView.model.attributes.question,sAtt,tablesConnected[0].text,fIRI,linkView.targetView.model.attributes.question)
                         drawSVGGraph();
                     }else{																	
@@ -280,7 +286,7 @@ paperTGDs.on('link:connect',function(linkView){
 					if (pks.length==1){
 						var fSymbol=getFunctionSymbol(mapSymbols,linkView.targetView.model.attributes.question);
 						var valueIRI=fSymbol+"("+pks[0]+")"
-						currentLink.appendLabel({attrs: {text: {text: valueIRI}}});
+						currentLink.appendLabel({attrs: {text: {text: valueIRI, 'font-size':iriCfontSizeLabel}}});
                         createLinkTool(currentLink);                        
                         drawNewGreenLinkInTable(currentLink,linkView.sourceView.model.attributes.question,valueIRI,linkView.targetView.model.attributes.question)
 					}else{
@@ -355,14 +361,14 @@ paperTGDs.on('link:connect',function(linkView){
 								var linkParent=link(graphTGDs,element.id,element.attributes.ports.items[0].id,linkView.targetView.model.id,linkView.targetView.model.attributes.ports.items[0].id,subjectLinkColor);
 								createLinkTool(linkParent);
 				                
-				                linkParent.appendLabel({attrs: {text: {text: valueIRI}}});
+				                linkParent.appendLabel({attrs: {text: {text: valueIRI ,'font-size':iriCfontSizeLabel}}});
 
 				                
 				                let tHead=linkView.targetView.model.attributes.question;
 				                drawNewGreenLinkInTable(linkParent,tablesConnected[0].text,valueIRI,tHead)
 				            }
 						
-                            currentLink.appendLabel({attrs: {text: {text: tablesConnected[0].text}},position: {offset: -10}});							
+                            currentLink.appendLabel({attrs: {text: {text: tablesConnected[0].text, 'font-size':pathfontSizeLabel}},position: {offset: -10}});							
                             currentLink.attr('line/stroke', attributeLinkColor);
 							createLinkTool(currentLink);
 							console.log("creating blue link")
@@ -599,7 +605,7 @@ function loadModalPathAttribute(currentLink,parameters){
         bodyViewOptions: { displayParameters:parameters },
         onConfirm: function() {                           
             var joinPath=$("#ddParameter .btn").text().trim();
-            currentLink.appendLabel({attrs: {text: {text: joinPath}},position: {offset: -10}});
+            currentLink.appendLabel({attrs: {text: {text: joinPath, 'font-size':pathfontSizeLabel}},position: {offset: -10}}); 
 			var linkView=currentLink.findView(paperTGDs)
 			currentLink.attr('line/stroke', attributeLinkColor);
 			createLinkTool(currentLink);
@@ -653,7 +659,7 @@ function loadModalPathAttribute(currentLink,parameters){
 	                var linkParent=link(graphTGDs,element.id,element.attributes.ports.items[0].id,linkView.targetView.model.id,linkView.targetView.model.attributes.ports.items[0].id,subjectLinkColor);
 	                var pks=getKeys(element.attributes.options);
 	                let valueIRI=mapSymbols.keys().next().value+"("+pks[0]+")";
-	                linkParent.appendLabel({attrs: {text: {text: valueIRI}}});
+	                linkParent.appendLabel({attrs: {text: {text: valueIRI, 'font-size':iriCfontSizeLabel}}});
 	                drawNewGreenLinkInTable(linkParent,lastTableName,valueIRI,linkView.targetView.model.attributes.question)
                 }
             }
@@ -922,11 +928,11 @@ function loadModalRedFromTable(currentLink,iris, parameters,functionsMap,valueRe
             valueIRI=valueIRI.concat(")");
             var joinPath=$("#ddParameter .btn").text().trim();
             if (currentLink.labels().length==0){            
-            	currentLink.appendLabel({attrs: {text: {text: valueIRI}},position: {offset: 10}});            
-            	currentLink.appendLabel({attrs: {text: {text: joinPath}},position: {offset: -10}}); 
+            	currentLink.appendLabel({attrs: {text: {text: valueIRI,'font-size':iriCfontSizeLabel}},position: {offset: 10}});            
+            	currentLink.appendLabel({attrs: {text: {text: joinPath, 'font-size':pathfontSizeLabel}},position: {offset: -10}}); 
             }else{                
-                currentLink.label(0,{attrs: {text: {text: valueIRI}}}); 
-                currentLink.label(1,{attrs: {text: {text: joinPath}},position: {offset: -10}}) ;               
+                currentLink.label(0,{attrs: {text: {text: valueIRI,'font-size':iriCfontSizeLabel}}}); 
+                currentLink.label(1,{attrs: {text: {text: joinPath,'font-size':pathfontSizeLabel}},position: {offset: -10}}) ;               
             }            
             let linkView=currentLink.findView(paperTGDs);      
             let sAtt=getSourceOptionNameLinkView(linkView);
@@ -977,7 +983,7 @@ function loadModalRedFromTable(currentLink,iris, parameters,functionsMap,valueRe
 	                var linkParent=link(graphTGDs,element.id,element.attributes.ports.items[0].id,linkView.targetView.model.id,linkView.targetView.model.attributes.ports.items[0].id,subjectLinkColor);
 	                var pks=getKeys(element.attributes.options);
 	                let valueIRI=mapSymbols.keys().next().value+"("+pks[0]+")";
-	                linkParent.appendLabel({attrs: {text: {text: valueIRI}}});
+	                linkParent.appendLabel({attrs: {text: {text: valueIRI,'font-size':iriCfontSizeLabel}}});
 	                
 	                drawNewGreenLinkInTable(linkParent,lastTableName,valueIRI,linkView.targetView.model.attributes.question)
                 }
@@ -1076,8 +1082,8 @@ function loadModalTypeReferenced(currentLink,iris, parameters,functionsMap,value
             valueIRI=valueIRI.concat(")");
             var joinPath=$("#ddParameter .btn").text().trim();
             if (currentLink.labels().length==0){            
-            	currentLink.appendLabel({attrs: {text: {text: valueIRI}},position: {offset: 10}});            
-            	currentLink.appendLabel({attrs: {text: {text: joinPath}},position: {offset: -10}}); 
+            	currentLink.appendLabel({attrs: {text: {text: valueIRI,'font-size':iriCfontSizeLabel}},position: {offset: 10}});            
+            	currentLink.appendLabel({attrs: {text: {text: joinPath,'font-size':pathfontSizeLabel}},position: {offset: -10}}); 
             }else{                
                 currentLink.label(0,{attrs: {text: {text: valueIRI}}}); 
                 currentLink.label(1,{attrs: {text: {text: joinPath}},position: {offset: -10}}) ;               
@@ -1132,7 +1138,7 @@ function loadModalTypeReferenced(currentLink,iris, parameters,functionsMap,value
 	                var linkParent=link(graphTGDs,element.id,element.attributes.ports.items[0].id,linkView.targetView.model.id,linkView.targetView.model.attributes.ports.items[0].id,subjectLinkColor);
 	                var pks=getKeys(element.attributes.options);
 	                let valueIRI=mapSymbols.keys().next().value+"("+pks[0]+")";
-	                linkParent.appendLabel({attrs: {text: {text: valueIRI}}});
+	                linkParent.appendLabel({attrs: {text: {text: valueIRI,'font-size':iriCfontSizeLabel}}});
 	                drawNewGreenLinkInTable(linkParent,lastTableName,valueIRI,linkView.targetView.model.attributes.question)
                 }                
 			}
@@ -1235,7 +1241,6 @@ function drawNewBlueLinkInTable(blueLink){
 	let constraintAtt="";
 	if (blueLink.labels().length>1)
 		constraintAtt=(((blueLink.labels()[1]|| {}).attrs||{}).text||{}).text;
-	console.log(parentId)
 	buildBlueLink(parentId,blueLink.id,relNames,sourceTName,targetTName,sourceAtt,targetAtt,constraintAtt);	
 }
 
@@ -1301,7 +1306,8 @@ function loadPathIRIModal(currentLink,iris, parameters,functionsMap,lsPaths){
         bodyViewOptions: { displayParameters:lsPaths },
         onConfirm: function() {                           
             var joinPath=$("#ddParameter .btn").text().trim();
-            currentLink.appendLabel({attrs: {text: {text: joinPath}},position: {offset: -10}});
+            console.log(pathfontSizeLabel)
+            currentLink.appendLabel({attrs: {text: {text: joinPath, 'font-size':pathfontSizeLabel}},position: {offset: -10}});
 						
 			var linkView=currentLink.findView(paperTGDs)			
 			currentLink.attr('line/stroke', attributeLinkColor);
@@ -1337,7 +1343,7 @@ function loadPathIRIModal(currentLink,iris, parameters,functionsMap,lsPaths){
 				var linkParent=link(graphTGDs,element.id,element.attributes.ports.items[0].id,linkView.targetView.model.id,linkView.targetView.model.attributes.ports.items[0].id,subjectLinkColor);
 				createLinkTool(linkParent);
                 
-                linkParent.appendLabel({attrs: {text: {text: valueIRI}}});
+                linkParent.appendLabel({attrs: {text: {text: valueIRI,'font-size':iriCfontSizeLabel}}});
 
                 let sHead=getTokens(joinPath);
                 let tHead=linkView.targetView.model.attributes.question;
@@ -1420,7 +1426,7 @@ function loadModal(currentLink,iris, parameters,functionsMap){
                 valueIRI=valueIRI.concat("(");
                 valueIRI=valueIRI.concat($("#ddParameter .btn").text().trim());
                 valueIRI=valueIRI.concat(")");            
-                currentLink.appendLabel({attrs: {text: {text: valueIRI}}});            
+                currentLink.appendLabel({attrs: {text: {text: valueIRI,'font-size':iriCfontSizeLabel}}});            
                 
                 createLinkTool(currentLink);
                 var linkView=currentLink.findView(paperTGDs)
@@ -1499,7 +1505,7 @@ function loadModalGreenFromTable(currentLink,iris, parameters,functionsMap,cy){
                 if (currentLink.labels().length>0){
                     currentLink.removeLabel(-1);
                 }            
-                currentLink.appendLabel({attrs: {text: {text: valueIRI}}});
+                currentLink.appendLabel({attrs: {text: {text: valueIRI,'font-size':iriCfontSizeLabel}}});
                 //verify if it does not exist a link with the same IRI already in the canvas
                 let notFound=true;
                 if (notFound){
@@ -2659,7 +2665,6 @@ function drawSVGGraph(){
 			}
 		}
 		let matrix=Array(taNames.size).fill(null).map(() => Array(taNames.size).fill(0));
-		console.log(matrix)
 		let curEX=[curPosEX];
 		let curEY=[curPosEY];		
 		getTreeOrder(svg,attLines,curEX,curEY,matrix, indexTa,tgdGreenCond.get(key)[3],pathAttTree,tgdPosDB,attDepth);		

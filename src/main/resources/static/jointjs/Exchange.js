@@ -347,7 +347,14 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	let msgs=[];
 	let miShex=new Map();
 	let schShex=new Map();
-	
+	//get the tables with its attributes.
+	let dbMap=new Map();
+	graphST.getElements().forEach(function(element){		
+		if (element.attributes.type=="db.Table"){			
+			dbMap.set(element.attributes.question,element.attributes.options);
+		}
+	});
+	console.log(dbMap)
 	graphST.getElements().forEach(function(element){		
 		if (element.attributes.type=="shex.Type"){				
 			miShex.set(element.attributes.question,[]);
@@ -394,13 +401,21 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 						let auxTC=inShLink.attributes.target.port;						
 						if (auxTC.split(",")[2]=="1" || auxTC.split(",")[2]=="?"){
 							console.log("review if the pk determines the value")
-							let originTaName=inShLink.labels()[0];
+							let originTaName=inShLink.labels()[0].attrs.text.text;
 							console.log(originTaName)
+							let relNamesPathAtt=this.getTokens(originTaName);
+							
 							//get the key
 							//check if it is a key and if origin ta name length is one
 							let isKeyAttIRI=true;
 							//check if the other joins of table determines this attribute
-							if (originTaName.length>1 && isKeyAttIRI){
+							if (relNamesPathAtt.length>1 && isKeyAttIRI){
+								for (let rNameAtt of relNamesPathAtt){
+									console.log(rNameAtt);
+									/*check if the last table contains in its primary keys other than the key used  
+									and the table before if so then there is inconsistency
+									*/
+								}
 								console.log(auxShNamesTa);
 							}
 						}
