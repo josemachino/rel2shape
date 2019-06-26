@@ -378,6 +378,35 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 						}
 					}					  
 				});
+				//check those links that correspond to the entity mapping				
+				//get the set of entity mappings
+				// if there is going to be multiple IRI constructors then this should
+				// be modified saving in the attribute mappings also the IRI constructor
+				let auxShNamesTa=[];
+				for (let inShLink of intargetLinks){					
+					if (inShLink.attr('line/stroke')==subjectLinkColor){
+						let inShLinkView=inShLink.findView(paperTGDs);
+						auxShNamesTa.push({tableName:inShLinkView.sourceView.model.attributes.question,key:inShLink.labels()[0]});
+					}
+				}
+				for (let inShLink of intargetLinks){
+					if (inShLink.attr('line/stroke')!=subjectLinkColor){
+						let auxTC=inShLink.attributes.target.port;						
+						if (auxTC.split(",")[2]=="1" || auxTC.split(",")[2]=="?"){
+							console.log("review if the pk determines the value")
+							let originTaName=inShLink.labels()[0];
+							console.log(originTaName)
+							//get the key
+							//check if it is a key and if origin ta name length is one
+							let isKeyAttIRI=true;
+							//check if the other joins of table determines this attribute
+							if (originTaName.length>1 && isKeyAttIRI){
+								console.log(auxShNamesTa);
+							}
+						}
+					}
+				}
+				
 			}
 			var constraints=[];
 			element.attributes.options.forEach(function(tc) {
