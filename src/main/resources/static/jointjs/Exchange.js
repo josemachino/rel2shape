@@ -342,6 +342,20 @@ Exchange.prototype.getDeepSize=function(constraints,visited,map){
 	}
 };
 
+Exchange.prototype.containPks=function(pks1,pks2){
+	return false;
+}
+
+Exchange.prototype.getPks=function(options){
+	let pks=[]
+	for (let opt of options){
+		if (opt.isKey){
+			pks.push(opt)
+		}
+	}
+	return pks;
+}
+
 Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTables) {		
 	let chaseQ="";
 	let msgs=[];
@@ -351,7 +365,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 	let dbMap=new Map();
 	graphST.getElements().forEach(function(element){		
 		if (element.attributes.type=="db.Table"){			
-			dbMap.set(element.attributes.question,element.attributes.options);
+			dbMap.set(element.attributes.question,element.attributes.options);			
 		}
 	});
 	console.log(dbMap)
@@ -393,7 +407,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 				for (let inShLink of intargetLinks){					
 					if (inShLink.attr('line/stroke')==subjectLinkColor){
 						let inShLinkView=inShLink.findView(paperTGDs);
-						auxShNamesTa.push({tableName:inShLinkView.sourceView.model.attributes.question,key:inShLink.labels()[0]});
+						auxShNamesTa.push({tableName:inShLinkView.sourceView.model.attributes.question,key:inShLink.labels()[0].attrs.text.text});
 					}
 				}
 				for (let inShLink of intargetLinks){
@@ -401,17 +415,26 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 						let auxTC=inShLink.attributes.target.port;						
 						if (auxTC.split(",")[2]=="1" || auxTC.split(",")[2]=="?"){
 							console.log("review if the pk determines the value")
-							let originTaName=inShLink.labels()[0].attrs.text.text;
+							let originTaName="";
+							if (inShLink.attr('line/stroke')==attributeLinkColor){
+								originTaName=inShLink.labels()[0].attrs.text.text;
+							}else{
+								originTaName=inShLink.labels()[1].attrs.text.text;
+							}
+							
 							console.log(originTaName)
 							let relNamesPathAtt=this.getTokens(originTaName);
 							
 							//get the key
 							//check if it is a key and if origin ta name length is one
 							let isKeyAttIRI=true;
+							console.log(relNamesPathAtt);
 							//check if the other joins of table determines this attribute
 							if (relNamesPathAtt.length>1 && isKeyAttIRI){
-								for (let rNameAtt of relNamesPathAtt){
-									console.log(rNameAtt);
+								let auxPks=this.getPks(dbMap.get(relNamesPathAtt[0]));
+								console.log(auxPks)
+								for (let k=1; k<relNamesPathAtt.length;k++){									
+									
 									/*check if the last table contains in its primary keys other than the key used  
 									and the table before if so then there is inconsistency
 									*/
