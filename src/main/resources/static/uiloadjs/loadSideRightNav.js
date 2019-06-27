@@ -66,7 +66,7 @@ materialize:function(e){
     	var mimeType = 'text/turtle'
     	var store = $rdf.graph()
 
-    	try {
+    	/*try {
     	    $rdf.parse(body, store, uri, mimeType);    	    
             const allTriples = store.statementsMatching(undefined, undefined, undefined);
             allTriples.forEach(function(triple) {
@@ -80,7 +80,7 @@ materialize:function(e){
             });
     	} catch (err) {
     	    console.log(err)
-    	}		
+    	}		*/
         let nameExt="";
         if ($( "select#formats" ).val()=="Turtle"){
         	nameExt="ttl";

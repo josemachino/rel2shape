@@ -343,8 +343,12 @@ Exchange.prototype.getDeepSize=function(constraints,visited,map){
 };
 
 Exchange.prototype.containPks=function(pks1,pks2){
+	if(pks1.length== pks2.length){
+		
+	}
+	
 	return false;
-}
+};
 
 Exchange.prototype.getPks=function(options){
 	let pks=[]
@@ -354,7 +358,7 @@ Exchange.prototype.getPks=function(options){
 		}
 	}
 	return pks;
-}
+};
 
 Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTables) {		
 	let chaseQ="";
@@ -377,7 +381,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 			if (intargetLinks.length==0){
 				element.attributes.options.forEach(function(tc) {					  				
 				  if (tc.mult=="1" || tc.mult=="+"){
-					  let msg='Triple constraint ('+tc.label+":"+tc.type +') needs to be linked in '+ element.attributes.question;					  
+					  let msg='Triple constraint ('+tc.label+"::"+tc.type +') needs to be linked in '+ element.attributes.question;					  
 					  msgs.push({text:msg,level:0})
 					  var tcs=miShex.get(element.attributes.question);
 					  tcs.push(tc)					  
@@ -391,7 +395,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 						})){
 							var tc=pt.id.split(",");
 							if (tc[2]=="1" || tc[2]=="+"){
-								let msg='Triple constraint ('+tc[0]+":"+tc[1]+') needs to be linked  in '+element.attributes.question;
+								let msg='Triple constraint ('+tc[0]+"::"+tc[1]+') needs to be linked  in '+element.attributes.question;
 								msgs.push({text:msg,level:0})
 								var tcs=miShex.get(element.attributes.question);
 								tcs.push({label:tc[0],type:tc[1],mult:tc[2]})								
@@ -412,8 +416,9 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 				}
 				for (let inShLink of intargetLinks){
 					if (inShLink.attr('line/stroke')!=subjectLinkColor){
-						let auxTC=inShLink.attributes.target.port;						
-						if (auxTC.split(",")[2]=="1" || auxTC.split(",")[2]=="?"){
+						let auxTC=inShLink.attributes.target.port;		
+						let tcAuxParts=auxTC.split(",");
+						if (tcAuxParts[2]=="1" || tcAuxParts[2]=="?"){
 							console.log("review if the pk determines the value")
 							let originTaName="";
 							if (inShLink.attr('line/stroke')==attributeLinkColor){
@@ -421,7 +426,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 							}else{
 								originTaName=inShLink.labels()[1].attrs.text.text;
 							}
-							
+							let attNameMapping="";
 							console.log(originTaName)
 							let relNamesPathAtt=this.getTokens(originTaName);
 							
@@ -431,10 +436,19 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 							console.log(relNamesPathAtt);
 							//check if the other joins of table determines this attribute
 							if (relNamesPathAtt.length>1 && isKeyAttIRI){
+								console.log(dbMap.get(relNamesPathAtt[0]))
 								let auxPks=this.getPks(dbMap.get(relNamesPathAtt[0]));
 								console.log(auxPks)
 								for (let k=1; k<relNamesPathAtt.length;k++){									
-									
+									let otherPks=this.getPks(dbMap.get(relNamesPathAtt[0]));
+									console.log(otherPks)
+									if (this.containPks(auxPks,otherPks)){
+										let msg="Triple Constraint ("+tcAuxParts[0]+"::"+tcAuxParts[1]+") will not be satisfied because the  attribute "+attNameMapping+" is not key-covered";
+										msgs.push({text:msg,level:1})
+										break;
+									}else{
+										auxPks=otherPks;
+									}
 									/*check if the last table contains in its primary keys other than the key used  
 									and the table before if so then there is inconsistency
 									*/

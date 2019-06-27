@@ -2645,6 +2645,8 @@ function drawSVGGraph(){
 		if (attBool){
 			let wTaleft=10;
 			drawLine(svg,curPosEX+wTaleft,iniPosTaY,curPosEX+wTaleft,curPosEY-spaceHeight-hTe/2,"#000000");
+		}else{
+			curPosEY+=heightText/2;
 		}
 		
 		let k=0;	
@@ -2680,7 +2682,10 @@ function drawSVGGraph(){
 			positionShY+=hTe+spaceHeight;
 		})
 		//Draw vertical line in the target shape
-		drawLine(svg,positionShX+rightAlign/2+widthsvgLink*6,posIniY-10,positionShX+rightAlign/2+widthsvgLink*6,positionShY-hTe,"#000000");
+		if (attSh.length>0){
+			drawLine(svg,positionShX+rightAlign/2+widthsvgLink*6,posIniY-10,positionShX+rightAlign/2+widthsvgLink*6,positionShY-hTe,"#000000");
+		}
+		
 		for (let att of attLines){
 			tgdPosSh.set(att.id,attMapPos.get(tgdPathLine.get(att.id)[2]));
 		}
@@ -3023,7 +3028,7 @@ function loadWarnMsg(dataMsg,queryDB){
 	            	var body = data
 	            	var mimeType = 'text/turtle'
 	            	var store = $rdf.graph()
-
+/*
 	            	try {
 	            	    $rdf.parse(body, store, uri, mimeType);    	    
 	                    const allTriples = store.statementsMatching(undefined, undefined, undefined);
@@ -3038,7 +3043,8 @@ function loadWarnMsg(dataMsg,queryDB){
 	                    });
 	            	} catch (err) {
 	            	    console.log(err)
-	            	}		
+	            	}	
+*/	
 	                let nameExt="";
 	                if ($( "select#formats" ).val()=="Turtle"){
 	                	nameExt="ttl";
