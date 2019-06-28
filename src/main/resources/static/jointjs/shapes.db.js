@@ -2975,14 +2975,18 @@ function loadWarnMsg(dataMsg,queryDB){
             var divContainer=document.createElement('div');
             divContainer.className="container";
             var ul=document.createElement('ul');
-            ul.setAttribute("class","list-group scrollUL")
+            ul.setAttribute("class","list-group scrollUL");
+            let inconsistent=false;
+            let miss=false;
             for (var i=0; i<dataMsg.length; i++){
 
                 var li=document.createElement('li');
                 
                 if (dataMsg[i].level==0){
+                	miss=true;
                 	li.setAttribute("class","list-group-item list-group-item-action list-group-item-warning");
                 } else {
+                	inconsistent=true;
                 	li.setAttribute("class","list-group-item list-group-item-action list-group-item-danger");
                 }
                 li.innerHTML=li.innerHTML+dataMsg[i].text;
@@ -2993,7 +2997,15 @@ function loadWarnMsg(dataMsg,queryDB){
             var divAlert=document.createElement('div');            
             divAlert.setAttribute("class","alert alert-danger");
             divAlert.setAttribute("role","alert");
-            divAlert.innerHTML='The chase SQL script will generate additional blank nodes to satisfy approximatelly the Shape schema';
+            if (inconsistent && miss){
+            	divAlert.innerHTML='The chase SQL script will generate additional blank nodes, but it not will satisfy the schema';
+            }else if (inconsistent){
+            	divAlert.innerHTML='The set of triples will not satisfied the schema.';
+            } else if (miss){
+            	divAlert.innerHTML='The chase SQL script will generate additional blank nodes to satisfy approximatelly the Shape schema';
+            }
+            
+            
             divContainer.appendChild(divAlert);
             this.$el.html(divContainer);        
             return this;

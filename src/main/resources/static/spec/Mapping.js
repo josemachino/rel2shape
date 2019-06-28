@@ -4,6 +4,8 @@ describe("Mappings", function() {
   var graphST;  
   var exchange;
   var paperTGDs;
+  var subjectLinkColor="green";
+  var attributeLinkColor="blue";
   beforeEach(function() {
 	graphST=new joint.dia.Graph;
 	exchange=new Exchange();

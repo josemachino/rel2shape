@@ -1,6 +1,8 @@
 //https://stackoverflow.com/questions/39059349/dynamic-predicate-in-r2rml
 //https://github.com/cytoscape/cytoscape.js/issues/382
-function Exchange(){}
+function Exchange(){
+	
+}
 //TODO IMPLEMENT DE VERIFICATION PROCESS THAT ALWAYS SHOULD BE TYPED the first element
 Exchange.prototype.checkComplete=function(jsonTGD,graphST){
 	let lsMsg=[];
@@ -344,7 +346,7 @@ Exchange.prototype.getDeepSize=function(constraints,visited,map){
 
 Exchange.prototype.containPks=function(pks1,tableName){
 	let contain=true;
-	for (let pk of pks1){
+	for (let pk of pks1){		
 		if (pk.ref.name!=tableName){
 			contain=false;
 			break;
@@ -372,6 +374,8 @@ Exchange.prototype.getAttsIriConstr = function (lsTables,taName){
 			break;
 		}
 	}
+	console.log(pAtts[pAtts.length-1])
+	pAtts[pAtts.length-1]=pAtts[pAtts.length-1].replace(")","")
 	return pAtts;
 };
 
@@ -439,7 +443,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 				//get the set of entity mappings
 				// if there is going to be multiple IRI constructors then this should
 				// be modified saving in the attribute mappings also the IRI constructor
-				let auxShNamesTa=[];
+				let auxShNamesTa=[];								
 				for (let inShLink of intargetLinks){					
 					if (inShLink.attr('line/stroke')==subjectLinkColor){
 						let inShLinkView=inShLink.findView(paperTGDs);
@@ -459,19 +463,23 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 							}else{
 								originTaName=inShLink.labels()[1].attrs.text.text;
 							}
-							let attNameMapping="";							
+													
 							let relNamesPathAtt=this.getTokens(originTaName);
-							
+							let attNameMapping=Exchange.prototype.getNameAttribute.call(this,dbMap.get(relNamesPathAtt[0]),idAt);	
 							//get the key
 							let pidConstrs=Exchange.prototype.getAttsIriConstr.call(this,auxShNamesTa,relNamesPathAtt[relNamesPathAtt.length-1]);
+							console.log(pidConstrs)
 							//check if it is a key and if origin ta name length is one
-							let isKeyAttIRI=Exchange.prototype.isKeyAttributeId.call(this,pidConstrs,dbMap.get(relNamesPathAtt[relNamesPathAtt.length-1]));							
+							let isKeyAttIRI=Exchange.prototype.isKeyAttributeId.call(this,pidConstrs,dbMap.get(relNamesPathAtt[relNamesPathAtt.length-1]));
+							console.log(isKeyAttIRI)
 							//check if the other joins of table determines this attribute
 							if (relNamesPathAtt.length>1 && isKeyAttIRI){
 								
-								let auxPks=Exchange.prototype.getPriKs.call(this,dbMap.get(relNamesPathAtt[0]));								
-								for (let k=1; k<relNamesPathAtt.length;k++){																		
-									if (Exchange.prototype.containPks.call(this,auxPks,relNamesPathAtt[k])){
+								let auxPks=Exchange.prototype.getPriKs.call(this,dbMap.get(relNamesPathAtt[0]));
+								console.log(auxPks)
+								for (let k=1; k<relNamesPathAtt.length;k++){							
+									console.log(relNamesPathAtt[k]);
+									if (!Exchange.prototype.containPks.call(this,auxPks,relNamesPathAtt[k])){
 										let msg="Triple Constraint ("+tcAuxParts[0]+"::"+tcAuxParts[1]+") will not be satisfied because the  attribute "+attNameMapping+" is not key-covered";
 										msgs.push({text:msg,level:1})
 										break;
