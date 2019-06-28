@@ -342,22 +342,55 @@ Exchange.prototype.getDeepSize=function(constraints,visited,map){
 	}
 };
 
-Exchange.prototype.containPks=function(pks1,pks2){
-	if(pks1.length== pks2.length){
-		
-	}
-	
-	return false;
+Exchange.prototype.containPks=function(pks1,tableName){
+	let contain=true;
+	for (let pk of pks1){
+		if (pk.ref.name!=tableName){
+			contain=false;
+			break;
+		}
+	} 	
+	return contain;
 };
 
-Exchange.prototype.getPks=function(options){
+Exchange.prototype.getPriKs = function(options){
 	let pks=[]
+	console.log(options)
 	for (let opt of options){
-		if (opt.isKey){
+		if (opt.iskey){			
 			pks.push(opt)
 		}
 	}
 	return pks;
+};
+
+Exchange.prototype.getAttsIriConstr = function (lsTables,taName){
+	let pAtts=[];
+	for (let ta of lsTables){
+		if (ta.tableName==taName){
+			pAtts=ta.key.split("(")[1].split(",")
+			break;
+		}
+	}
+	return pAtts;
+};
+
+Exchange.prototype.isKeyAttributeId = function (pidAts,options){
+	let isKeyAll=true;
+	for (let at of pidAts){
+		let isKey=false; 
+		for (let opt of options){
+			if (opt.text==at && opt.iskey){
+				isKey=true;
+				break;
+			}
+		}
+		if (!isKey){
+			isKeyAll=false;
+			break;
+		}
+	}	
+	return isKeyAll;
 };
 
 Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTables) {		
@@ -372,7 +405,6 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 			dbMap.set(element.attributes.question,element.attributes.options);			
 		}
 	});
-	console.log(dbMap)
 	graphST.getElements().forEach(function(element){		
 		if (element.attributes.type=="shex.Type"){				
 			miShex.set(element.attributes.question,[]);
@@ -416,6 +448,7 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 				}
 				for (let inShLink of intargetLinks){
 					if (inShLink.attr('line/stroke')!=subjectLinkColor){
+						let idAt=inShLink.attributes.source.port;
 						let auxTC=inShLink.attributes.target.port;		
 						let tcAuxParts=auxTC.split(",");
 						if (tcAuxParts[2]=="1" || tcAuxParts[2]=="?"){
@@ -426,35 +459,32 @@ Exchange.prototype.generateQuery = function(mapSymbols,graphST,paperTGDs,mapTabl
 							}else{
 								originTaName=inShLink.labels()[1].attrs.text.text;
 							}
-							let attNameMapping="";
-							console.log(originTaName)
+							let attNameMapping="";							
 							let relNamesPathAtt=this.getTokens(originTaName);
 							
 							//get the key
+							let pidConstrs=Exchange.prototype.getAttsIriConstr.call(this,auxShNamesTa,relNamesPathAtt[relNamesPathAtt.length-1]);
 							//check if it is a key and if origin ta name length is one
-							let isKeyAttIRI=true;
-							console.log(relNamesPathAtt);
+							let isKeyAttIRI=Exchange.prototype.isKeyAttributeId.call(this,pidConstrs,dbMap.get(relNamesPathAtt[relNamesPathAtt.length-1]));							
 							//check if the other joins of table determines this attribute
 							if (relNamesPathAtt.length>1 && isKeyAttIRI){
-								console.log(dbMap.get(relNamesPathAtt[0]))
-								let auxPks=this.getPks(dbMap.get(relNamesPathAtt[0]));
-								console.log(auxPks)
-								for (let k=1; k<relNamesPathAtt.length;k++){									
-									let otherPks=this.getPks(dbMap.get(relNamesPathAtt[0]));
-									console.log(otherPks)
-									if (this.containPks(auxPks,otherPks)){
+								
+								let auxPks=Exchange.prototype.getPriKs.call(this,dbMap.get(relNamesPathAtt[0]));								
+								for (let k=1; k<relNamesPathAtt.length;k++){																		
+									if (Exchange.prototype.containPks.call(this,auxPks,relNamesPathAtt[k])){
 										let msg="Triple Constraint ("+tcAuxParts[0]+"::"+tcAuxParts[1]+") will not be satisfied because the  attribute "+attNameMapping+" is not key-covered";
 										msgs.push({text:msg,level:1})
 										break;
 									}else{
-										auxPks=otherPks;
+										auxPks=Exchange.prototype.getPriKs.call(this,dbMap.get(relNamesPathAtt[k]));
 									}
-									/*check if the last table contains in its primary keys other than the key used  
-									and the table before if so then there is inconsistency
-									*/
-								}
-								console.log(auxShNamesTa);
+								}	
+								//if last table compare pidConstrs with auxPks								
+							}else if (relNamesPathAtt.length==1 && !isKeyAttIRI) {
+								let msg="Triple Constraint ("+tcAuxParts[0]+"::"+tcAuxParts[1]+") will not be satisfied because the  attribute "+attNameMapping+" is not key-covered";
+								msgs.push({text:msg,level:1})
 							}
+							
 						}
 					}
 				}
